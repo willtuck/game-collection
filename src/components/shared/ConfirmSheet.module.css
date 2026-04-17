@@ -1,0 +1,48 @@
+.message {
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.cancel {
+  height: 40px;
+  padding: 0 16px;
+  background: transparent;
+  color: var(--text-mid);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  font-size: 14px;
+}
+
+.cancel:hover { background: var(--surface2); }
+
+.confirm {
+  height: 40px;
+  padding: 0 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--r);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.confirm:hover { background: var(--accent-mid); }
+
+.confirm.danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.confirm.danger:hover {
+  background: var(--danger);
+  color: #fff;
+}
