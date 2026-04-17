@@ -33,7 +33,8 @@ const EMPTY: AddFormState = {
 export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
   const [form, setForm] = useState<AddFormState>(EMPTY);
   const [nameErr, setNameErr] = useState('');
-  const { games, addGame } = useGameStore(s => ({ games: s.games, addGame: s.addGame }));
+  const games = useGameStore(s => s.games);
+  const addGame = useGameStore(s => s.addGame);
 
   function set<K extends keyof AddFormState>(key: K, val: AddFormState[K]) {
     setForm(f => ({ ...f, [key]: val }));

@@ -18,7 +18,8 @@ const DEFAULT_FILTERS: FilterState = {
 };
 
 export function CollectionView() {
-  const { games, deleteGame } = useGameStore(s => ({ games: s.games, deleteGame: s.deleteGame }));
+  const games = useGameStore(s => s.games);
+  const deleteGame = useGameStore(s => s.deleteGame);
 
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);

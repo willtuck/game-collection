@@ -15,7 +15,8 @@ interface GameCardProps {
 
 export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const [editing, setEditing] = useState(false);
-  const { games, updateGame } = useGameStore(s => ({ games: s.games, updateGame: s.updateGame }));
+  const games = useGameStore(s => s.games);
+  const updateGame = useGameStore(s => s.updateGame);
   const col = gameColor(game.id);
 
   // ── Edit form state ──
