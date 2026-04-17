@@ -149,7 +149,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
         <div
           className={styles.tooltip}
           style={{
-            left: Math.min(tooltip.x + 10, cw - 168),
+            left: Math.min(tooltip.x + 10, cw - 30),
             top:  Math.max(tooltip.y - 34, 4),
           }}
         >

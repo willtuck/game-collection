@@ -17,9 +17,7 @@
   border-radius: 20px;
   pointer-events: none;
   white-space: nowrap;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: calc(100% - 20px);
   box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   z-index: 10;
 }
