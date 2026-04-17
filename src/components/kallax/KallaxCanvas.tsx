@@ -12,6 +12,12 @@ interface KallaxCanvasProps {
   searchTerm: string;
 }
 
+// Azimuth limits: keep cos(az) < 0 so the painter's draw order stays correct.
+// ±1.1 rad (~63°) from the default of -2.36 gives symmetric left/right travel
+// without flipping to a back-facing view.
+const AZ_MIN = -3.46;
+const AZ_MAX = -1.26;
+
 interface DragState {
   startX: number;
   startAz: number;
@@ -95,7 +101,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
         setTooltip(null);
       }
       if (drag.moved) {
-        const newAz = drag.startAz + delta * 0.009;
+        const newAz = Math.max(AZ_MIN, Math.min(AZ_MAX, drag.startAz + delta * 0.009));
         setRotation(newAz, getRotation().kElevation);
         setAzimuth(newAz);
         return;
