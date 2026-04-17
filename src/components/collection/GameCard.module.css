@@ -297,7 +297,7 @@
   cursor: pointer;
 }
 
-.sugChip:hover {
+.sugChip:hover, .sugChipActive {
   background: var(--accent-mid);
   color: #fff;
 }

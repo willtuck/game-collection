@@ -22,6 +22,8 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const userId = useAuthStore(s => s.user?.id);
   const col = gameColor(game.id);
   const [dimSuggestions, setDimSuggestions] = useState<DimSuggestion[]>([]);
+  const [activeSugIdx, setActiveSugIdx] = useState<number | null>(null);
+  const [savedDims, setSavedDims] = useState<{ width: string; height: string; depth: string } | null>(null);
 
   // ── Edit form state ──
   const eu = game.unit || 'cm';
@@ -62,11 +64,13 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
       maxPlayers: game.maxPlayers ?? '',
     });
     setDimSuggestions([]);
+    setActiveSugIdx(null);
+    setSavedDims(null);
     fetchDimSuggestions(game.name).then(setDimSuggestions);
     setEditing(true);
   }
 
-  function cancelEdit() { setEditing(false); setDimSuggestions([]); }
+  function cancelEdit() { setEditing(false); setDimSuggestions([]); setActiveSugIdx(null); setSavedDims(null); }
 
   function toggleUnit() {
     const newUnit = form.unit === 'cm' ? 'in' : 'cm';
@@ -105,15 +109,29 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     toast(`Updated "${name}"`);
     setEditing(false);
     setDimSuggestions([]);
+    setActiveSugIdx(null);
+    setSavedDims(null);
   }
 
-  function applySuggestion(s: DimSuggestion) {
-    setForm(f => ({
-      ...f,
-      width:  f.unit === 'cm' ? s.width  : (parseFloat(s.width)  / 2.54).toFixed(2),
-      height: f.unit === 'cm' ? s.height : (parseFloat(s.height) / 2.54).toFixed(2),
-      depth:  f.unit === 'cm' ? s.depth  : (parseFloat(s.depth)  / 2.54).toFixed(2),
-    }));
+  function applySuggestion(s: DimSuggestion, i: number) {
+    if (activeSugIdx === i) {
+      // Deselect — revert to saved dims
+      if (savedDims) setForm(f => ({ ...f, ...savedDims }));
+      setActiveSugIdx(null);
+      setSavedDims(null);
+    } else {
+      // Select — save current dims on first pick, then apply
+      if (activeSugIdx === null) {
+        setSavedDims({ width: form.width, height: form.height, depth: form.depth });
+      }
+      setForm(f => ({
+        ...f,
+        width:  f.unit === 'cm' ? s.width  : (parseFloat(s.width)  / 2.54).toFixed(2),
+        height: f.unit === 'cm' ? s.height : (parseFloat(s.height) / 2.54).toFixed(2),
+        depth:  f.unit === 'cm' ? s.depth  : (parseFloat(s.depth)  / 2.54).toFixed(2),
+      }));
+      setActiveSugIdx(i);
+    }
   }
 
   function fmtSug(v: string) {
@@ -338,7 +356,11 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
               <div className={styles.suggestions}>
                 <span className={styles.sugLabel}>Suggested</span>
                 {dimSuggestions.map((s, i) => (
-                  <button key={i} className={styles.sugChip} onClick={() => applySuggestion(s)}>
+                  <button
+                    key={i}
+                    className={`${styles.sugChip} ${activeSugIdx === i ? styles.sugChipActive : ''}`}
+                    onClick={() => applySuggestion(s, i)}
+                  >
                     {fmtSug(s.width)} × {fmtSug(s.height)} × {fmtSug(s.depth)} {form.unit}
                   </button>
                 ))}
