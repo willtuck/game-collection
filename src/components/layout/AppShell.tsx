@@ -14,11 +14,11 @@ export function AppShell() {
   return (
     <div className={styles.shell}>
       <Header />
+      <BottomNav active={activeTab} onChange={setActiveTab} />
       <main className={styles.main}>
         {activeTab === 'collection' && <CollectionView />}
         {activeTab === 'suggested'  && <SuggestedView />}
       </main>
-      <BottomNav active={activeTab} onChange={setActiveTab} />
       <Toast />
     </div>
   );

@@ -7,8 +7,6 @@
 
 .main {
   flex: 1;
-  /* Reserve space for fixed bottom nav */
-  padding-bottom: calc(64px + env(safe-area-inset-bottom));
   overflow: hidden;
   display: flex;
   flex-direction: column;
