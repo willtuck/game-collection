@@ -5,6 +5,7 @@ import { packCellsGroupAware } from '../../lib/packing';
 import { kuGrid } from '../../lib/helpers';
 import { KallaxCanvas } from './KallaxCanvas';
 import { SuggestedSettings } from './SuggestedSettings';
+import { KallaxManagerSheet } from './KallaxManagerSheet';
 import styles from './SuggestedView.module.css';
 
 export function SuggestedView() {
@@ -19,6 +20,7 @@ export function SuggestedView() {
 
   const [search, setSearch] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [manageOpen, setManageOpen] = useState(false);
 
   const activeKu = kallaxes.find(k => k.id === activeKuId) ?? kallaxes[0];
   const [cols, rows] = kuGrid(activeKu?.model ?? '2x4');
@@ -47,6 +49,9 @@ export function SuggestedView() {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+        <button className={styles.settingsBtn} onClick={() => setManageOpen(true)}>
+          Units
+        </button>
         <button className={styles.settingsBtn} onClick={() => setSettingsOpen(true)}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5"/>
@@ -111,6 +116,8 @@ export function SuggestedView() {
           </>
         )}
       </div>
+
+      <KallaxManagerSheet open={manageOpen} onClose={() => setManageOpen(false)} />
 
       <SuggestedSettings
         open={settingsOpen}

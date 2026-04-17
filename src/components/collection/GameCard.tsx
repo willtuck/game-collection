@@ -35,6 +35,8 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     width: disp(game.width),
     height: disp(game.height),
     depth: disp(game.depth),
+    minPlayers: game.minPlayers ?? '',
+    maxPlayers: game.maxPlayers ?? '',
   });
 
   function setF<K extends keyof typeof form>(key: K, val: (typeof form)[K]) {
@@ -52,6 +54,8 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
       width: disp(game.width),
       height: disp(game.height),
       depth: disp(game.depth),
+      minPlayers: game.minPlayers ?? '',
+      maxPlayers: game.maxPlayers ?? '',
     });
     setEditing(true);
   }
@@ -85,6 +89,8 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
       height: storedInside ? null : toCm(form.height, form.unit),
       depth:  storedInside ? null : toCm(form.depth, form.unit),
       unit: form.unit,
+      minPlayers: form.minPlayers.trim() || undefined,
+      maxPlayers: form.maxPlayers.trim() || undefined,
     });
     toast(`Updated "${name}"`);
     setEditing(false);
@@ -240,6 +246,39 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
             Group <span className={styles.optional}>(optional)</span>
           </label>
           <GroupInput value={form.groupName} onChange={v => setF('groupName', v)} />
+        </div>
+
+        {/* Players */}
+        <div className={styles.field}>
+          <label className={styles.flabel}>
+            Players <span className={styles.optional}>(optional)</span>
+          </label>
+          <div className={styles.playersRow}>
+            <div className={styles.dimField}>
+              <label className={styles.dimLabel}>Min</label>
+              <input
+                type="number"
+                className={styles.dimInput}
+                value={form.minPlayers}
+                onChange={e => setF('minPlayers', e.target.value)}
+                placeholder="1"
+                min="1"
+                max="99"
+              />
+            </div>
+            <div className={styles.dimField}>
+              <label className={styles.dimLabel}>Max</label>
+              <input
+                type="number"
+                className={styles.dimInput}
+                value={form.maxPlayers}
+                onChange={e => setF('maxPlayers', e.target.value)}
+                placeholder="4"
+                min="1"
+                max="99"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Dimensions */}

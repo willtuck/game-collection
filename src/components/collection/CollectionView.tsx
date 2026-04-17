@@ -4,6 +4,7 @@ import { GameGrid } from './GameGrid';
 import { FAB } from '../shared/FAB';
 import { AddGameSheet } from '../sheets/AddGameSheet';
 import { FilterSheet, type FilterState } from '../sheets/FilterSheet';
+import { ImportSheet } from '../sheets/ImportSheet';
 import { ConfirmSheet } from '../shared/ConfirmSheet';
 import { useGameStore } from '../../store/useGameStore';
 import { hasDims } from '../../lib/helpers';
@@ -25,6 +26,7 @@ export function CollectionView() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [addOpen, setAddOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const activeFilterCount = [
@@ -110,7 +112,10 @@ export function CollectionView() {
         onChange={setFilters}
         onClose={() => setFilterOpen(false)}
         onExportCSV={handleExportCSV}
+        onImportCSV={() => setImportOpen(true)}
       />
+
+      <ImportSheet open={importOpen} onClose={() => setImportOpen(false)} />
 
       <ConfirmSheet
         open={!!pendingDeleteId}
