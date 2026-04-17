@@ -4,7 +4,7 @@ import { gameColor } from './colors';
 
 /* ── Projection ── */
 
-let kAzimuth   = -2.36;
+let kAzimuth   = -Math.PI + Math.PI / 8;  // ~22° right of front
 let kElevation =  0.52;
 
 export function getRotation() { return { kAzimuth, kElevation }; }

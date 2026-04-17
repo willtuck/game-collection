@@ -15,8 +15,8 @@ interface KallaxCanvasProps {
 // Azimuth limits: keep cos(az) < 0 so the painter's draw order stays correct.
 // ±1.1 rad (~63°) from the default of -2.36 gives symmetric left/right travel
 // without flipping to a back-facing view.
-const AZ_MIN = -3.46;
-const AZ_MAX = -1.26;
+const AZ_MIN = -Math.PI - Math.PI / 4;  // 45° left of front
+const AZ_MAX = -Math.PI + Math.PI / 4;  // 45° right of front
 
 interface DragState {
   startX: number;
