@@ -37,11 +37,11 @@ export const useGameStore = create<GameStore>()(
   persist(
     (set) => ({
       games: [],
-      kallaxes: [{ id: 'ku1', model: '2x4', label: 'My Kallax' }],
+      kallaxes: [],
       layouts: [],
       kallaxSort: 'alpha',
       kallaxMode: 'upright',
-      activeKuId: 'ku1',
+      activeKuId: null,
 
       addGame: (game) =>
         set(s => ({ games: [game, ...s.games] })),

@@ -3,10 +3,19 @@ import { useGameStore } from '../../store/useGameStore';
 import { getSortedForKallax } from '../../lib/sorting';
 import { packCellsGroupAware } from '../../lib/packing';
 import { kuGrid } from '../../lib/helpers';
+import type { PackedGame } from '../../lib/types';
 import { KallaxCanvas } from './KallaxCanvas';
 import { SuggestedSettings } from './SuggestedSettings';
 import { KallaxManagerSheet } from './KallaxManagerSheet';
 import styles from './SuggestedView.module.css';
+
+interface UnitPacking {
+  id: string;
+  label: string;
+  cols: number;
+  rows: number;
+  cellPacked: PackedGame[][];
+}
 
 export function SuggestedView() {
   const games      = useGameStore(s => s.games);
@@ -22,21 +31,28 @@ export function SuggestedView() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
 
-  const activeKu = kallaxes.find(k => k.id === activeKuId) ?? kallaxes[0];
-  const [cols, rows] = kuGrid(activeKu?.model ?? '2x4');
-  const numCells = cols * rows;
-
   const sortedGames = useMemo(
     () => getSortedForKallax(games, kallaxSort),
     [games, kallaxSort],
   );
 
-  const { cellPacked, remaining } = useMemo(
-    () => packCellsGroupAware(sortedGames, numCells, kallaxMode === 'stacked'),
-    [sortedGames, numCells, kallaxMode],
-  );
+  // Pack games sequentially across all units — overflow from unit N feeds unit N+1
+  const { units, remaining } = useMemo(() => {
+    const units: UnitPacking[] = [];
+    let rem = sortedGames;
+    for (const ku of kallaxes) {
+      const [cols, rows] = kuGrid(ku.model);
+      const { cellPacked, remaining } = packCellsGroupAware(rem, cols * rows, kallaxMode === 'stacked');
+      rem = remaining;
+      units.push({ id: ku.id, label: ku.label, cols, rows, cellPacked });
+    }
+    return { units, remaining: rem };
+  }, [sortedGames, kallaxes, kallaxMode]);
 
-  const totalFitted = cellPacked.flat().length;
+  const activeUnit = units.find(u => u.id === activeKuId) ?? units[0];
+
+  const noUnits    = kallaxes.length === 0;
+  const noDims     = !noUnits && sortedGames.length === 0;
 
   return (
     <div className={styles.view}>
@@ -48,11 +64,12 @@ export function SuggestedView() {
           placeholder="Highlight a game…"
           value={search}
           onChange={e => setSearch(e.target.value)}
+          disabled={noUnits}
         />
         <button className={styles.settingsBtn} onClick={() => setManageOpen(true)}>
           Units
         </button>
-        <button className={styles.settingsBtn} onClick={() => setSettingsOpen(true)}>
+        <button className={styles.settingsBtn} onClick={() => setSettingsOpen(true)} disabled={noUnits}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5"/>
             <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.54 11.54l1.41 1.41M3.05 12.95l1.42-1.42M11.54 4.46l1.41-1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -61,48 +78,57 @@ export function SuggestedView() {
         </button>
       </div>
 
-      {/* Unit tabs (only shown when multiple units) */}
-      {kallaxes.length > 1 && (
+      {/* Unit tabs */}
+      {units.length > 1 && (
         <div className={styles.units}>
-          {kallaxes.map(ku => (
+          {units.map(u => (
             <button
-              key={ku.id}
-              className={`${styles.unitTab} ${ku.id === activeKu?.id ? styles.activeTab : ''}`}
-              onClick={() => setActiveKu(ku.id)}
+              key={u.id}
+              className={`${styles.unitTab} ${u.id === activeUnit?.id ? styles.activeTab : ''}`}
+              onClick={() => setActiveKu(u.id)}
             >
-              {ku.label}
+              {u.label}
             </button>
           ))}
         </div>
       )}
 
       <div className={styles.scroll}>
-        {sortedGames.length === 0 ? (
+        {noUnits ? (
+          <div className={styles.empty}>
+            <div className={styles.emptyTitle}>No Kallax units yet</div>
+            <div className={styles.emptyBody}>
+              Tap <strong>Units</strong> to add your first unit and see how your games fit.
+            </div>
+          </div>
+        ) : noDims ? (
           <div className={styles.empty}>
             <div className={styles.emptyTitle}>No games with dimensions</div>
             <div className={styles.emptyBody}>
               Add box dimensions to your games in the Collection tab to see them arranged here.
             </div>
           </div>
-        ) : (
+        ) : activeUnit ? (
           <>
             <KallaxCanvas
-              cellPacked={cellPacked}
-              cols={cols}
-              rows={rows}
+              cellPacked={activeUnit.cellPacked}
+              cols={activeUnit.cols}
+              rows={activeUnit.rows}
               searchTerm={search.toLowerCase()}
             />
 
             <div className={styles.stats}>
-              {activeKu?.label} · {totalFitted} of {sortedGames.length}{' '}
-              {sortedGames.length === 1 ? 'game' : 'games'} fit
-              {' · '}{kallaxMode} · {kallaxSort.replace(/-/g, ' ')}
+              {activeUnit.label}
+              {' · '}{activeUnit.cellPacked.flat().length}{' '}
+              {activeUnit.cellPacked.flat().length === 1 ? 'game' : 'games'}
+              {' · '}{kallaxMode}
             </div>
 
             {remaining.length > 0 && (
               <div className={styles.remaining}>
                 <div className={styles.remainingTitle}>
                   {remaining.length} {remaining.length === 1 ? 'game' : 'games'} don't fit
+                  {kallaxes.length > 1 ? ' in any unit' : ''}
                 </div>
                 <div className={styles.remainingList}>
                   {remaining.map(g => (
@@ -114,7 +140,7 @@ export function SuggestedView() {
               </div>
             )}
           </>
-        )}
+        ) : null}
       </div>
 
       <KallaxManagerSheet open={manageOpen} onClose={() => setManageOpen(false)} />
