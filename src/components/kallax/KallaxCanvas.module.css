@@ -1,0 +1,25 @@
+.wrap {
+  position: relative;
+  width: 100%;
+}
+
+.canvas {
+  display: block;
+}
+
+.tooltip {
+  position: absolute;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 12px;
+  font-family: var(--sans);
+  padding: 4px 10px;
+  border-radius: 20px;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  z-index: 10;
+}
