@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { BoxPreview } from './BoxPreview';
 import { GroupInput } from './GroupInput';
 import { useGameStore } from '../../store/useGameStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { fetchDimSuggestions, contributeDims, type DimSuggestion } from '../../lib/supabaseSync';
 import { hasDims, toCm, fmtDims, fmtDate } from '../../lib/helpers';
 import { gameColor } from '../../lib/colors';
 import { toast } from '../shared/Toast';
@@ -17,7 +19,9 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const [editing, setEditing] = useState(false);
   const games = useGameStore(s => s.games);
   const updateGame = useGameStore(s => s.updateGame);
+  const userId = useAuthStore(s => s.user?.id);
   const col = gameColor(game.id);
+  const [dimSuggestions, setDimSuggestions] = useState<DimSuggestion[]>([]);
 
   // ── Edit form state ──
   const eu = game.unit || 'cm';
@@ -57,10 +61,12 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
       minPlayers: game.minPlayers ?? '',
       maxPlayers: game.maxPlayers ?? '',
     });
+    setDimSuggestions([]);
+    fetchDimSuggestions(game.name).then(setDimSuggestions);
     setEditing(true);
   }
 
-  function cancelEdit() { setEditing(false); }
+  function cancelEdit() { setEditing(false); setDimSuggestions([]); }
 
   function toggleUnit() {
     const newUnit = form.unit === 'cm' ? 'in' : 'cm';
@@ -79,21 +85,40 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     const name = form.name.trim();
     if (!name) return;
     const storedInside = form.type === 'expansion' && !!form.baseGameId && form.storageMode === 'inside';
+    const wCm = storedInside ? null : toCm(form.width, form.unit);
+    const hCm = storedInside ? null : toCm(form.height, form.unit);
+    const dCm = storedInside ? null : toCm(form.depth, form.unit);
     updateGame(game.id, {
       name,
       type: form.type === 'expansion' ? 'expansion' : undefined,
       baseGameId: (form.type === 'expansion' && form.baseGameId) ? form.baseGameId : undefined,
       storedInside: storedInside || undefined,
       groupName: form.groupName.trim() || undefined,
-      width:  storedInside ? null : toCm(form.width, form.unit),
-      height: storedInside ? null : toCm(form.height, form.unit),
-      depth:  storedInside ? null : toCm(form.depth, form.unit),
+      width: wCm, height: hCm, depth: dCm,
       unit: form.unit,
       minPlayers: form.minPlayers.trim() || undefined,
       maxPlayers: form.maxPlayers.trim() || undefined,
     });
+    if (!storedInside && wCm && hCm && dCm && userId) {
+      contributeDims(name, wCm, hCm, dCm, userId);
+    }
     toast(`Updated "${name}"`);
     setEditing(false);
+    setDimSuggestions([]);
+  }
+
+  function applySuggestion(s: DimSuggestion) {
+    setForm(f => ({
+      ...f,
+      width:  f.unit === 'cm' ? s.width  : (parseFloat(s.width)  / 2.54).toFixed(2),
+      height: f.unit === 'cm' ? s.height : (parseFloat(s.height) / 2.54).toFixed(2),
+      depth:  f.unit === 'cm' ? s.depth  : (parseFloat(s.depth)  / 2.54).toFixed(2),
+    }));
+  }
+
+  function fmtSug(v: string) {
+    if (form.unit === 'cm') return v;
+    return (parseFloat(v) / 2.54).toFixed(1);
   }
 
   const isExpansion = game.type === 'expansion';
@@ -307,6 +332,16 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
             {(pw > 0 || ph > 0 || pd > 0) && (
               <div className={styles.preview}>
                 <BoxPreview w={pw||1} h={ph||1} d={pd||1} gameId={game.id} />
+              </div>
+            )}
+            {dimSuggestions.length > 0 && (
+              <div className={styles.suggestions}>
+                <span className={styles.sugLabel}>Suggested</span>
+                {dimSuggestions.map((s, i) => (
+                  <button key={i} className={styles.sugChip} onClick={() => applySuggestion(s)}>
+                    {fmtSug(s.width)} × {fmtSug(s.height)} × {fmtSug(s.depth)} {form.unit}
+                  </button>
+                ))}
               </div>
             )}
           </div>

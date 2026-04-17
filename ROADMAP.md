@@ -29,9 +29,11 @@
 ## Up Next
 
 ### Phase 2 — Accounts & cloud sync
-- Sign in with Google (Supabase Auth)
-- Games and Kallax units stored in Supabase (Postgres), synced across devices
-- Offline-first: local Zustand state as cache, sync on reconnect
+- ✅ Sign in with GitHub (placeholder — see below)
+- ✅ Games and Kallax units stored in Supabase (Postgres), synced across devices
+- ✅ On first sign-in: local data pushed up if DB empty, else DB wins
+- Auth polish (before public launch): swap to consumer-friendly providers —
+  Google, email/password, and possibly Apple. No Facebook.
 
 ### Phase 3 — Richer game data
 - Cover art / thumbnail (fetched from BGG API or user-uploaded)
