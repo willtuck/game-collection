@@ -29,3 +29,66 @@
   font-size: 12px;
   color: var(--text-light);
 }
+
+.auth {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.signInBtn {
+  font-size: 13px;
+  font-family: var(--sans);
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.signInBtn:hover {
+  background: var(--surface-raised);
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-mid);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signOutBtn {
+  font-size: 12px;
+  font-family: var(--sans);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.signOutBtn:hover {
+  color: var(--text);
+  background: var(--surface-raised);
+}

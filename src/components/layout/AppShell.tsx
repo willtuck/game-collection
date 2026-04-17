@@ -4,9 +4,11 @@ import { BottomNav, type TabName } from './BottomNav';
 import { CollectionView } from '../collection/CollectionView';
 import { SuggestedView } from '../kallax/SuggestedView';
 import { Toast } from '../shared/Toast';
+import { useAuthInit } from '../../hooks/useAuthInit';
 import styles from './AppShell.module.css';
 
 export function AppShell() {
+  useAuthInit();
   const [activeTab, setActiveTab] = useState<TabName>('collection');
 
   return (
