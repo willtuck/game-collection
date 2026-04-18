@@ -96,7 +96,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
         hitRef.current = drawTopGames(ctx, proj, topPacked, effectiveSearch);
       } else {
         // ── Zoomed: single cell fills the canvas ──
-        const col   = zoomedCellIdx % cols;
+        const col   = cols - 1 - (zoomedCellIdx % cols); // matches left-first ordering
         const row   = rows - 1 - Math.floor(zoomedCellIdx / cols); // matches top-first ordering
         const cellX = col * KW;
         const cellY = row * KH;
@@ -122,8 +122,8 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
       const { proj } = isoProject(allCorners, cw, canvasH, 20);
       const allHits: HitRegion[] = [];
       for (let i = 0; i < cols * rows; i++) {
-        const c = i % cols;
-        const r = rows - 1 - Math.floor(i / cols); // cell 0 = top-left
+        const c = cols - 1 - (i % cols);           // cell 0 = left (x=0 is rightmost on screen)
+        const r = rows - 1 - Math.floor(i / cols); // cell 0 = top
         allHits.push(...drawCell(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i, i));
       }
 
