@@ -1,6 +1,6 @@
 .fab {
   position: fixed;
-  bottom: calc(64px + 16px); /* above bottom nav */
+  bottom: calc(16px + env(safe-area-inset-bottom));
   right: 20px;
   height: 52px;
   padding: 0 20px;
