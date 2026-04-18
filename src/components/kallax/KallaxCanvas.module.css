@@ -8,6 +8,32 @@
   display: block;
 }
 
+.backBtn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  height: 30px;
+  padding: 0 10px 0 8px;
+  border: 1px solid var(--border-mid);
+  border-radius: 20px;
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-mid);
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  transition: background 0.12s, color 0.12s;
+}
+
+.backBtn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
 .tooltip {
   position: absolute;
   background: var(--text);

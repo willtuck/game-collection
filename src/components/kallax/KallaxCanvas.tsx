@@ -12,11 +12,8 @@ interface KallaxCanvasProps {
   searchTerm: string;
 }
 
-// Azimuth limits: keep cos(az) < 0 so the painter's draw order stays correct.
-// ±1.1 rad (~63°) from the default of -2.36 gives symmetric left/right travel
-// without flipping to a back-facing view.
-const AZ_MIN = -Math.PI - Math.PI / 4;  // 45° left of front
-const AZ_MAX = -Math.PI + Math.PI / 4;  // 45° right of front
+const AZ_MIN = -Math.PI - Math.PI / 4;
+const AZ_MAX = -Math.PI + Math.PI / 4;
 
 interface DragState {
   startX: number;
@@ -30,16 +27,20 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
   const hitRef       = useRef<HitRegion[]>([]);
   const dragRef      = useRef<DragState | null>(null);
 
-  const [tooltip,      setTooltip]      = useState<{ name: string; x: number; y: number } | null>(null);
-  const [tapHighlight, setTapHighlight] = useState('');
-  const [cw,           setCw]           = useState(0);
-  const [azimuth,      setAzimuth]      = useState(() => getRotation().kAzimuth);
-  const [dragging,     setDragging]     = useState(false);
+  const [tooltip,       setTooltip]       = useState<{ name: string; x: number; y: number } | null>(null);
+  const [tapHighlight,  setTapHighlight]  = useState('');
+  const [zoomedCellIdx, setZoomedCellIdx] = useState<number | null>(null);
+  const [cw,            setCw]            = useState(0);
+  const [azimuth,       setAzimuth]       = useState(() => getRotation().kAzimuth);
+  const [dragging,      setDragging]      = useState(false);
 
-  // Search field takes over — clear any tap highlight
+  // Search field takes over — clear tap highlight
   useEffect(() => { if (searchTerm) setTapHighlight(''); }, [searchTerm]);
 
-  // The effective highlight: tap win on touch, search field wins on desktop
+  // Zoom resets highlight and tooltip
+  useEffect(() => { setTapHighlight(''); setTooltip(null); }, [zoomedCellIdx]);
+
+  // Effective highlight: tap wins on touch, search field wins on desktop
   const effectiveSearch = tapHighlight || searchTerm;
 
   // Responsive width
@@ -54,7 +55,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
 
   const canvasH = Math.min(cw * 0.85, 480);
 
-  // Render (re-runs whenever azimuth changes)
+  // Render
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || cw <= 0) return;
@@ -70,23 +71,39 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
     ctx.clearRect(0, 0, cw, canvasH);
 
     const { w: KW, h: KH, d: KD } = KALLAX;
-    const totalW = cols * KW;
-    const totalH = rows * KH;
-    const allCorners: [number, number, number][] = [
-      [0, 0, 0],      [totalW, 0, 0],      [totalW, 0, KD],      [0, 0, KD],
-      [0, totalH, 0], [totalW, totalH, 0], [totalW, totalH, KD], [0, totalH, KD],
-    ];
-    const { proj } = isoProject(allCorners, cw, canvasH, 20);
 
-    const allHits: HitRegion[] = [];
-    for (let i = 0; i < cols * rows; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const hits = drawCell(ctx, proj, row * KH, cellPacked[i] ?? [], col * KW, effectiveSearch);
-      allHits.push(...hits);
+    if (zoomedCellIdx !== null) {
+      // ── Zoomed: render single cell filling the canvas ──
+      const col   = zoomedCellIdx % cols;
+      const row   = Math.floor(zoomedCellIdx / cols);
+      const cellX = col * KW;
+      const cellY = row * KH;
+      const singleCorners: [number, number, number][] = [
+        [cellX,      cellY,      0  ], [cellX + KW, cellY,      0  ],
+        [cellX + KW, cellY,      KD ], [cellX,      cellY,      KD ],
+        [cellX,      cellY + KH, 0  ], [cellX + KW, cellY + KH, 0  ],
+        [cellX + KW, cellY + KH, KD ], [cellX,      cellY + KH, KD ],
+      ];
+      const { proj } = isoProject(singleCorners, cw, canvasH, 24);
+      hitRef.current = drawCell(ctx, proj, cellY, cellPacked[zoomedCellIdx] ?? [], cellX, effectiveSearch);
+    } else {
+      // ── Full kallax ──
+      const totalW = cols * KW;
+      const totalH = rows * KH;
+      const allCorners: [number, number, number][] = [
+        [0, 0,      0  ], [totalW, 0,      0  ], [totalW, 0,      KD ], [0, 0,      KD ],
+        [0, totalH, 0  ], [totalW, totalH, 0  ], [totalW, totalH, KD ], [0, totalH, KD ],
+      ];
+      const { proj } = isoProject(allCorners, cw, canvasH, 20);
+      const allHits: HitRegion[] = [];
+      for (let i = 0; i < cols * rows; i++) {
+        const c = i % cols;
+        const r = Math.floor(i / cols);
+        allHits.push(...drawCell(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch));
+      }
+      hitRef.current = allHits;
     }
-    hitRef.current = allHits;
-  }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth]);
+  }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth, zoomedCellIdx]);
 
   const findHit = useCallback((x: number, y: number) =>
     hitRef.current.find(r => pointInPoly(x, y, r.poly)) ?? null,
@@ -99,7 +116,6 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
-
     if (drag) {
       const delta = e.clientX - drag.startX;
       if (!drag.moved && Math.abs(delta) > 4) {
@@ -114,8 +130,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
         return;
       }
     }
-
-    // Hover tooltip (mouse only)
+    // Hover tooltip — mouse only
     if (e.pointerType === 'mouse' && !drag?.moved) {
       const rect = e.currentTarget.getBoundingClientRect();
       const hit  = findHit(e.clientX - rect.left, e.clientY - rect.top);
@@ -128,26 +143,32 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
     dragRef.current = null;
     setDragging(false);
 
-    if (!drag?.moved) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const hit  = findHit(e.clientX - rect.left, e.clientY - rect.top);
+    if (drag?.moved) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const hit  = findHit(e.clientX - rect.left, e.clientY - rect.top);
+
+    if (zoomedCellIdx !== null) {
+      // ── Zoomed view: tap/click identifies individual games ──
       if (hit) {
-        // On touch: toggle solid highlight (tap same game again to clear).
-        // Must be lowercase — drawCell matches with g.name.toLowerCase().includes(searchTerm)
         if (e.pointerType !== 'mouse') {
           const nameLower = hit.name.toLowerCase();
           setTapHighlight(prev => prev === nameLower ? '' : nameLower);
         }
-        // Show name tooltip briefly on any tap
         setTooltip({ name: hit.name, x: e.clientX - rect.left, y: e.clientY - rect.top });
         setTimeout(() => setTooltip(null), 1400);
       } else {
-        // Tap on empty area — clear highlight and tooltip
-        if (e.pointerType !== 'mouse') setTapHighlight('');
-        setTooltip(null);
+        // Tap empty space → back to full view
+        setZoomedCellIdx(null);
+      }
+    } else {
+      // ── Full view: tap/click zooms into that game's cell ──
+      if (hit) {
+        const cellIdx = cellPacked.findIndex(cell => cell.some(g => g.id === hit.id));
+        if (cellIdx !== -1) setZoomedCellIdx(cellIdx);
       }
     }
-  }, [findHit]);
+  }, [findHit, zoomedCellIdx, cellPacked]);
 
   return (
     <div
@@ -160,6 +181,21 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
       onPointerLeave={(e) => { if (e.pointerType === 'mouse' && !dragRef.current?.moved) setTooltip(null); }}
     >
       <canvas ref={canvasRef} className={styles.canvas} />
+
+      {/* Back button shown only when zoomed into a cell */}
+      {zoomedCellIdx !== null && (
+        <button
+          className={styles.backBtn}
+          onPointerDown={e => e.stopPropagation()}
+          onClick={() => setZoomedCellIdx(null)}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          All cells
+        </button>
+      )}
+
       {tooltip && (
         <div
           className={styles.tooltip}
