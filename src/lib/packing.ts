@@ -1,6 +1,48 @@
 import type { PackableGame, PackedGame } from './types';
 
 export const KALLAX = { w: 33, h: 33, d: 38 }; // cm, interior dimensions
+export const MAX_TOP_HEIGHT = 25; // cm — max stack height on top of a unit
+
+/**
+ * Packs games on top of a Kallax unit in stacked orientation.
+ * Games are always laid flat regardless of the in-unit storage mode setting.
+ * Max combined stack height is MAX_TOP_HEIGHT cm.
+ */
+export function packTop(
+  games: PackableGame[],
+  cols: number,
+): { topPacked: PackedGame[]; remaining: PackableGame[] } {
+  const { w: KW, d: KD } = KALLAX;
+  const totalW = cols * KW;
+  const topPacked: PackedGame[] = [];
+  const remaining: PackableGame[] = [];
+  let heightUsed = 0;
+
+  for (const g of games) {
+    if (!g.width || !g.height || !g.depth) { remaining.push(g); continue; }
+    const rawDims = [parseFloat(g.width), parseFloat(g.height), parseFloat(g.depth)].sort((a, b) => a - b);
+    const thickness = rawDims[0];
+    // Orient footprint to fit on the Kallax top surface (totalW × KD)
+    const footW = rawDims[1] <= totalW ? rawDims[1] : rawDims[2];
+    const footD = rawDims[1] <= totalW ? rawDims[2] : rawDims[1];
+    if (footW > totalW || footD > KD || heightUsed + thickness > MAX_TOP_HEIGHT) {
+      remaining.push(g);
+      continue;
+    }
+    topPacked.push({
+      ...g,
+      xOffset: (totalW - footW) / 2,
+      yOffset: -(heightUsed + thickness), // y of top face (negative = above kallax)
+      mode: 'stacked',
+      _thickness: thickness,
+      _footW: footW,
+      _footD: footD,
+    });
+    heightUsed += thickness;
+  }
+
+  return { topPacked, remaining };
+}
 
 export function packCell(
   gamesPool: PackableGame[],

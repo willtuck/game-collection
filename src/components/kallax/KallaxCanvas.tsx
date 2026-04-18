@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { isoProject, drawCell, pointInPoly, getRotation, setRotation } from '../../lib/rendering';
+import { isoProject, drawCell, drawTopGames, pointInPoly, getRotation, setRotation } from '../../lib/rendering';
 import { KALLAX } from '../../lib/packing';
 import type { HitRegion } from '../../lib/rendering';
 import type { PackedGame } from '../../lib/types';
@@ -10,6 +10,7 @@ interface KallaxCanvasProps {
   cols: number;
   rows: number;
   searchTerm: string;
+  topPacked?: PackedGame[];
 }
 
 const AZ_MIN = -Math.PI - Math.PI / 4;
@@ -21,7 +22,7 @@ interface DragState {
   moved: boolean;
 }
 
-export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanvasProps) {
+export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [] }: KallaxCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const hitRef       = useRef<HitRegion[]>([]);
@@ -95,9 +96,11 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
       // ── Full kallax ──
       const totalW = cols * KW;
       const totalH = rows * KH;
+      // Extend bounding box upward to include any games on top of the unit
+      const topMinY = topPacked.length > 0 ? Math.min(...topPacked.map(g => g.yOffset)) : 0;
       const allCorners: [number, number, number][] = [
-        [0, 0,      0  ], [totalW, 0,      0  ], [totalW, 0,      KD ], [0, 0,      KD ],
-        [0, totalH, 0  ], [totalW, totalH, 0  ], [totalW, totalH, KD ], [0, totalH, KD ],
+        [0, topMinY, 0  ], [totalW, topMinY, 0  ], [totalW, topMinY, KD ], [0, topMinY, KD ],
+        [0, totalH,  0  ], [totalW, totalH,  0  ], [totalW, totalH,  KD ], [0, totalH,  KD ],
       ];
       const { proj } = isoProject(allCorners, cw, canvasH, 20);
       const allHits: HitRegion[] = [];
@@ -106,9 +109,11 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
         const r = Math.floor(i / cols);
         allHits.push(...drawCell(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i, i));
       }
+      // Draw and register games sitting on top of the unit
+      allHits.push(...drawTopGames(ctx, proj, topPacked, effectiveSearch));
       hitRef.current = allHits;
     }
-  }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx]);
+  }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx, topPacked]);
 
   // Prefer game hits over cell-level hits so games always take precedence.
   // Uses per-face polys when available (sides 2-4 only, back face excluded).

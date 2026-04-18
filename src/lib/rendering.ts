@@ -182,6 +182,59 @@ export function drawBox(
   const dm = proj(0, d / 2, 0);  ctx.fillText('D', dm[0] - 10, dm[1]);
 }
 
+/* ── Shared game box renderer ── */
+
+/**
+ * Draws a game box given 8 projected 2D screen corners.
+ * Returns the 3 non-back side face polygons for hit testing.
+ */
+function renderGameBox(
+  ctx: CanvasRenderingContext2D,
+  P: [number, number][],
+  col: GameColor,
+  isMatch: boolean,
+  isDimmed: boolean,
+): { faceFront: [number,number][]; faceRight: [number,number][]; faceLeft: [number,number][] } {
+  function gFace(idx: number[], fill: string) {
+    ctx.beginPath(); idx.forEach((i, n) => n === 0 ? ctx.moveTo(...P[i]) : ctx.lineTo(...P[i]));
+    ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+  }
+  const topFill = col.fill.replace(/[\d.]+\)$/, v => String(Math.min(parseFloat(v) * 1.8, 1)) + ')');
+  if (isDimmed) {
+    const dimFill = 'rgba(160,152,140,0.08)';
+    gFace([3,7,6,2],dimFill); gFace([0,3,7,4],dimFill); gFace([1,2,6,5],dimFill);
+    gFace([0,1,2,3],dimFill); gFace([0,1,5,4],dimFill); gFace([4,5,6,7],dimFill);
+    [[4,5],[5,6],[6,7],[7,4],[4,0],[5,1],[6,2],[7,3],[1,2]].forEach(([a,b]) => {
+      ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
+      ctx.strokeStyle = 'rgba(160,152,140,0.2)'; ctx.lineWidth = 0.75; ctx.setLineDash([]); ctx.stroke();
+    });
+  } else {
+    const hFill    = isMatch ? col.fill.replace(/[\d.]+\)$/, '0.55)') : col.fill;
+    const hTopFill = isMatch ? col.fill.replace(/[\d.]+\)$/, '0.75)') : topFill;
+    gFace([3,7,6,2],hFill); gFace([0,3,7,4],hFill); gFace([1,2,6,5],hFill);
+    gFace([0,1,2,3],hFill); gFace([0,1,5,4],hFill); gFace([4,5,6,7],hTopFill);
+    [[0,3],[3,2],[0,1]].forEach(([a,b]) => {
+      ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
+      ctx.strokeStyle = 'rgba(180,170,160,0.4)'; ctx.lineWidth = 0.75;
+      ctx.setLineDash([2,3]); ctx.stroke(); ctx.setLineDash([]);
+    });
+    [[4,5],[5,6],[6,7],[7,4],[4,0],[5,1],[6,2],[7,3],[1,2]].forEach(([a,b]) => {
+      ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
+      ctx.strokeStyle = col.stroke; ctx.lineWidth = isMatch ? 2 : 1.25; ctx.setLineDash([]); ctx.stroke();
+    });
+    if (isMatch) {
+      ctx.beginPath();
+      [4,5,6,7,4].forEach((i, n) => n === 0 ? ctx.moveTo(...P[i]) : ctx.lineTo(...P[i]));
+      ctx.strokeStyle = col.stroke; ctx.lineWidth = 2.5; ctx.setLineDash([]); ctx.stroke();
+    }
+  }
+  return {
+    faceFront: [P[0],P[1],P[5],P[4]],
+    faceRight: [P[1],P[2],P[6],P[5]],
+    faceLeft:  [P[0],P[3],P[7],P[4]],
+  };
+}
+
 /* ── Kallax cell renderer ── */
 
 export function drawCell(
@@ -229,7 +282,6 @@ export function drawCell(
 
   packedGames.forEach(g => {
     const gw = parseFloat(g.width!), gh = parseFloat(g.height!), gd = parseFloat(g.depth!);
-    const col = gameColor(g.id);
     const isMatch = !!searchTerm && g.name.toLowerCase().includes(searchTerm);
     const isDimmed = !!searchTerm && !isMatch;
 
@@ -258,58 +310,12 @@ export function drawCell(
     }
 
     const P = corners.map(([x,y,z]) => proj(x, y, z));
-
-    function gFace(idx: number[], fill: string) {
-      ctx.beginPath(); idx.forEach((i, n) => n === 0 ? ctx.moveTo(...P[i]) : ctx.lineTo(...P[i]));
-      ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
-    }
-
-    const topFill = col.fill.replace(/[\d.]+\)$/, v => String(Math.min(parseFloat(v) * 1.8, 1)) + ')');
-
-    if (isDimmed) {
-      const dimFill = 'rgba(160,152,140,0.08)';
-      [0,1,2,3,4,5].forEach(() => {}); // kept for clarity
-      gFace([3,7,6,2],dimFill); gFace([0,3,7,4],dimFill); gFace([1,2,6,5],dimFill);
-      gFace([0,1,2,3],dimFill); gFace([0,1,5,4],dimFill); gFace([4,5,6,7],dimFill);
-      [[4,5],[5,6],[6,7],[7,4],[4,0],[5,1],[6,2],[7,3],[1,2]].forEach(([a,b]) => {
-        ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
-        ctx.strokeStyle = 'rgba(160,152,140,0.2)'; ctx.lineWidth = 0.75;
-        ctx.setLineDash([]); ctx.stroke();
-      });
-    } else {
-      const hFill     = isMatch ? col.fill.replace(/[\d.]+\)$/, '0.55)') : col.fill;
-      const hTopFill  = isMatch ? col.fill.replace(/[\d.]+\)$/, '0.75)') : topFill;
-      gFace([3,7,6,2],hFill); gFace([0,3,7,4],hFill); gFace([1,2,6,5],hFill);
-      gFace([0,1,2,3],hFill); gFace([0,1,5,4],hFill); gFace([4,5,6,7],hTopFill);
-
-      // Hidden edges
-      [[0,3],[3,2],[0,1]].forEach(([a,b]) => {
-        ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
-        ctx.strokeStyle = 'rgba(180,170,160,0.4)'; ctx.lineWidth = 0.75;
-        ctx.setLineDash([2,3]); ctx.stroke(); ctx.setLineDash([]);
-      });
-      [[4,5],[5,6],[6,7],[7,4],[4,0],[5,1],[6,2],[7,3],[1,2]].forEach(([a,b]) => {
-        ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
-        ctx.strokeStyle = col.stroke;
-        ctx.lineWidth = isMatch ? 2 : 1.25;
-        ctx.setLineDash([]); ctx.stroke();
-      });
-      if (isMatch) {
-        ctx.beginPath();
-        [4,5,6,7,4].forEach((i, n) => n === 0 ? ctx.moveTo(...P[i]) : ctx.lineTo(...P[i]));
-        ctx.strokeStyle = col.stroke; ctx.lineWidth = 2.5; ctx.setLineDash([]); ctx.stroke();
-      }
-    }
-
-    // Sides 2-4: front [P0,P1,P5,P4], right [P1,P2,P6,P5], left [P0,P3,P7,P4].
-    // Side 1 (back face, [P2,P3,P7,P6]) is excluded — it projects into shelf depth.
-    const faceFront: [number,number][] = [P[0],P[1],P[5],P[4]];
-    const faceRight: [number,number][] = [P[1],P[2],P[6],P[5]];
-    const faceLeft:  [number,number][] = [P[0],P[3],P[7],P[4]];
+    const col = gameColor(g.id);
+    const { faceFront, faceRight, faceLeft } = renderGameBox(ctx, P, col, isMatch, isDimmed);
     const frontPoly = g.mode === 'stacked' ? [P[0],P[1],P[5],P[4]] : [P[4],P[5],P[6],P[7]];
     hitRegions.push({
       id: g.id, name: g.name,
-      poly: faceFront,            // fallback single poly
+      poly: faceFront,
       polys: [faceFront, faceRight, faceLeft],
       frontPoly,
     });
@@ -345,6 +351,52 @@ export function drawCell(
     isCell: true,
     cellIndex: cellIdx,
   });
+
+  return hitRegions;
+}
+
+/* ── Top-of-unit renderer ── */
+
+/**
+ * Draws games stacked on top of a Kallax unit (above y=0) and returns their hit regions.
+ * Games are always in stacked orientation; positions are absolute (pre-computed by packTop).
+ */
+export function drawTopGames(
+  ctx: CanvasRenderingContext2D,
+  proj: (x: number, y: number, z: number) => [number, number],
+  topPacked: PackedGame[],
+  searchTerm = '',
+): HitRegion[] {
+  const { d: KD } = KALLAX;
+  const hitRegions: HitRegion[] = [];
+
+  for (const g of topPacked) {
+    const thickness = g._thickness!;
+    const footW     = g._footW!;
+    const footD     = g._footD!;
+    const xOff      = g.xOffset;
+    const yOff      = g.yOffset; // top face of the game (negative = above kallax surface)
+    const zCenter   = (KD - footD) / 2;
+
+    const corners: [number, number, number][] = [
+      [xOff,       yOff,           zCenter       ], [xOff+footW, yOff,           zCenter       ],
+      [xOff+footW, yOff,           zCenter+footD ], [xOff,       yOff,           zCenter+footD ],
+      [xOff,       yOff+thickness, zCenter       ], [xOff+footW, yOff+thickness, zCenter       ],
+      [xOff+footW, yOff+thickness, zCenter+footD ], [xOff,       yOff+thickness, zCenter+footD ],
+    ];
+    const P = corners.map(([x, y, z]) => proj(x, y, z));
+    const col = gameColor(g.id);
+    const isMatch = !!searchTerm && g.name.toLowerCase().includes(searchTerm);
+    const isDimmed = !!searchTerm && !isMatch;
+
+    const { faceFront, faceRight, faceLeft } = renderGameBox(ctx, P, col, isMatch, isDimmed);
+    hitRegions.push({
+      id: g.id, name: g.name,
+      poly: faceFront,
+      polys: [faceFront, faceRight, faceLeft],
+      frontPoly: faceFront,
+    });
+  }
 
   return hitRegions;
 }

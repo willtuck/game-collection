@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { getSortedForKallax } from '../../lib/sorting';
-import { packCellsGroupAware } from '../../lib/packing';
+import { packCellsGroupAware, packTop } from '../../lib/packing';
 import { kuGrid } from '../../lib/helpers';
 import type { PackedGame } from '../../lib/types';
 import { KallaxCanvas } from './KallaxCanvas';
@@ -15,6 +15,7 @@ interface UnitPacking {
   cols: number;
   rows: number;
   cellPacked: PackedGame[][];
+  topPacked: PackedGame[];
 }
 
 export function SuggestedView() {
@@ -42,9 +43,10 @@ export function SuggestedView() {
     let rem = sortedGames;
     for (const ku of kallaxes) {
       const [cols, rows] = kuGrid(ku.model);
-      const { cellPacked, remaining } = packCellsGroupAware(rem, cols * rows, kallaxMode === 'stacked');
-      rem = remaining;
-      units.push({ id: ku.id, label: ku.label, cols, rows, cellPacked });
+      const { cellPacked, remaining: afterCells } = packCellsGroupAware(rem, cols * rows, kallaxMode === 'stacked');
+      const { topPacked, remaining: afterTop } = packTop(afterCells, cols);
+      rem = afterTop;
+      units.push({ id: ku.id, label: ku.label, cols, rows, cellPacked, topPacked });
     }
     return { units, remaining: rem };
   }, [sortedGames, kallaxes, kallaxMode]);
@@ -115,12 +117,17 @@ export function SuggestedView() {
               cols={activeUnit.cols}
               rows={activeUnit.rows}
               searchTerm={search.toLowerCase()}
+              topPacked={activeUnit.topPacked}
             />
 
             <div className={styles.stats}>
               {activeUnit.label}
               {' · '}{activeUnit.cellPacked.flat().length}{' '}
-              {activeUnit.cellPacked.flat().length === 1 ? 'game' : 'games'}
+              {activeUnit.cellPacked.flat().length === 1 ? 'game' : 'games'} inside
+              {activeUnit.topPacked.length > 0 && (
+                <>{' · '}{activeUnit.topPacked.length}{' '}
+                  {activeUnit.topPacked.length === 1 ? 'game' : 'games'} on top</>
+              )}
               {' · '}{kallaxMode}
             </div>
 
