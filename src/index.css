@@ -47,13 +47,13 @@
 
 html {
   width: 100%;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 body {
   width: 100%;
   min-height: 100dvh;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 #root {
