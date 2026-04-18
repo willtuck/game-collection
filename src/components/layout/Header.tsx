@@ -17,6 +17,7 @@ export function Header() {
       <h1 className={styles.title}>
         Game <em>Collection</em>
       </h1>
+      <span className={styles.build}>{__COMMIT_HASH__}</span>
       <span className={styles.count}>
         {count === 1 ? '1 game' : `${count} games`}
       </span>
