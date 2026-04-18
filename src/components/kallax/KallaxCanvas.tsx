@@ -97,7 +97,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
       } else {
         // ── Zoomed: single cell fills the canvas ──
         const col   = zoomedCellIdx % cols;
-        const row   = Math.floor(zoomedCellIdx / cols);
+        const row   = rows - 1 - Math.floor(zoomedCellIdx / cols); // matches top-first ordering
         const cellX = col * KW;
         const cellY = row * KH;
         const singleCorners: [number, number, number][] = [
@@ -123,7 +123,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
       const allHits: HitRegion[] = [];
       for (let i = 0; i < cols * rows; i++) {
         const c = i % cols;
-        const r = Math.floor(i / cols);
+        const r = rows - 1 - Math.floor(i / cols); // cell 0 = top-left
         allHits.push(...drawCell(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i, i));
       }
 
