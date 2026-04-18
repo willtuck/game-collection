@@ -74,3 +74,13 @@ input, select, button {
   font-family: inherit;
   font-size: inherit;
 }
+
+/* Prevent iOS Safari/Chrome from auto-zooming when inputs are focused.
+   iOS zooms in whenever an input has font-size < 16px, then doesn't
+   zoom back out — making the page appear to scroll horizontally.
+   This targets touch devices only so desktop styles are unaffected. */
+@media (hover: none) and (pointer: coarse) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
