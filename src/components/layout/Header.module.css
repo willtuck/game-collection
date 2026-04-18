@@ -111,6 +111,9 @@
     padding: 0 16px;
     gap: 8px;
   }
+  .title {
+    font-size: 18px;
+  }
   .count {
     display: none;
   }

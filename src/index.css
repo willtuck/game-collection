@@ -45,16 +45,20 @@
   padding: 0;
 }
 
-html, body {
+html {
+  overflow-x: clip;
+}
+
+body {
+  width: 100vw;
   min-height: 100dvh;
-  max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 #root {
+  width: 100%;
   min-height: 100dvh;
-  max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 h1, h2, h3 {
