@@ -63,6 +63,7 @@ export interface HitRegion {
   id: string;
   name: string;
   poly: [number, number][];
+  polys?: [number, number][][];  // individual face polys for precise hit testing
   frontPoly: [number, number][];
   isCell?: boolean;
   isPlacedGame?: boolean;
@@ -300,10 +301,18 @@ export function drawCell(
       }
     }
 
-    // Use convex hull of all 8 projected corners as hit area — covers all visible side panels.
-    const hitPoly = convexHull(P as [number, number][]);
+    // Sides 2-4: front [P0,P1,P5,P4], right [P1,P2,P6,P5], left [P0,P3,P7,P4].
+    // Side 1 (back face, [P2,P3,P7,P6]) is excluded — it projects into shelf depth.
+    const faceFront: [number,number][] = [P[0],P[1],P[5],P[4]];
+    const faceRight: [number,number][] = [P[1],P[2],P[6],P[5]];
+    const faceLeft:  [number,number][] = [P[0],P[3],P[7],P[4]];
     const frontPoly = g.mode === 'stacked' ? [P[0],P[1],P[5],P[4]] : [P[4],P[5],P[6],P[7]];
-    hitRegions.push({ id: g.id, name: g.name, poly: hitPoly, frontPoly });
+    hitRegions.push({
+      id: g.id, name: g.name,
+      poly: faceFront,            // fallback single poly
+      polys: [faceFront, faceRight, faceLeft],
+      frontPoly,
+    });
   });
 
   // Redraw shell on top of games

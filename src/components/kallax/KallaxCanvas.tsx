@@ -110,12 +110,18 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
     }
   }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx]);
 
-  // Prefer game hits over cell-level hits so games always take precedence
-  const findHit = useCallback((x: number, y: number): HitRegion | null => {
-    const gameHit = hitRef.current.find(r => !r.isCell && pointInPoly(x, y, r.poly));
-    if (gameHit) return gameHit;
-    return hitRef.current.find(r => r.isCell && pointInPoly(x, y, r.poly)) ?? null;
+  // Prefer game hits over cell-level hits so games always take precedence.
+  // Uses per-face polys when available (sides 2-4 only, back face excluded).
+  const testHit = useCallback((x: number, y: number, r: HitRegion): boolean => {
+    if (r.polys) return r.polys.some(p => pointInPoly(x, y, p));
+    return pointInPoly(x, y, r.poly);
   }, []);
+
+  const findHit = useCallback((x: number, y: number): HitRegion | null => {
+    const gameHit = hitRef.current.find(r => !r.isCell && testHit(x, y, r));
+    if (gameHit) return gameHit;
+    return hitRef.current.find(r => r.isCell && testHit(x, y, r)) ?? null;
+  }, [testHit]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
