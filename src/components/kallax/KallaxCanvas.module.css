@@ -1,6 +1,7 @@
 .wrap {
   position: relative;
   width: 100%;
+  touch-action: none;
 }
 
 .canvas {

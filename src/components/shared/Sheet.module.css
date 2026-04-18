@@ -1,6 +1,8 @@
 .backdrop {
   position: fixed;
   inset: 0;
+  width: 100dvw;
+  overflow: hidden;
   background: rgba(26, 24, 20, 0.4);
   z-index: 200;
   display: flex;
