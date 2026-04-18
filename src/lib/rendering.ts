@@ -303,16 +303,14 @@ export function drawCell(
     ctx.stroke();
   }
 
-  // Cell-level hit region: axis-aligned bounding box of all projected corners.
+  // Cell-level hit region: the front face quad (the opening of the cell).
   // Pushed after game hits so game polygons take precedence in findHit.
-  const allPts = [c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7]];
-  const pxs = allPts.map(p => p[0]), pys = allPts.map(p => p[1]);
-  const [mnX, mxX, mnY, mxY] = [Math.min(...pxs), Math.max(...pxs), Math.min(...pys), Math.max(...pys)];
+  const frontFace: [number, number][] = [c[0], c[1], c[5], c[4]];
   hitRegions.push({
     id: `__cell_${cellIdx ?? 0}`,
     name: '',
-    poly: [[mnX,mnY],[mxX,mnY],[mxX,mxY],[mnX,mxY]],
-    frontPoly: [[mnX,mnY],[mxX,mnY],[mxX,mxY],[mnX,mxY]],
+    poly: frontFace,
+    frontPoly: frontFace,
     isCell: true,
     cellIndex: cellIdx,
   });
