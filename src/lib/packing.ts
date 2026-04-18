@@ -27,8 +27,10 @@ export function fitsInCell(g: PackableGame): boolean {
 export function packTop(
   games: PackableGame[],
   cols: number,
+  rows: number,
 ): { topPacked: PackedGame[]; remaining: PackableGame[] } {
-  const { w: KW, d: KD } = KALLAX;
+  const { w: KW, h: KH, d: KD } = KALLAX;
+  const yBase = rows * KH; // y=rows*KH is the visual top surface of the unit
   const totalW = cols * KW;
 
   // All valid flat orientations for a game on this unit's top surface
@@ -77,7 +79,7 @@ export function packTop(
     topPacked.push({
       ...item.g,
       xOffset: x,
-      yOffset: -item.thickness,         // top face sits at –thickness above y=0
+      yOffset: yBase,                   // bottom of game box sits on the Kallax top surface
       mode: 'stacked',
       _thickness: item.thickness,
       _footW: item.footW,
@@ -109,7 +111,7 @@ export function packTop(
         topPacked.push({
           ...g,
           xOffset: slot.x + (slot.footW - footW) / 2, // center on the base game
-          yOffset: -(slot.heightUsed + thickness),
+          yOffset: yBase + slot.heightUsed,             // sits on top of whatever is already stacked
           mode: 'stacked',
           _thickness: thickness,
           _footW: footW,

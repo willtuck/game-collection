@@ -85,12 +85,12 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
     if (zoomedCellIdx !== null) {
       if (zoomedCellIdx === topCellIdx) {
         // ── Zoomed top view ──
-        const stackH = topPacked.length > 0
-          ? Math.abs(Math.min(...topPacked.map(g => g.yOffset)))
-          : 1;
+        const topMaxY = topPacked.length > 0
+          ? Math.max(...topPacked.map(g => g.yOffset + (g._thickness ?? 0)))
+          : totalH + 1;
         const topCorners: [number, number, number][] = [
-          [0,      -stackH, 0  ], [totalW, -stackH, 0  ], [totalW, -stackH, KD ], [0,      -stackH, KD ],
-          [0,      0,       0  ], [totalW, 0,       0  ], [totalW, 0,       KD ], [0,      0,       KD ],
+          [0,      totalH,  0  ], [totalW, totalH,  0  ], [totalW, totalH,  KD ], [0,      totalH,  KD ],
+          [0,      topMaxY, 0  ], [totalW, topMaxY, 0  ], [totalW, topMaxY, KD ], [0,      topMaxY, KD ],
         ];
         const { proj } = isoProject(topCorners, cw, canvasH, 24);
         hitRef.current = drawTopGames(ctx, proj, topPacked, effectiveSearch);
@@ -111,10 +111,13 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
       }
     } else {
       // ── Full kallax ──
-      const topMinY = topPacked.length > 0 ? Math.min(...topPacked.map(g => g.yOffset)) : 0;
+      // Top games sit above y=totalH; extend bounding box to include them
+      const topMaxY = topPacked.length > 0
+        ? Math.max(...topPacked.map(g => g.yOffset + (g._thickness ?? 0)))
+        : totalH;
       const allCorners: [number, number, number][] = [
-        [0, topMinY, 0  ], [totalW, topMinY, 0  ], [totalW, topMinY, KD ], [0, topMinY, KD ],
-        [0, totalH,  0  ], [totalW, totalH,  0  ], [totalW, totalH,  KD ], [0, totalH,  KD ],
+        [0, 0,       0  ], [totalW, 0,       0  ], [totalW, 0,       KD ], [0, 0,       KD ],
+        [0, topMaxY, 0  ], [totalW, topMaxY, 0  ], [totalW, topMaxY, KD ], [0, topMaxY, KD ],
       ];
       const { proj } = isoProject(allCorners, cw, canvasH, 20);
       const allHits: HitRegion[] = [];
@@ -128,12 +131,11 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
       allHits.push(...drawTopGames(ctx, proj, topPacked, effectiveSearch));
 
       if (topPacked.length > 0) {
-        const stackH = Math.abs(Math.min(...topPacked.map(g => g.yOffset)));
         const topFront: [number, number][] = [
-          proj(0,      -stackH, 0),
-          proj(totalW, -stackH, 0),
-          proj(totalW, 0,       0),
-          proj(0,      0,       0),
+          proj(0,      totalH,  0),
+          proj(totalW, totalH,  0),
+          proj(totalW, topMaxY, 0),
+          proj(0,      topMaxY, 0),
         ];
 
         if (hoveredCellIdx === topCellIdx) {

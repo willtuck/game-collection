@@ -48,7 +48,7 @@ export function SuggestedView() {
       const oversized = rem.filter(g => !fitsInCell(g));
       const cellable  = rem.filter(g =>  fitsInCell(g));
       const { cellPacked, remaining: afterCells } = packCellsGroupAware(cellable, cols * rows, kallaxMode === 'stacked');
-      const { topPacked, remaining: afterTop }   = packTop(oversized, cols);
+      const { topPacked, remaining: afterTop }   = packTop(oversized, cols, rows);
       rem = [...afterTop, ...afterCells];
       units.push({ id: ku.id, label: ku.label, cols, rows, cellPacked, topPacked });
     }
