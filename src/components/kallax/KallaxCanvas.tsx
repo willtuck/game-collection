@@ -132,9 +132,11 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
       const rect = e.currentTarget.getBoundingClientRect();
       const hit  = findHit(e.clientX - rect.left, e.clientY - rect.top);
       if (hit) {
-        // On touch: toggle solid highlight (tap same game again to clear)
+        // On touch: toggle solid highlight (tap same game again to clear).
+        // Must be lowercase — drawCell matches with g.name.toLowerCase().includes(searchTerm)
         if (e.pointerType !== 'mouse') {
-          setTapHighlight(prev => prev === hit.name ? '' : hit.name);
+          const nameLower = hit.name.toLowerCase();
+          setTapHighlight(prev => prev === nameLower ? '' : nameLower);
         }
         // Show name tooltip briefly on any tap
         setTooltip({ name: hit.name, x: e.clientX - rect.left, y: e.clientY - rect.top });
