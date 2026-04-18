@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Sheet } from '../shared/Sheet';
 import { useGameStore } from '../../store/useGameStore';
 import { parseImportCSV } from '../../lib/csvImport';
+import { toCm } from '../../lib/helpers';
 import { toast } from '../shared/Toast';
 import type { Game } from '../../lib/types';
 import type { ImportRow } from '../../lib/csvImport';
@@ -52,14 +53,15 @@ export function ImportSheet({ open, onClose }: ImportSheetProps) {
   function handleImport() {
     const now = new Date().toISOString();
     newRows.forEach(r => {
+      const u = r.unit ?? 'cm';
       const game: Game = {
         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: r.name,
         type: r.type,
-        width:  r.width  ?? null,
-        height: r.height ?? null,
-        depth:  r.depth  ?? null,
-        unit: r.unit ?? 'cm',
+        width:  r.width  ? toCm(r.width,  u) : null,
+        height: r.height ? toCm(r.height, u) : null,
+        depth:  r.depth  ? toCm(r.depth,  u) : null,
+        unit: 'cm',
         minPlayers: r.minPlayers,
         maxPlayers: r.maxPlayers,
         groupName: r.groupName,
