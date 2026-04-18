@@ -1,5 +1,4 @@
 .header {
-  grid-column: 1 / -1;
   height: 56px;
   padding: 0 24px;
   background: var(--surface);
@@ -10,6 +9,8 @@
   position: sticky;
   top: 0;
   z-index: 50;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .title {
@@ -25,9 +26,15 @@
 }
 
 .build {
+  position: fixed;
+  top: 4px;
+  left: 8px;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9px;
   color: var(--border-mid);
+  pointer-events: none;
+  z-index: 9999;
+  line-height: 1;
 }
 
 .count {
@@ -97,4 +104,14 @@
 .signOutBtn:hover {
   color: var(--text);
   background: var(--surface-raised);
+}
+
+@media (max-width: 479px) {
+  .header {
+    padding: 0 16px;
+    gap: 8px;
+  }
+  .count {
+    display: none;
+  }
 }

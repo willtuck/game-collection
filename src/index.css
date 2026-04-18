@@ -47,11 +47,13 @@
 
 html, body {
   min-height: 100dvh;
+  max-width: 100%;
   overflow-x: hidden;
 }
 
 #root {
   min-height: 100dvh;
+  max-width: 100%;
   overflow-x: hidden;
 }
 
