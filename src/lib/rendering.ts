@@ -70,6 +70,27 @@ export interface HitRegion {
   cellIndex?: number;
 }
 
+/** Returns the convex hull of a set of 2D points (Andrew's monotone chain). */
+function convexHull(pts: [number, number][]): [number, number][] {
+  if (pts.length < 3) return pts;
+  const s = [...pts].sort((a, b) => a[0] !== b[0] ? a[0] - b[0] : a[1] - b[1]);
+  const cross = (o: [number,number], a: [number,number], b: [number,number]) =>
+    (a[0]-o[0])*(b[1]-o[1]) - (a[1]-o[1])*(b[0]-o[0]);
+  const lower: [number,number][] = [];
+  for (const p of s) {
+    while (lower.length >= 2 && cross(lower[lower.length-2], lower[lower.length-1], p) <= 0) lower.pop();
+    lower.push(p);
+  }
+  const upper: [number,number][] = [];
+  for (let i = s.length-1; i >= 0; i--) {
+    const p = s[i];
+    while (upper.length >= 2 && cross(upper[upper.length-2], upper[upper.length-1], p) <= 0) upper.pop();
+    upper.push(p);
+  }
+  lower.pop(); upper.pop();
+  return lower.concat(upper);
+}
+
 export function pointInPoly(px: number, py: number, poly: [number, number][]): boolean {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
@@ -279,7 +300,8 @@ export function drawCell(
       }
     }
 
-    const hitPoly   = g.mode === 'stacked' ? [P[4],P[5],P[6],P[7]] : [P[0],P[1],P[5],P[4]];
+    // Use convex hull of all 8 projected corners as hit area — covers all visible side panels.
+    const hitPoly = convexHull(P as [number, number][]);
     const frontPoly = g.mode === 'stacked' ? [P[0],P[1],P[5],P[4]] : [P[4],P[5],P[6],P[7]];
     hitRegions.push({ id: g.id, name: g.name, poly: hitPoly, frontPoly });
   });
