@@ -111,20 +111,26 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
       }
     } else {
       // ── Full kallax ──
-      // Top games sit above y=totalH; extend bounding box to include them
+      // Top games sit above y=totalH; extend bounding box symmetrically so the
+      // Kallax stays vertically centered (avoids bottom row being clipped).
       const topMaxY = topPacked.length > 0
         ? Math.max(...topPacked.map(g => g.yOffset + (g._thickness ?? 0)))
         : totalH;
+      const topExtra = Math.max(0, topMaxY - totalH);
       const allCorners: [number, number, number][] = [
-        [0, 0,       0  ], [totalW, 0,       0  ], [totalW, 0,       KD ], [0, 0,       KD ],
-        [0, topMaxY, 0  ], [totalW, topMaxY, 0  ], [totalW, topMaxY, KD ], [0, topMaxY, KD ],
+        [0, -topExtra, 0  ], [totalW, -topExtra, 0  ], [totalW, -topExtra, KD ], [0, -topExtra, KD ],
+        [0, topMaxY,   0  ], [totalW, topMaxY,   0  ], [totalW, topMaxY,   KD ], [0, topMaxY,   KD ],
       ];
       const { proj } = isoProject(allCorners, cw, canvasH, 20);
       const allHits: HitRegion[] = [];
-      for (let i = 0; i < cols * rows; i++) {
-        const c = cols - 1 - (i % cols);           // cell 0 = left (x=0 is rightmost on screen)
-        const r = rows - 1 - Math.floor(i / cols); // cell 0 = top
-        allHits.push(...drawCell(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i, i));
+      // Draw bottom rows first so top-row cells paint over bottom-row cells,
+      // preventing the bottom row's opaque back wall from overdrawing top-row games.
+      for (let r = 0; r < rows; r++) {
+        for (let cIdx = 0; cIdx < cols; cIdx++) {
+          const c = cols - 1 - cIdx;                 // high-x (screen-left) first within each row
+          const i = (rows - 1 - r) * cols + (cols - 1 - c);  // maps back to cellPacked index
+          allHits.push(...drawCell(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i, i));
+        }
       }
 
       // Draw top games and add top cell hit region + hover highlight

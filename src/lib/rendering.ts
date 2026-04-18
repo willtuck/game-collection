@@ -287,7 +287,7 @@ export function drawCell(
 
     let corners: [number, number, number][];
     if (g.mode === 'upright') {
-      const xOff = g.xOffset, yOff = yBase, spineW = gd;
+      const xOff = xBase + g.xOffset, yOff = yBase, spineW = gd;
       corners = [
         [xOff,         yOff,    0 ], [xOff+spineW,  yOff,    0 ],
         [xOff+spineW,  yOff,    gw], [xOff,         yOff,    gw],
