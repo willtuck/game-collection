@@ -27,20 +27,24 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
   const hitRef       = useRef<HitRegion[]>([]);
   const dragRef      = useRef<DragState | null>(null);
 
-  const [tooltip,       setTooltip]       = useState<{ name: string; x: number; y: number } | null>(null);
-  const [tapHighlight,  setTapHighlight]  = useState('');
-  const [zoomedCellIdx, setZoomedCellIdx] = useState<number | null>(null);
-  const [cw,            setCw]            = useState(0);
-  const [azimuth,       setAzimuth]       = useState(() => getRotation().kAzimuth);
-  const [dragging,      setDragging]      = useState(false);
+  const [tooltip,        setTooltip]        = useState<{ name: string; x: number; y: number } | null>(null);
+  const [tapHighlight,   setTapHighlight]   = useState('');
+  const [zoomedCellIdx,  setZoomedCellIdx]  = useState<number | null>(null);
+  const [hoveredCellIdx, setHoveredCellIdx] = useState<number | null>(null);
+  const [cw,             setCw]             = useState(0);
+  const [azimuth,        setAzimuth]        = useState(() => getRotation().kAzimuth);
+  const [dragging,       setDragging]       = useState(false);
 
   // Search field takes over — clear tap highlight
   useEffect(() => { if (searchTerm) setTapHighlight(''); }, [searchTerm]);
 
-  // Zoom resets highlight and tooltip
-  useEffect(() => { setTapHighlight(''); setTooltip(null); }, [zoomedCellIdx]);
+  // Zoom resets highlight, tooltip, and cell hover
+  useEffect(() => {
+    setTapHighlight('');
+    setTooltip(null);
+    setHoveredCellIdx(null);
+  }, [zoomedCellIdx]);
 
-  // Effective highlight: tap wins on touch, search field wins on desktop
   const effectiveSearch = tapHighlight || searchTerm;
 
   // Responsive width
@@ -73,7 +77,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
     const { w: KW, h: KH, d: KD } = KALLAX;
 
     if (zoomedCellIdx !== null) {
-      // ── Zoomed: render single cell filling the canvas ──
+      // ── Zoomed: single cell fills the canvas ──
       const col   = zoomedCellIdx % cols;
       const row   = Math.floor(zoomedCellIdx / cols);
       const cellX = col * KW;
@@ -85,7 +89,8 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
         [cellX + KW, cellY + KH, KD ], [cellX,      cellY + KH, KD ],
       ];
       const { proj } = isoProject(singleCorners, cw, canvasH, 24);
-      hitRef.current = drawCell(ctx, proj, cellY, cellPacked[zoomedCellIdx] ?? [], cellX, effectiveSearch);
+      // hovered=false in zoomed view — the cell already fills the canvas
+      hitRef.current = drawCell(ctx, proj, cellY, cellPacked[zoomedCellIdx] ?? [], cellX, effectiveSearch, false, zoomedCellIdx);
     } else {
       // ── Full kallax ──
       const totalW = cols * KW;
@@ -99,15 +104,18 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
       for (let i = 0; i < cols * rows; i++) {
         const c = i % cols;
         const r = Math.floor(i / cols);
-        allHits.push(...drawCell(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch));
+        allHits.push(...drawCell(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i, i));
       }
       hitRef.current = allHits;
     }
-  }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth, zoomedCellIdx]);
+  }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx]);
 
-  const findHit = useCallback((x: number, y: number) =>
-    hitRef.current.find(r => pointInPoly(x, y, r.poly)) ?? null,
-  []);
+  // Prefer game hits over cell-level hits so games always take precedence
+  const findHit = useCallback((x: number, y: number): HitRegion | null => {
+    const gameHit = hitRef.current.find(r => !r.isCell && pointInPoly(x, y, r.poly));
+    if (gameHit) return gameHit;
+    return hitRef.current.find(r => r.isCell && pointInPoly(x, y, r.poly)) ?? null;
+  }, []);
 
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -130,13 +138,28 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
         return;
       }
     }
-    // Hover tooltip — mouse only
+
+    // Desktop only: hover tooltip + cell highlight
     if (e.pointerType === 'mouse' && !drag?.moved) {
       const rect = e.currentTarget.getBoundingClientRect();
       const hit  = findHit(e.clientX - rect.left, e.clientY - rect.top);
-      setTooltip(hit ? { name: hit.name, x: e.clientX - rect.left, y: e.clientY - rect.top } : null);
+      if (hit && !hit.isCell) {
+        // Hovering over a game — show tooltip, highlight its parent cell
+        setTooltip({ name: hit.name, x: e.clientX - rect.left, y: e.clientY - rect.top });
+        if (zoomedCellIdx === null) {
+          const ci = (hitRef.current as HitRegion[]).find(r => r.isCell && pointInPoly(e.clientX - rect.left, e.clientY - rect.top, r.poly));
+          setHoveredCellIdx(ci?.cellIndex ?? null);
+        }
+      } else if (hit?.isCell) {
+        // Hovering over empty cell area
+        setTooltip(null);
+        setHoveredCellIdx(hit.cellIndex ?? null);
+      } else {
+        setTooltip(null);
+        setHoveredCellIdx(null);
+      }
     }
-  }, [findHit]);
+  }, [findHit, zoomedCellIdx]);
 
   const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
@@ -149,8 +172,9 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
     const hit  = findHit(e.clientX - rect.left, e.clientY - rect.top);
 
     if (zoomedCellIdx !== null) {
-      // ── Zoomed view: tap/click identifies individual games ──
-      if (hit) {
+      // ── Zoomed view ──
+      if (hit && !hit.isCell) {
+        // Tap/click on a game → identify it
         if (e.pointerType !== 'mouse') {
           const nameLower = hit.name.toLowerCase();
           setTapHighlight(prev => prev === nameLower ? '' : nameLower);
@@ -158,14 +182,19 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
         setTooltip({ name: hit.name, x: e.clientX - rect.left, y: e.clientY - rect.top });
         setTimeout(() => setTooltip(null), 1400);
       } else {
-        // Tap empty space → back to full view
+        // Tap on empty space or cell boundary → back to full view
         setZoomedCellIdx(null);
       }
     } else {
-      // ── Full view: tap/click zooms into that game's cell ──
+      // ── Full view: any hit (game or cell) → zoom into that cell ──
       if (hit) {
-        const cellIdx = cellPacked.findIndex(cell => cell.some(g => g.id === hit.id));
-        if (cellIdx !== -1) setZoomedCellIdx(cellIdx);
+        const cellIdx = hit.isCell
+          ? (hit.cellIndex ?? null)
+          : cellPacked.findIndex(cell => cell.some(g => g.id === hit.id));
+        if (cellIdx !== null && cellIdx !== -1) {
+          setZoomedCellIdx(cellIdx);
+          setHoveredCellIdx(null);
+        }
       }
     }
   }, [findHit, zoomedCellIdx, cellPacked]);
@@ -178,11 +207,15 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerLeave={(e) => { if (e.pointerType === 'mouse' && !dragRef.current?.moved) setTooltip(null); }}
+      onPointerLeave={(e) => {
+        if (e.pointerType === 'mouse' && !dragRef.current?.moved) {
+          setTooltip(null);
+          setHoveredCellIdx(null);
+        }
+      }}
     >
       <canvas ref={canvasRef} className={styles.canvas} />
 
-      {/* Back button shown only when zoomed into a cell */}
       {zoomedCellIdx !== null && (
         <button
           className={styles.backBtn}

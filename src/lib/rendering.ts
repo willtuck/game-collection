@@ -169,6 +169,8 @@ export function drawCell(
   packedGames: PackedGame[],
   xBase = 0,
   searchTerm = '',
+  hovered = false,
+  cellIdx?: number,
 ): HitRegion[] {
   const { w: KW, h: KH, d: KD } = KALLAX;
   const hitRegions: HitRegion[] = [];
@@ -287,6 +289,33 @@ export function drawCell(
   kEdge(c[6],c[2],'#3E3A33',2); kEdge(c[2],c[3],'#3E3A33',2);
   [[c[0],c[4]],[c[7],c[3]],[c[5],c[6]],[c[6],c[2]],[c[3],c[2]]]
     .forEach(([p1,p2]) => kEdge(p1,p2,'#9A9288',1.5));
+
+  // Desktop hover: subtle accent tint on the front face (the cell opening)
+  if (hovered) {
+    ctx.beginPath();
+    [c[0], c[1], c[5], c[4]].forEach((p, i) => i === 0 ? ctx.moveTo(...p) : ctx.lineTo(...p));
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(74,124,101,0.10)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(74,124,101,0.40)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([]);
+    ctx.stroke();
+  }
+
+  // Cell-level hit region: axis-aligned bounding box of all projected corners.
+  // Pushed after game hits so game polygons take precedence in findHit.
+  const allPts = [c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7]];
+  const pxs = allPts.map(p => p[0]), pys = allPts.map(p => p[1]);
+  const [mnX, mxX, mnY, mxY] = [Math.min(...pxs), Math.max(...pxs), Math.min(...pys), Math.max(...pys)];
+  hitRegions.push({
+    id: `__cell_${cellIdx ?? 0}`,
+    name: '',
+    poly: [[mnX,mnY],[mxX,mnY],[mxX,mxY],[mnX,mxY]],
+    frontPoly: [[mnX,mnY],[mxX,mnY],[mxX,mxY],[mnX,mxY]],
+    isCell: true,
+    cellIndex: cellIdx,
+  });
 
   return hitRegions;
 }
