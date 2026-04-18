@@ -30,10 +30,17 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
   const hitRef       = useRef<HitRegion[]>([]);
   const dragRef      = useRef<DragState | null>(null);
 
-  const [tooltip,  setTooltip]  = useState<{ name: string; x: number; y: number } | null>(null);
-  const [cw,       setCw]       = useState(0);
-  const [azimuth,  setAzimuth]  = useState(() => getRotation().kAzimuth);
-  const [dragging, setDragging] = useState(false);
+  const [tooltip,      setTooltip]      = useState<{ name: string; x: number; y: number } | null>(null);
+  const [tapHighlight, setTapHighlight] = useState('');
+  const [cw,           setCw]           = useState(0);
+  const [azimuth,      setAzimuth]      = useState(() => getRotation().kAzimuth);
+  const [dragging,     setDragging]     = useState(false);
+
+  // Search field takes over — clear any tap highlight
+  useEffect(() => { if (searchTerm) setTapHighlight(''); }, [searchTerm]);
+
+  // The effective highlight: tap win on touch, search field wins on desktop
+  const effectiveSearch = tapHighlight || searchTerm;
 
   // Responsive width
   useEffect(() => {
@@ -75,11 +82,11 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
     for (let i = 0; i < cols * rows; i++) {
       const col = i % cols;
       const row = Math.floor(i / cols);
-      const hits = drawCell(ctx, proj, row * KH, cellPacked[i] ?? [], col * KW, searchTerm);
+      const hits = drawCell(ctx, proj, row * KH, cellPacked[i] ?? [], col * KW, effectiveSearch);
       allHits.push(...hits);
     }
     hitRef.current = allHits;
-  }, [cellPacked, cols, rows, searchTerm, cw, canvasH, azimuth]);
+  }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth]);
 
   const findHit = useCallback((x: number, y: number) =>
     hitRef.current.find(r => pointInPoly(x, y, r.poly)) ?? null,
@@ -122,13 +129,19 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
     setDragging(false);
 
     if (!drag?.moved) {
-      // Tap — show tooltip briefly
       const rect = e.currentTarget.getBoundingClientRect();
       const hit  = findHit(e.clientX - rect.left, e.clientY - rect.top);
       if (hit) {
+        // On touch: toggle solid highlight (tap same game again to clear)
+        if (e.pointerType !== 'mouse') {
+          setTapHighlight(prev => prev === hit.name ? '' : hit.name);
+        }
+        // Show name tooltip briefly on any tap
         setTooltip({ name: hit.name, x: e.clientX - rect.left, y: e.clientY - rect.top });
         setTimeout(() => setTooltip(null), 1400);
       } else {
+        // Tap on empty area — clear highlight and tooltip
+        if (e.pointerType !== 'mouse') setTapHighlight('');
         setTooltip(null);
       }
     }
