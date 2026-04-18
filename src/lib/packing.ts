@@ -3,10 +3,26 @@ import type { PackableGame, PackedGame } from './types';
 export const KALLAX = { w: 33, h: 33, d: 38 }; // cm, interior dimensions
 export const MAX_TOP_HEIGHT = 25; // cm — max stack height on top of a unit
 
+/** Returns true if the game can physically fit inside a Kallax cell in any orientation. */
+export function fitsInCell(g: PackableGame): boolean {
+  if (!g.width || !g.height || !g.depth) return false;
+  const { w: KW, h: KH, d: KD } = KALLAX;
+  const gw = parseFloat(g.width), gh = parseFloat(g.height), gd = parseFloat(g.depth);
+  // Upright: height vertical, width as depth-in-shelf, depth as spine width
+  if (gh <= KH && gw <= KD && gd <= KW) return true;
+  // Stacked: sorted dims, two footprint orientations
+  const dims = [gw, gh, gd].sort((a, b) => a - b);
+  if ((dims[1] <= KW && dims[2] <= KD) || (dims[1] <= KD && dims[2] <= KW)) return true;
+  return false;
+}
+
 /**
  * Packs games on top of a Kallax unit in stacked orientation.
- * Games are always laid flat regardless of the in-unit storage mode setting.
- * Max combined stack height is MAX_TOP_HEIGHT cm.
+ * Placement strategy:
+ *   1. Fill a side-by-side base row from left to right; center the row when done.
+ *   2. Games that don't fit in the row try to stack on an existing base-row game
+ *      whose footprint can contain them (max combined height MAX_TOP_HEIGHT cm).
+ * Games are always laid flat regardless of in-unit storage mode.
  */
 export function packTop(
   games: PackableGame[],
@@ -14,34 +30,100 @@ export function packTop(
 ): { topPacked: PackedGame[]; remaining: PackableGame[] } {
   const { w: KW, d: KD } = KALLAX;
   const totalW = cols * KW;
-  const topPacked: PackedGame[] = [];
-  const remaining: PackableGame[] = [];
-  let heightUsed = 0;
 
-  for (const g of games) {
-    if (!g.width || !g.height || !g.depth) { remaining.push(g); continue; }
-    const rawDims = [parseFloat(g.width), parseFloat(g.height), parseFloat(g.depth)].sort((a, b) => a - b);
-    const thickness = rawDims[0];
-    // Orient footprint to fit on the Kallax top surface (totalW × KD)
-    const footW = rawDims[1] <= totalW ? rawDims[1] : rawDims[2];
-    const footD = rawDims[1] <= totalW ? rawDims[2] : rawDims[1];
-    if (footW > totalW || footD > KD || heightUsed + thickness > MAX_TOP_HEIGHT) {
-      remaining.push(g);
-      continue;
-    }
-    topPacked.push({
-      ...g,
-      xOffset: (totalW - footW) / 2,
-      yOffset: -(heightUsed + thickness), // y of top face (negative = above kallax)
-      mode: 'stacked',
-      _thickness: thickness,
-      _footW: footW,
-      _footD: footD,
-    });
-    heightUsed += thickness;
+  // All valid flat orientations for a game on this unit's top surface
+  function orientations(g: PackableGame): { thickness: number; footW: number; footD: number }[] {
+    if (!g.width || !g.height || !g.depth) return [];
+    const [d0, d1, d2] = [parseFloat(g.width), parseFloat(g.height), parseFloat(g.depth)]
+      .sort((a, b) => a - b);
+    const out: { thickness: number; footW: number; footD: number }[] = [];
+    if (d2 <= totalW && d1 <= KD) out.push({ thickness: d0, footW: d2, footD: d1 });
+    if (d1 <= totalW && d2 <= KD) out.push({ thickness: d0, footW: d1, footD: d2 });
+    return out;
   }
 
-  return { topPacked, remaining };
+  interface RowItem { g: PackableGame; thickness: number; footW: number; footD: number }
+  interface Slot    { x: number; footW: number; footD: number; heightUsed: number }
+
+  // ── Pass 1: build side-by-side base row ──
+  const rowItems: RowItem[] = [];
+  const overflowGames: PackableGame[] = [];
+  const cantFit: PackableGame[] = [];
+  let rowWidth = 0;
+
+  for (const g of games) {
+    const opts = orientations(g);
+    if (opts.length === 0) { cantFit.push(g); continue; }
+    // Prefer the orientation with the smallest footW that still fits in the remaining row
+    const fitting = opts
+      .filter(o => rowWidth + o.footW <= totalW)
+      .sort((a, b) => a.footW - b.footW);
+    if (fitting.length > 0) {
+      const { thickness, footW, footD } = fitting[0];
+      rowItems.push({ g, thickness, footW, footD });
+      rowWidth += footW;
+    } else {
+      overflowGames.push(g);
+    }
+  }
+
+  // Center the base row on the top surface
+  const startX = (totalW - rowWidth) / 2;
+  const topPacked: PackedGame[] = [];
+  const slots: Slot[] = [];
+  let x = startX;
+
+  for (const item of rowItems) {
+    topPacked.push({
+      ...item.g,
+      xOffset: x,
+      yOffset: -item.thickness,         // top face sits at –thickness above y=0
+      mode: 'stacked',
+      _thickness: item.thickness,
+      _footW: item.footW,
+      _footD: item.footD,
+    });
+    slots.push({ x, footW: item.footW, footD: item.footD, heightUsed: item.thickness });
+    x += item.footW;
+  }
+
+  // ── Pass 2: stack overflow games onto base-row games ──
+  const remaining: PackableGame[] = [];
+  for (const g of overflowGames) {
+    if (!g.width || !g.height || !g.depth) { remaining.push(g); continue; }
+    const [d0, d1, d2] = [parseFloat(g.width), parseFloat(g.height), parseFloat(g.depth)]
+      .sort((a, b) => a - b);
+    const thickness = d0;
+    let placed = false;
+
+    for (const slot of slots) {
+      if (slot.heightUsed + thickness > MAX_TOP_HEIGHT) continue;
+      // Orientations that fit within the slot's footprint
+      const opts = [
+        d2 <= slot.footW && d1 <= slot.footD ? { footW: d2, footD: d1 } : null,
+        d1 <= slot.footW && d2 <= slot.footD ? { footW: d1, footD: d2 } : null,
+      ].filter(Boolean) as { footW: number; footD: number }[];
+
+      if (opts.length > 0) {
+        const { footW, footD } = opts[0];
+        topPacked.push({
+          ...g,
+          xOffset: slot.x + (slot.footW - footW) / 2, // center on the base game
+          yOffset: -(slot.heightUsed + thickness),
+          mode: 'stacked',
+          _thickness: thickness,
+          _footW: footW,
+          _footD: footD,
+        });
+        slot.heightUsed += thickness;
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) remaining.push(g);
+  }
+
+  return { topPacked, remaining: [...remaining, ...cantFit] };
 }
 
 export function packCell(

@@ -36,6 +36,9 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
   const [azimuth,        setAzimuth]        = useState(() => getRotation().kAzimuth);
   const [dragging,       setDragging]       = useState(false);
 
+  // Index used for the virtual "top cell" — one beyond the last real cell
+  const topCellIdx = cols * rows;
+
   // Search field takes over — clear tap highlight
   useEffect(() => { if (searchTerm) setTapHighlight(''); }, [searchTerm]);
 
@@ -76,27 +79,38 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
     ctx.clearRect(0, 0, cw, canvasH);
 
     const { w: KW, h: KH, d: KD } = KALLAX;
+    const totalW = cols * KW;
+    const totalH = rows * KH;
 
     if (zoomedCellIdx !== null) {
-      // ── Zoomed: single cell fills the canvas ──
-      const col   = zoomedCellIdx % cols;
-      const row   = Math.floor(zoomedCellIdx / cols);
-      const cellX = col * KW;
-      const cellY = row * KH;
-      const singleCorners: [number, number, number][] = [
-        [cellX,      cellY,      0  ], [cellX + KW, cellY,      0  ],
-        [cellX + KW, cellY,      KD ], [cellX,      cellY,      KD ],
-        [cellX,      cellY + KH, 0  ], [cellX + KW, cellY + KH, 0  ],
-        [cellX + KW, cellY + KH, KD ], [cellX,      cellY + KH, KD ],
-      ];
-      const { proj } = isoProject(singleCorners, cw, canvasH, 24);
-      // hovered=false in zoomed view — the cell already fills the canvas
-      hitRef.current = drawCell(ctx, proj, cellY, cellPacked[zoomedCellIdx] ?? [], cellX, effectiveSearch, false, zoomedCellIdx);
+      if (zoomedCellIdx === topCellIdx) {
+        // ── Zoomed top view ──
+        const stackH = topPacked.length > 0
+          ? Math.abs(Math.min(...topPacked.map(g => g.yOffset)))
+          : 1;
+        const topCorners: [number, number, number][] = [
+          [0,      -stackH, 0  ], [totalW, -stackH, 0  ], [totalW, -stackH, KD ], [0,      -stackH, KD ],
+          [0,      0,       0  ], [totalW, 0,       0  ], [totalW, 0,       KD ], [0,      0,       KD ],
+        ];
+        const { proj } = isoProject(topCorners, cw, canvasH, 24);
+        hitRef.current = drawTopGames(ctx, proj, topPacked, effectiveSearch);
+      } else {
+        // ── Zoomed: single cell fills the canvas ──
+        const col   = zoomedCellIdx % cols;
+        const row   = Math.floor(zoomedCellIdx / cols);
+        const cellX = col * KW;
+        const cellY = row * KH;
+        const singleCorners: [number, number, number][] = [
+          [cellX,      cellY,      0  ], [cellX + KW, cellY,      0  ],
+          [cellX + KW, cellY,      KD ], [cellX,      cellY,      KD ],
+          [cellX,      cellY + KH, 0  ], [cellX + KW, cellY + KH, 0  ],
+          [cellX + KW, cellY + KH, KD ], [cellX,      cellY + KH, KD ],
+        ];
+        const { proj } = isoProject(singleCorners, cw, canvasH, 24);
+        hitRef.current = drawCell(ctx, proj, cellY, cellPacked[zoomedCellIdx] ?? [], cellX, effectiveSearch, false, zoomedCellIdx);
+      }
     } else {
       // ── Full kallax ──
-      const totalW = cols * KW;
-      const totalH = rows * KH;
-      // Extend bounding box upward to include any games on top of the unit
       const topMinY = topPacked.length > 0 ? Math.min(...topPacked.map(g => g.yOffset)) : 0;
       const allCorners: [number, number, number][] = [
         [0, topMinY, 0  ], [totalW, topMinY, 0  ], [totalW, topMinY, KD ], [0, topMinY, KD ],
@@ -109,11 +123,44 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
         const r = Math.floor(i / cols);
         allHits.push(...drawCell(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i, i));
       }
-      // Draw and register games sitting on top of the unit
+
+      // Draw top games and add top cell hit region + hover highlight
       allHits.push(...drawTopGames(ctx, proj, topPacked, effectiveSearch));
+
+      if (topPacked.length > 0) {
+        const stackH = Math.abs(Math.min(...topPacked.map(g => g.yOffset)));
+        const topFront: [number, number][] = [
+          proj(0,      -stackH, 0),
+          proj(totalW, -stackH, 0),
+          proj(totalW, 0,       0),
+          proj(0,      0,       0),
+        ];
+
+        if (hoveredCellIdx === topCellIdx) {
+          ctx.beginPath();
+          topFront.forEach((p, i) => i === 0 ? ctx.moveTo(...p) : ctx.lineTo(...p));
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(74,124,101,0.10)';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(74,124,101,0.40)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([]);
+          ctx.stroke();
+        }
+
+        allHits.push({
+          id: '__top_cell',
+          name: '',
+          poly: topFront,
+          frontPoly: topFront,
+          isCell: true,
+          cellIndex: topCellIdx,
+        });
+      }
+
       hitRef.current = allHits;
     }
-  }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx, topPacked]);
+  }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx, topPacked, topCellIdx]);
 
   // Prefer game hits over cell-level hits so games always take precedence.
   // Uses per-face polys when available (sides 2-4 only, back face excluded).
@@ -155,14 +202,12 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
       const rect = e.currentTarget.getBoundingClientRect();
       const hit  = findHit(e.clientX - rect.left, e.clientY - rect.top);
       if (hit && !hit.isCell) {
-        // Hovering over a game — show tooltip, highlight its parent cell
         setTooltip({ name: hit.name, x: e.clientX - rect.left, y: e.clientY - rect.top });
         if (zoomedCellIdx === null) {
           const ci = (hitRef.current as HitRegion[]).find(r => r.isCell && pointInPoly(e.clientX - rect.left, e.clientY - rect.top, r.poly));
           setHoveredCellIdx(ci?.cellIndex ?? null);
         }
       } else if (hit?.isCell) {
-        // Hovering over empty cell area
         setTooltip(null);
         setHoveredCellIdx(hit.cellIndex ?? null);
       } else {
@@ -185,7 +230,6 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
     if (zoomedCellIdx !== null) {
       // ── Zoomed view ──
       if (hit && !hit.isCell) {
-        // Tap/click on a game → identify it
         if (e.pointerType !== 'mouse') {
           const nameLower = hit.name.toLowerCase();
           setTapHighlight(prev => prev === nameLower ? '' : nameLower);
@@ -193,22 +237,26 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
         setTooltip({ name: hit.name, x: e.clientX - rect.left, y: e.clientY - rect.top });
         setTimeout(() => setTooltip(null), 1400);
       } else {
-        // Tap on empty space or cell boundary → back to full view
         setZoomedCellIdx(null);
       }
     } else {
-      // ── Full view: any hit (game or cell) → zoom into that cell ──
+      // ── Full view: any hit → zoom into that cell ──
       if (hit) {
         const cellIdx = hit.isCell
           ? (hit.cellIndex ?? null)
-          : cellPacked.findIndex(cell => cell.some(g => g.id === hit.id));
+          : (() => {
+              const idx = cellPacked.findIndex(cell => cell.some(g => g.id === hit.id));
+              if (idx >= 0) return idx;
+              if (topPacked.some(g => g.id === hit.id)) return topCellIdx;
+              return null;
+            })();
         if (cellIdx !== null && cellIdx !== -1) {
           setZoomedCellIdx(cellIdx);
           setHoveredCellIdx(null);
         }
       }
     }
-  }, [findHit, zoomedCellIdx, cellPacked]);
+  }, [findHit, zoomedCellIdx, cellPacked, topPacked, topCellIdx]);
 
   return (
     <div
@@ -236,7 +284,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          All cells
+          {zoomedCellIdx === topCellIdx ? 'All cells' : 'All cells'}
         </button>
       )}
 

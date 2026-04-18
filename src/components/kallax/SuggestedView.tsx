@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { getSortedForKallax } from '../../lib/sorting';
-import { packCellsGroupAware, packTop } from '../../lib/packing';
+import { packCellsGroupAware, packTop, fitsInCell } from '../../lib/packing';
 import { kuGrid } from '../../lib/helpers';
 import type { PackedGame } from '../../lib/types';
 import { KallaxCanvas } from './KallaxCanvas';
@@ -43,9 +43,13 @@ export function SuggestedView() {
     let rem = sortedGames;
     for (const ku of kallaxes) {
       const [cols, rows] = kuGrid(ku.model);
-      const { cellPacked, remaining: afterCells } = packCellsGroupAware(rem, cols * rows, kallaxMode === 'stacked');
-      const { topPacked, remaining: afterTop } = packTop(afterCells, cols);
-      rem = afterTop;
+      // Oversized games (physically can't fit in any cell) go on top immediately.
+      // Normal-sized games try cells first; overflow passes to the next unit.
+      const oversized = rem.filter(g => !fitsInCell(g));
+      const cellable  = rem.filter(g =>  fitsInCell(g));
+      const { cellPacked, remaining: afterCells } = packCellsGroupAware(cellable, cols * rows, kallaxMode === 'stacked');
+      const { topPacked, remaining: afterTop }   = packTop(oversized, cols);
+      rem = [...afterTop, ...afterCells];
       units.push({ id: ku.id, label: ku.label, cols, rows, cellPacked, topPacked });
     }
     return { units, remaining: rem };
