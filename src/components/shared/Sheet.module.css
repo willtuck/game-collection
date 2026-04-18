@@ -43,6 +43,7 @@
 .body {
   padding: 8px 20px 24px;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
   /* Extra bottom padding for mobile home indicator */
   padding-bottom: max(24px, env(safe-area-inset-bottom));

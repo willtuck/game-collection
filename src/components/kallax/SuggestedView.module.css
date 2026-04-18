@@ -86,6 +86,7 @@
 .scroll {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 8px 16px 80px;
 }
 
