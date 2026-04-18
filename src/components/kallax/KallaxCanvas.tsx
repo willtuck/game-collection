@@ -142,7 +142,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm }: KallaxCanva
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerLeave={() => { if (!dragRef.current?.moved) setTooltip(null); }}
+      onPointerLeave={(e) => { if (e.pointerType === 'mouse' && !dragRef.current?.moved) setTooltip(null); }}
     >
       <canvas ref={canvasRef} className={styles.canvas} />
       {tooltip && (
