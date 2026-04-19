@@ -10,6 +10,20 @@ import {
 
 const uid = () => useAuthStore.getState().user?.id ?? null;
 
+// ── One-time localStorage key migration ──────────────────────────────────────
+// Moves persisted data from the old 'game-collection-v1' key to 'shelfgeek-v1'
+// before Zustand initialises, so no data is lost on the first load after deploy.
+// Safe to run every boot: the guard prevents overwriting already-migrated data.
+(function migrateStorageKey() {
+  const OLD = 'game-collection-v1';
+  const NEW = 'shelfgeek-v1';
+  const oldData = localStorage.getItem(OLD);
+  if (oldData && !localStorage.getItem(NEW)) {
+    localStorage.setItem(NEW, oldData);
+  }
+  localStorage.removeItem(OLD);
+})();
+
 interface GameStore {
   // ── State ──
   games: Game[];
@@ -123,7 +137,7 @@ export const useGameStore = create<GameStore>()(
       setKallaxMode: (mode) => set({ kallaxMode: mode }),
     }),
     {
-      name: 'game-collection-v1',
+      name: 'shelfgeek-v1',
     }
   )
 );
