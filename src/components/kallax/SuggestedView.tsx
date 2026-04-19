@@ -117,6 +117,7 @@ export function SuggestedView() {
         ) : activeUnit ? (
           <>
             <KallaxCanvas
+              key={activeUnit.id}
               cellPacked={activeUnit.cellPacked}
               cols={activeUnit.cols}
               rows={activeUnit.rows}
