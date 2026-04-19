@@ -23,7 +23,7 @@
   cursor: pointer;
 }
 
-.option:hover {
+.option:hover, .optionActive {
   background: var(--accent-light);
   color: var(--accent);
 }

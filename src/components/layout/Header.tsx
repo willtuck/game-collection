@@ -27,7 +27,7 @@ export function Header() {
           user ? (
             <div className={styles.user}>
               {avatar
-                ? <img src={avatar} alt={username} className={styles.avatar} />
+                ? <img src={avatar} alt={username || 'User avatar'} className={styles.avatar} />
                 : <div className={styles.avatarFallback}>{username?.[0]?.toUpperCase() ?? '?'}</div>
               }
               <button className={styles.signOutBtn} onClick={signOut}>Sign out</button>

@@ -177,8 +177,8 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
           <div className={styles.top}>
             <div className={styles.name}>{game.name}</div>
             <div className={styles.actions}>
-              <button className={styles.ico} onClick={openEdit} title="Edit">✎</button>
-              <button className={`${styles.ico} ${styles.del}`} onClick={() => onDeleteRequest(game.id)} title="Delete">✕</button>
+              <button className={styles.ico} onClick={openEdit} aria-label="Edit game">✎</button>
+              <button className={`${styles.ico} ${styles.del}`} onClick={() => onDeleteRequest(game.id)} aria-label="Delete game">✕</button>
             </div>
           </div>
 

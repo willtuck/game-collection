@@ -281,7 +281,12 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
         }
       }}
     >
-      <canvas ref={canvasRef} className={styles.canvas} />
+      <canvas
+        ref={canvasRef}
+        className={styles.canvas}
+        role="img"
+        aria-label={`Isometric view of ${cols}×${rows} Kallax unit`}
+      />
 
       {zoomedCellIdx !== null && (
         <button
@@ -289,7 +294,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
           onPointerDown={e => e.stopPropagation()}
           onClick={() => setZoomedCellIdx(null)}
         >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
             <path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           {zoomedCellIdx === topCellIdx ? 'All cells' : 'All cells'}

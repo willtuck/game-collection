@@ -89,6 +89,10 @@ export function ImportSheet({ open, onClose }: ImportSheetProps) {
             onDrop={handleDrop}
             onDragOver={e => e.preventDefault()}
             onClick={() => fileRef.current?.click()}
+            role="button"
+            tabIndex={0}
+            aria-label="Choose a CSV file to import"
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileRef.current?.click(); } }}
           >
             <div className={styles.dropIcon}>↑</div>
             <div className={styles.dropTitle}>Choose a CSV file</div>

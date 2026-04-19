@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useId } from 'react';
 import styles from './Sheet.module.css';
 
 interface SheetProps {
@@ -9,7 +9,49 @@ interface SheetProps {
 }
 
 export function Sheet({ open, onClose, title, children }: SheetProps) {
-  const sheetRef = useRef<HTMLDivElement>(null);
+  const sheetRef     = useRef<HTMLDivElement>(null);
+  const prevFocusRef = useRef<HTMLElement | null>(null);
+  const titleId      = useId();
+
+  // Save focused element on open; restore it on close
+  useEffect(() => {
+    if (open) {
+      prevFocusRef.current = document.activeElement as HTMLElement;
+    } else {
+      prevFocusRef.current?.focus();
+      prevFocusRef.current = null;
+    }
+  }, [open]);
+
+  // Auto-focus first focusable element + trap focus inside the sheet
+  useEffect(() => {
+    if (!open) return;
+    const sheet = sheetRef.current;
+    if (!sheet) return;
+
+    const getFocusable = () =>
+      Array.from(sheet.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ));
+
+    const focusable = getFocusable();
+    focusable[0]?.focus();
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const els = getFocusable();
+      const first = els[0];
+      const last  = els[els.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      } else {
+        if (document.activeElement === last)  { e.preventDefault(); first?.focus(); }
+      }
+    };
+
+    document.addEventListener('keydown', handleTab);
+    return () => document.removeEventListener('keydown', handleTab);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -27,14 +69,20 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
   if (!open) return null;
 
   return (
-    <div className={styles.backdrop} onClick={onClose} role="dialog" aria-modal>
+    <div
+      className={styles.backdrop}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={title ? titleId : undefined}
+    >
       <div
         ref={sheetRef}
         className={styles.sheet}
         onClick={e => e.stopPropagation()}
       >
         <div className={styles.handle} />
-        {title && <div className={styles.title}>{title}</div>}
+        {title && <h2 id={titleId} className={styles.title}>{title}</h2>}
         <div className={styles.body}>{children}</div>
       </div>
     </div>
