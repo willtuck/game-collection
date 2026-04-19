@@ -77,7 +77,7 @@ export function CollectionView() {
     const blob = new Blob([[cols.join(','), ...rows].join('\n')], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'game-collection.csv';
+    a.download = 'shelfgeek.csv';
     a.click();
     URL.revokeObjectURL(a.href);
   }

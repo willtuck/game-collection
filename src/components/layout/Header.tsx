@@ -15,7 +15,7 @@ export function Header() {
   return (
     <header className={styles.header}>
       <h1 className={styles.title}>
-        Game <em>Collection</em>
+        Shelf<em>geek</em>
       </h1>
       <span className={styles.build}>{__COMMIT_HASH__}</span>
       <span className={styles.count}>
