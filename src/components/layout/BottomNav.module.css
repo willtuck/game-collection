@@ -16,7 +16,7 @@
   border: none;
   background: transparent;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-light);
   cursor: pointer;
   transition: color 0.12s;

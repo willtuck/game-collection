@@ -6,7 +6,7 @@
 }
 
 .label {
-  font-size: 11px;
+  font-size: 14px;
   font-family: var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -25,7 +25,7 @@
   border-radius: 20px;
   background: transparent;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-mid);
   transition: background 0.12s, color 0.12s, border-color 0.12s;
 }

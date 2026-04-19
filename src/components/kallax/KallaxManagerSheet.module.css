@@ -12,7 +12,7 @@
 }
 
 .modelBadge {
-  font-size: 11px;
+  font-size: 14px;
   font-family: var(--mono);
   color: var(--accent);
   background: var(--accent-light);
@@ -45,7 +45,7 @@
   border-radius: var(--r);
   background: transparent;
   color: var(--text-light);
-  font-size: 12px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,7 +74,7 @@
 }
 
 .sectionLabel {
-  font-size: 11px;
+  font-size: 14px;
   font-family: var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.07em;

@@ -30,7 +30,7 @@
   top: 4px;
   left: 8px;
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 14px;
   color: var(--border-mid);
   pointer-events: none;
   z-index: 9999;
@@ -39,7 +39,7 @@
 
 .count {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-light);
 }
 
@@ -50,7 +50,7 @@
 }
 
 .signInBtn {
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--sans);
   padding: 5px 14px;
   border-radius: 20px;
@@ -83,7 +83,7 @@
   border-radius: 50%;
   background: var(--accent-mid);
   color: #fff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -91,7 +91,7 @@
 }
 
 .signOutBtn {
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--sans);
   padding: 4px 10px;
   border-radius: 20px;

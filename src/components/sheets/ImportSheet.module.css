@@ -37,7 +37,7 @@
 }
 
 .dropBody {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-light);
   line-height: 1.5;
 }
@@ -48,7 +48,7 @@
 
 .error {
   margin-top: 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--danger);
   font-family: var(--mono);
   background: var(--danger-bg);
@@ -73,7 +73,7 @@
 }
 
 .skip {
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--mono);
   color: var(--text-light);
 }
@@ -108,14 +108,14 @@
 }
 
 .previewMeta {
-  font-size: 11px;
+  font-size: 14px;
   font-family: var(--mono);
   color: var(--text-light);
   white-space: nowrap;
 }
 
 .dupeTag {
-  font-size: 10px;
+  font-size: 14px;
   font-family: var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;

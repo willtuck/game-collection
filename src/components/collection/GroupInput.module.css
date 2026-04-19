@@ -18,7 +18,7 @@
 .option {
   padding: 8px 12px;
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-mid);
   cursor: pointer;
 }
