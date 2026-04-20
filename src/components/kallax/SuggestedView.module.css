@@ -108,6 +108,7 @@
 .canvasArea {
   flex: 1;
   min-height: 200px;
+  overflow: hidden;
 }
 
 /* ── Stats line ── */
