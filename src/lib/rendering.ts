@@ -252,17 +252,14 @@ export function drawCell(
     proj(xBase+KW, yBase+KH, KD), proj(xBase,    yBase+KH, KD),
   ];
 
-  kFace([c[3],c[7],c[6],c[2]], '#5C5449');                  // back wall
-  kFace([c[0],c[3],c[7],c[4]], 'rgba(180,172,160,0.65)');  // left divider
+  // Phase 1: draw faces BEHIND the games (back wall, far-side divider, bottom)
+  kFace([c[3],c[7],c[6],c[2]], '#5C5449');                  // back wall (opaque)
+  kFace([c[0],c[3],c[7],c[4]], 'rgba(180,172,160,0.65)');  // left divider (far side)
   kFace([c[0],c[1],c[2],c[3]], 'rgba(180,172,160,0.70)');  // bottom shelf
-  kFace([c[4],c[5],c[6],c[7]], 'rgba(200,194,184,0.25)');  // top shelf
-  kFace([c[1],c[2],c[6],c[5]], 'rgba(160,152,140,0.50)');  // right divider
+  // back edges
   kEdge(c[3],c[7],'#3E3A33',2); kEdge(c[7],c[6],'#3E3A33',2);
   kEdge(c[6],c[2],'#3E3A33',2); kEdge(c[2],c[3],'#3E3A33',2);
-  kEdge(c[0],c[1],'#C5BEB2',1,[3,3]);
-  kEdge(c[4],c[5],'#C5BEB2',1,[3,3]);
-  kEdge(c[1],c[5],'#C5BEB2',1,[3,3]);
-  [[c[0],c[4]],[c[7],c[3]],[c[5],c[6]],[c[6],c[2]],[c[3],c[2]]]
+  [[c[0],c[4]],[c[7],c[3]],[c[6],c[2]],[c[3],c[2]]]
     .forEach(([p1,p2]) => kEdge(p1,p2,'#9A9288',1.5));
 
   packedGames.forEach(g => {
@@ -305,10 +302,14 @@ export function drawCell(
     });
   });
 
-  // Redraw shell on top of games
-  kEdge(c[3],c[7],'#3E3A33',2); kEdge(c[7],c[6],'#3E3A33',2);
-  kEdge(c[6],c[2],'#3E3A33',2); kEdge(c[2],c[3],'#3E3A33',2);
-  [[c[0],c[4]],[c[7],c[3]],[c[5],c[6]],[c[6],c[2]],[c[3],c[2]]]
+  // Phase 2: draw faces IN FRONT of games (right divider, top shelf, front edges)
+  kFace([c[1],c[2],c[6],c[5]], 'rgba(160,152,140,0.50)');  // right divider (near side)
+  kFace([c[4],c[5],c[6],c[7]], 'rgba(200,194,184,0.25)');  // top shelf
+  // front edges
+  kEdge(c[0],c[1],'#C5BEB2',1,[3,3]);
+  kEdge(c[4],c[5],'#C5BEB2',1,[3,3]);
+  kEdge(c[1],c[5],'#C5BEB2',1,[3,3]);
+  [[c[0],c[4]],[c[5],c[6]]]
     .forEach(([p1,p2]) => kEdge(p1,p2,'#9A9288',1.5));
 
   // Desktop hover: subtle accent tint on the front face (the cell opening)
