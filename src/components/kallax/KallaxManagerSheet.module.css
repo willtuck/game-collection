@@ -11,6 +11,37 @@
   gap: 8px;
 }
 
+.labelWrap {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+.pencilBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0.45;
+  transition: opacity 0.12s, color 0.12s;
+  cursor: pointer;
+}
+
+.labelWrap:focus-within .pencilBtn,
+.pencilBtn:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
 .modelBadge {
   font-size: 14px;
   font-family: var(--mono);
@@ -23,7 +54,7 @@
 }
 
 .labelInput {
-  flex: 1;
+  width: 100%;
   height: 38px;
   border: 1px solid var(--border-mid);
   border-radius: var(--r);
@@ -160,6 +191,35 @@
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-light);
+}
+
+.customGroupLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unitToggle {
+  display: flex;
+  border: 1px solid var(--border-mid);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.unitToggleBtn {
+  padding: 2px 8px;
+  font-size: 12px;
+  font-family: var(--mono);
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.unitToggleActive {
+  background: var(--accent);
+  color: #fff;
 }
 
 .gridInputs, .dimsInputs {

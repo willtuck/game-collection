@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Sheet } from '../shared/Sheet';
 import { useGameStore } from '../../store/useGameStore';
 import { kuLabel, unitBadgeLabel, buildCustomModel } from '../../lib/helpers';
@@ -12,6 +12,17 @@ interface KallaxManagerSheetProps {
   onClose: () => void;
 }
 
+/** Convert a cm value to the display unit */
+function toDisplay(cmVal: number, unit: 'cm' | 'in'): string {
+  return unit === 'in' ? (cmVal / 2.54).toFixed(1) : String(cmVal);
+}
+
+/** Parse a display-unit string to cm */
+function toCm(val: string, unit: 'cm' | 'in'): number {
+  const n = parseFloat(val) || 0;
+  return unit === 'in' ? n * 2.54 : n;
+}
+
 export function KallaxManagerSheet({ open, onClose }: KallaxManagerSheetProps) {
   const kallaxes          = useGameStore(s => s.kallaxes);
   const addKallax         = useGameStore(s => s.addKallax);
@@ -21,42 +32,83 @@ export function KallaxManagerSheet({ open, onClose }: KallaxManagerSheetProps) {
   const [newModel,    setNewModel]    = useState('2x4');
   const [newLabel,    setNewLabel]    = useState('');
 
-  // Custom unit fields
+  // Custom unit fields (values stored in the currently selected display unit)
+  const [dimUnit,     setDimUnit]     = useState<'cm' | 'in'>('cm');
   const [customCols,  setCustomCols]  = useState('4');
   const [customRows,  setCustomRows]  = useState('2');
-  const [customCellW, setCustomCellW] = useState(String(KALLAX.w));
-  const [customCellH, setCustomCellH] = useState(String(KALLAX.h));
-  const [customCellD, setCustomCellD] = useState(String(KALLAX.d));
+  const [customCellW, setCustomCellW] = useState(toDisplay(KALLAX.w, 'cm'));
+  const [customCellH, setCustomCellH] = useState(toDisplay(KALLAX.h, 'cm'));
+  const [customCellD, setCustomCellD] = useState(toDisplay(KALLAX.d, 'cm'));
 
   const isCustom = newModel === 'custom';
 
+  // Refs for each label input so we can focus on pencil-click
+  const labelRefs = useRef<Map<string, HTMLInputElement>>(new Map());
+
+  function handleDimUnitChange(next: 'cm' | 'in') {
+    if (next === dimUnit) return;
+    // Convert current values to the new unit
+    const convert = (v: string) => {
+      const cm = toCm(v, dimUnit);
+      return next === 'in' ? (cm / 2.54).toFixed(1) : cm.toFixed(1);
+    };
+    setCustomCellW(convert(customCellW));
+    setCustomCellH(convert(customCellH));
+    setCustomCellD(convert(customCellD));
+    setDimUnit(next);
+  }
+
   function handleAdd() {
     let model = newModel;
+    let label = newLabel.trim();
+
     if (isCustom) {
       const cols  = Math.max(1, parseInt(customCols)  || 2);
       const rows  = Math.max(1, parseInt(customRows)  || 4);
-      const cellW = Math.max(1, parseFloat(customCellW) || KALLAX.w);
-      const cellH = Math.max(1, parseFloat(customCellH) || KALLAX.h);
-      const cellD = Math.max(1, parseFloat(customCellD) || KALLAX.d);
+      const cellW = Math.max(1, toCm(customCellW, dimUnit) || KALLAX.w);
+      const cellH = Math.max(1, toCm(customCellH, dimUnit) || KALLAX.h);
+      const cellD = Math.max(1, toCm(customCellD, dimUnit) || KALLAX.d);
       model = buildCustomModel({ cols, rows, cellW, cellH, cellD });
+
+      // Auto-name if blank: "Custom 1", "Custom 2", …
+      if (!label) {
+        const existingCustom = kallaxes.filter(k => k.model.startsWith('custom:')).length;
+        label = `Custom ${existingCustom + 1}`;
+      }
     }
-    addKallax(model, newLabel.trim());
+
+    addKallax(model, label);
     setNewLabel('');
   }
 
   return (
     <Sheet open={open} onClose={onClose} title="Shelving units">
+      {/* ── Existing units ── */}
       <div className={styles.list}>
         {kallaxes.map(ku => (
           <div key={ku.id} className={styles.row}>
             <span className={styles.modelBadge}>{unitBadgeLabel(ku)}</span>
-            <input
-              className={styles.labelInput}
-              value={ku.label}
-              onChange={e => updateKallaxLabel(ku.id, e.target.value)}
-              placeholder={unitBadgeLabel(ku)}
-              aria-label="Unit label"
-            />
+            <div className={styles.labelWrap}>
+              <input
+                ref={el => { if (el) labelRefs.current.set(ku.id, el); else labelRefs.current.delete(ku.id); }}
+                className={styles.labelInput}
+                value={ku.label}
+                onChange={e => updateKallaxLabel(ku.id, e.target.value)}
+                placeholder="Rename…"
+                aria-label={`Name for ${unitBadgeLabel(ku)} unit`}
+              />
+              <button
+                className={styles.pencilBtn}
+                onClick={() => labelRefs.current.get(ku.id)?.focus()}
+                tabIndex={-1}
+                aria-hidden="true"
+              >
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <path d="M9.5 1.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+                  <path d="M8 3l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
             <button
               className={styles.deleteBtn}
               onClick={() => removeKallax(ku.id)}
@@ -69,6 +121,7 @@ export function KallaxManagerSheet({ open, onClose }: KallaxManagerSheetProps) {
 
       <div className={styles.divider} />
 
+      {/* ── Add a unit ── */}
       <div className={styles.addSection}>
         <div className={styles.sectionLabel}>Add a unit</div>
         <div className={styles.addRow}>
@@ -86,7 +139,7 @@ export function KallaxManagerSheet({ open, onClose }: KallaxManagerSheetProps) {
           </select>
           <input
             className={styles.newLabelInput}
-            placeholder="Label (optional)"
+            placeholder={isCustom ? 'Name (e.g. Custom 1)' : 'Label (optional)'}
             value={newLabel}
             onChange={e => setNewLabel(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
@@ -96,6 +149,7 @@ export function KallaxManagerSheet({ open, onClose }: KallaxManagerSheetProps) {
         {isCustom && (
           <div className={styles.customFields}>
             <div className={styles.customRow}>
+              {/* Grid */}
               <div className={styles.customGroup}>
                 <div className={styles.customGroupLabel}>Grid</div>
                 <div className={styles.gridInputs}>
@@ -123,8 +177,23 @@ export function KallaxManagerSheet({ open, onClose }: KallaxManagerSheetProps) {
                 </div>
               </div>
 
+              {/* Cell dimensions */}
               <div className={styles.customGroup}>
-                <div className={styles.customGroupLabel}>Cell interior (cm)</div>
+                <div className={styles.customGroupLabelRow}>
+                  <span className={styles.customGroupLabel}>Cell interior</span>
+                  <div className={styles.unitToggle} role="group" aria-label="Dimension unit">
+                    <button
+                      className={`${styles.unitToggleBtn} ${dimUnit === 'cm' ? styles.unitToggleActive : ''}`}
+                      onClick={() => handleDimUnitChange('cm')}
+                      type="button"
+                    >cm</button>
+                    <button
+                      className={`${styles.unitToggleBtn} ${dimUnit === 'in' ? styles.unitToggleActive : ''}`}
+                      onClick={() => handleDimUnitChange('in')}
+                      type="button"
+                    >in</button>
+                  </div>
+                </div>
                 <div className={styles.dimsInputs}>
                   {([
                     ['W', customCellW, setCustomCellW],
@@ -138,8 +207,12 @@ export function KallaxManagerSheet({ open, onClose }: KallaxManagerSheetProps) {
                         className={styles.customInput}
                         value={val}
                         onChange={e => set(e.target.value)}
-                        min="1" step="0.5"
-                        placeholder={lbl === 'W' ? String(KALLAX.w) : lbl === 'H' ? String(KALLAX.h) : String(KALLAX.d)}
+                        min="0.1" step={dimUnit === 'in' ? '0.1' : '0.5'}
+                        placeholder={
+                          lbl === 'W' ? toDisplay(KALLAX.w, dimUnit) :
+                          lbl === 'H' ? toDisplay(KALLAX.h, dimUnit) :
+                                        toDisplay(KALLAX.d, dimUnit)
+                        }
                       />
                     </div>
                   ))}
