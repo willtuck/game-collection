@@ -63,7 +63,6 @@ export interface HitRegion {
   id: string;
   name: string;
   poly: [number, number][];
-  polys?: [number, number][][];  // individual face polys for precise hit testing
   frontPoly: [number, number][];
   isCell?: boolean;
   isPlacedGame?: boolean;
@@ -292,12 +291,11 @@ export function drawCell(
 
     const P = corners.map(([x,y,z]) => proj(x, y, z));
     const col = gameColor(g.id);
-    const { faceFront, faceRight, faceLeft } = renderGameBox(ctx, P, col, isMatch, isDimmed);
+    const { faceFront } = renderGameBox(ctx, P, col, isMatch, isDimmed);
     const frontPoly = g.mode === 'stacked' ? [P[0],P[1],P[5],P[4]] : [P[4],P[5],P[6],P[7]];
     hitRegions.push({
       id: g.id, name: g.name,
       poly: faceFront,
-      polys: [faceFront, faceRight, faceLeft],
       frontPoly,
     });
   });
@@ -371,11 +369,10 @@ export function drawTopGames(
     const isMatch = !!searchTerm && g.name.toLowerCase().includes(searchTerm);
     const isDimmed = !!searchTerm && !isMatch;
 
-    const { faceFront, faceRight, faceLeft } = renderGameBox(ctx, P, col, isMatch, isDimmed);
+    const { faceFront } = renderGameBox(ctx, P, col, isMatch, isDimmed);
     hitRegions.push({
       id: g.id, name: g.name,
       poly: faceFront,
-      polys: [faceFront, faceRight, faceLeft],
       frontPoly: faceFront,
     });
   }

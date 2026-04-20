@@ -178,7 +178,6 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
   }, [cellPacked, cols, rows, effectiveSearch, cw, ch, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx, topPacked, topCellIdx, dims, KW, KH, KD]);
 
   const testHit = useCallback((x: number, y: number, r: HitRegion): boolean => {
-    if (r.polys) return r.polys.some(p => pointInPoly(x, y, p));
     return pointInPoly(x, y, r.poly);
   }, []);
 
