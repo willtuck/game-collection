@@ -194,9 +194,9 @@ function renderGameBox(
       gEdge(a, b, 'rgba(160,152,140,0.2)', 0.75);
     });
   } else {
-    const baseFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.85)' : '0.70)');
-    const sideFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.75)' : '0.55)');
-    const topFill  = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.90)' : '0.80)');
+    const baseFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.95)' : '0.90)');
+    const sideFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.90)' : '0.82)');
+    const topFill  = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.98)' : '0.95)');
 
     gFace([1,2,6,5], sideFill); // right
     gFace([0,1,5,4], baseFill); // front
@@ -253,9 +253,9 @@ export function drawCell(
   ];
 
   // Phase 1: draw faces BEHIND the games (back wall, far-side divider, bottom)
-  kFace([c[3],c[7],c[6],c[2]], '#5C5449');                  // back wall (opaque)
-  kFace([c[0],c[3],c[7],c[4]], 'rgba(180,172,160,0.65)');  // left divider (far side)
-  kFace([c[0],c[1],c[2],c[3]], 'rgba(180,172,160,0.70)');  // bottom shelf
+  kFace([c[3],c[7],c[6],c[2]], '#5C5449');  // back wall
+  kFace([c[0],c[3],c[7],c[4]], '#B0A89C');  // left divider (far side)
+  kFace([c[0],c[1],c[2],c[3]], '#A8A095');  // bottom shelf
   // back edges
   kEdge(c[3],c[7],'#3E3A33',2); kEdge(c[7],c[6],'#3E3A33',2);
   kEdge(c[6],c[2],'#3E3A33',2); kEdge(c[2],c[3],'#3E3A33',2);
@@ -303,8 +303,8 @@ export function drawCell(
   });
 
   // Phase 2: draw faces IN FRONT of games (right divider, top shelf, front edges)
-  kFace([c[1],c[2],c[6],c[5]], 'rgba(160,152,140,0.50)');  // right divider (near side)
-  kFace([c[4],c[5],c[6],c[7]], 'rgba(200,194,184,0.25)');  // top shelf
+  kFace([c[1],c[2],c[6],c[5]], '#B8B0A4');  // right divider (near side)
+  kFace([c[4],c[5],c[6],c[7]], '#C2BAB0');  // top shelf
   // front edges
   kEdge(c[0],c[1],'#C5BEB2',1,[3,3]);
   kEdge(c[4],c[5],'#C5BEB2',1,[3,3]);
