@@ -99,8 +99,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* ── Canvas wrapper — grows to fill available vertical space ── */
@@ -126,11 +125,14 @@
 /* ── Remaining games ── */
 
 .remaining {
-  margin: 20px 16px 12px;
+  margin: 0 16px 12px;
   padding: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
+  flex-shrink: 0;
+  max-height: 30vh;
+  overflow-y: auto;
 }
 
 .remainingTitle {
