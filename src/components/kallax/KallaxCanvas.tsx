@@ -12,6 +12,7 @@ interface KallaxCanvasProps {
   searchTerm: string;
   topPacked?: PackedGame[];
   cellDims?: { w: number; h: number; d: number };
+  heightPx?: number;
 }
 
 const AZ_MIN = -Math.PI - Math.PI / 4;
@@ -23,7 +24,7 @@ interface DragState {
   moved: boolean;
 }
 
-export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [], cellDims }: KallaxCanvasProps) {
+export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [], cellDims, heightPx }: KallaxCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const hitRef       = useRef<HitRegion[]>([]);
@@ -33,9 +34,8 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
   const [tapHighlight,   setTapHighlight]   = useState('');
   const [zoomedCellIdx,  setZoomedCellIdx]  = useState<number | null>(null);
   const [hoveredCellIdx, setHoveredCellIdx] = useState<number | null>(null);
-  const [cw,             setCw]             = useState(0);
-  const [ch,             setCh]             = useState(0);
-  const [azimuth,        setAzimuth]        = useState(() => getRotation().kAzimuth);
+  const [cw,      setCw]      = useState(0);
+  const [azimuth, setAzimuth] = useState(() => getRotation().kAzimuth);
   const [dragging,       setDragging]       = useState(false);
 
   // Use provided dims or fall back to standard KALLAX dims
@@ -61,17 +61,13 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(e => {
-      setCw(e[0].contentRect.width);
-      setCh(e[0].contentRect.height);
-    });
+    const ro = new ResizeObserver(e => setCw(e[0].contentRect.width));
     ro.observe(el);
     setCw(el.clientWidth);
-    setCh(el.clientHeight);
     return () => ro.disconnect();
   }, []);
 
-  const canvasH = ch > 0 ? ch : Math.min(cw * 0.85, 480);
+  const canvasH = heightPx && heightPx > 0 ? heightPx : Math.min(cw * 0.85, 480);
 
   // Render
   useEffect(() => {
@@ -173,7 +169,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
 
       hitRef.current = allHits;
     }
-  }, [cellPacked, cols, rows, effectiveSearch, cw, ch, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx, topPacked, topCellIdx, dims, KW, KH, KD]);
+  }, [cellPacked, cols, rows, effectiveSearch, cw, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx, topPacked, topCellIdx, dims, KW, KH, KD]);
 
   const testHit = useCallback((x: number, y: number, r: HitRegion): boolean => {
     if (r.polys) return r.polys.some(p => pointInPoly(x, y, p));

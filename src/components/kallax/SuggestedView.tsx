@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { getSortedForKallax } from '../../lib/sorting';
 import { packCellsGroupAware, packTop, fitsInCell } from '../../lib/packing';
@@ -32,6 +32,17 @@ export function SuggestedView() {
   const [search, setSearch] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
+  const [canvasAreaH, setCanvasAreaH] = useState(0);
+  const canvasAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = canvasAreaRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(e => setCanvasAreaH(e[0].contentRect.height));
+    ro.observe(el);
+    setCanvasAreaH(el.clientHeight);
+    return () => ro.disconnect();
+  }, []);
 
   const sortedGames = useMemo(
     () => getSortedForKallax(games, kallaxSort),
@@ -116,7 +127,7 @@ export function SuggestedView() {
           </div>
         ) : activeUnit ? (
           <>
-            <div className={styles.canvasArea}>
+            <div className={styles.canvasArea} ref={canvasAreaRef}>
               <KallaxCanvas
                 key={activeUnit.id}
                 cellPacked={activeUnit.cellPacked}
@@ -125,6 +136,7 @@ export function SuggestedView() {
                 searchTerm={search.toLowerCase()}
                 topPacked={activeUnit.topPacked}
                 cellDims={activeUnit.dims}
+                heightPx={canvasAreaH}
               />
             </div>
 
