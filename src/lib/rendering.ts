@@ -178,28 +178,33 @@ function renderGameBox(
     ctx.beginPath(); idx.forEach((i, n) => n === 0 ? ctx.moveTo(...P[i]) : ctx.lineTo(...P[i]));
     ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
   }
-  const topFill = col.fill.replace(/[\d.]+\)$/, v => String(Math.min(parseFloat(v) * 1.8, 1)) + ')');
+  function gEdge(a: number, b: number, color: string, lw: number, dash?: number[]) {
+    ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
+    ctx.strokeStyle = color; ctx.lineWidth = lw;
+    ctx.setLineDash(dash ?? []); ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  // Only draw the 3 visible faces: right side, front, and top
   if (isDimmed) {
     const dimFill = 'rgba(160,152,140,0.08)';
-    gFace([3,7,6,2],dimFill); gFace([0,3,7,4],dimFill); gFace([1,2,6,5],dimFill);
-    gFace([0,1,2,3],dimFill); gFace([0,1,5,4],dimFill); gFace([4,5,6,7],dimFill);
-    [[4,5],[5,6],[6,7],[7,4],[4,0],[5,1],[6,2],[7,3],[1,2]].forEach(([a,b]) => {
-      ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
-      ctx.strokeStyle = 'rgba(160,152,140,0.2)'; ctx.lineWidth = 0.75; ctx.setLineDash([]); ctx.stroke();
+    gFace([1,2,6,5], dimFill); // right
+    gFace([0,1,5,4], dimFill); // front
+    gFace([4,5,6,7], dimFill); // top
+    [[4,5],[5,6],[6,7],[7,4],[4,0],[5,1],[6,2],[1,2]].forEach(([a,b]) => {
+      gEdge(a, b, 'rgba(160,152,140,0.2)', 0.75);
     });
   } else {
-    const hFill    = isMatch ? col.fill.replace(/[\d.]+\)$/, '0.55)') : col.fill;
-    const hTopFill = isMatch ? col.fill.replace(/[\d.]+\)$/, '0.75)') : topFill;
-    gFace([3,7,6,2],hFill); gFace([0,3,7,4],hFill); gFace([1,2,6,5],hFill);
-    gFace([0,1,2,3],hFill); gFace([0,1,5,4],hFill); gFace([4,5,6,7],hTopFill);
-    [[0,3],[3,2],[0,1]].forEach(([a,b]) => {
-      ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
-      ctx.strokeStyle = 'rgba(180,170,160,0.4)'; ctx.lineWidth = 0.75;
-      ctx.setLineDash([2,3]); ctx.stroke(); ctx.setLineDash([]);
-    });
-    [[4,5],[5,6],[6,7],[7,4],[4,0],[5,1],[6,2],[7,3],[1,2]].forEach(([a,b]) => {
-      ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
-      ctx.strokeStyle = col.stroke; ctx.lineWidth = isMatch ? 2 : 1.25; ctx.setLineDash([]); ctx.stroke();
+    const baseFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.55)' : '0.45)');
+    const sideFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.45)' : '0.35)');
+    const topFill  = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.65)' : '0.55)');
+
+    gFace([1,2,6,5], sideFill); // right
+    gFace([0,1,5,4], baseFill); // front
+    gFace([4,5,6,7], topFill);  // top
+
+    // Visible edges
+    [[4,5],[5,6],[6,7],[7,4],[4,0],[5,1],[6,2],[1,2]].forEach(([a,b]) => {
+      gEdge(a, b, col.stroke, isMatch ? 2 : 1.25);
     });
     if (isMatch) {
       ctx.beginPath();
