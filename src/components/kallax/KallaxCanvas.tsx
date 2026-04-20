@@ -61,10 +61,12 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(e => setCw(e[0].contentRect.width));
+    const measure = () => setCw(el.clientWidth);
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
-    setCw(el.clientWidth);
-    return () => ro.disconnect();
+    measure();
+    window.addEventListener('resize', measure);
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
   }, []);
 
   const canvasH = heightPx && heightPx > 0 ? heightPx : Math.min(cw * 0.85, 480);

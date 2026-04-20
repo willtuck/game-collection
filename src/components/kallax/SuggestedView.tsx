@@ -38,10 +38,12 @@ export function SuggestedView() {
   useEffect(() => {
     const el = canvasAreaRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(e => setCanvasAreaH(e[0].contentRect.height));
+    const measure = () => setCanvasAreaH(el.clientHeight);
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
-    setCanvasAreaH(el.clientHeight);
-    return () => ro.disconnect();
+    measure();
+    window.addEventListener('resize', measure);
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
   }, []);
 
   const sortedGames = useMemo(
