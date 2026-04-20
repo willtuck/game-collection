@@ -124,7 +124,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
         [0, -topExtra, 0  ], [totalW, -topExtra, 0  ], [totalW, -topExtra, KD ], [0, -topExtra, KD ],
         [0, topMaxY,   0  ], [totalW, topMaxY,   0  ], [totalW, topMaxY,   KD ], [0, topMaxY,   KD ],
       ];
-      const { proj } = isoProject(allCorners, cw, canvasH, 20);
+      const { proj } = isoProject(allCorners, cw, canvasH, 8);
       const allHits: HitRegion[] = [];
 
       for (let r = 0; r < rows; r++) {

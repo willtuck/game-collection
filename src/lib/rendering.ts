@@ -41,7 +41,7 @@ export function isoProject(
   const xs1 = raw1.map(p => p[0]), ys1 = raw1.map(p => p[1]);
   const rw = Math.max(...xs1) - Math.min(...xs1);
   const rh = Math.max(...ys1) - Math.min(...ys1);
-  const scale = Math.min((CW - pad * 2) / Math.max(rw, 1), (CH - pad * 2) / Math.max(rh, 1)) * 0.92;
+  const scale = Math.min((CW - pad * 2) / Math.max(rw, 1), (CH - pad * 2) / Math.max(rh, 1)) * 0.98;
 
   const raw = corners3d.map(([x,y,z]) => projRaw(x, y, z, scale));
   const xs = raw.map(p => p[0]), ys = raw.map(p => p[1]);
