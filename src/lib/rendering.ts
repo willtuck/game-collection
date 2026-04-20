@@ -194,9 +194,9 @@ function renderGameBox(
       gEdge(a, b, 'rgba(160,152,140,0.2)', 0.75);
     });
   } else {
-    const baseFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.55)' : '0.45)');
-    const sideFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.45)' : '0.35)');
-    const topFill  = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.65)' : '0.55)');
+    const baseFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.85)' : '0.70)');
+    const sideFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.75)' : '0.55)');
+    const topFill  = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.90)' : '0.80)');
 
     gFace([1,2,6,5], sideFill); // right
     gFace([0,1,5,4], baseFill); // front
@@ -252,11 +252,11 @@ export function drawCell(
     proj(xBase+KW, yBase+KH, KD), proj(xBase,    yBase+KH, KD),
   ];
 
-  kFace([c[0],c[3],c[7],c[4]], 'rgba(160,152,140,0.22)');
-  kFace([c[1],c[2],c[6],c[5]], 'rgba(160,152,140,0.28)');
-  kFace([c[0],c[1],c[2],c[3]], 'rgba(160,152,140,0.32)');
-  kFace([c[4],c[5],c[6],c[7]], 'rgba(160,152,140,0.08)');
-  kFace([c[3],c[7],c[6],c[2]], '#5C5449');
+  kFace([c[3],c[7],c[6],c[2]], '#5C5449');                  // back wall
+  kFace([c[0],c[3],c[7],c[4]], 'rgba(180,172,160,0.65)');  // left divider
+  kFace([c[0],c[1],c[2],c[3]], 'rgba(180,172,160,0.70)');  // bottom shelf
+  kFace([c[4],c[5],c[6],c[7]], 'rgba(200,194,184,0.25)');  // top shelf
+  kFace([c[1],c[2],c[6],c[5]], 'rgba(160,152,140,0.50)');  // right divider
   kEdge(c[3],c[7],'#3E3A33',2); kEdge(c[7],c[6],'#3E3A33',2);
   kEdge(c[6],c[2],'#3E3A33',2); kEdge(c[2],c[3],'#3E3A33',2);
   kEdge(c[0],c[1],'#C5BEB2',1,[3,3]);
