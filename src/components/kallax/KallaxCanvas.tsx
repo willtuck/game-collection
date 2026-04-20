@@ -57,16 +57,17 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
 
   const effectiveSearch = tapHighlight || searchTerm;
 
-  // Responsive size — observe the wrapper for both width and height
+  // Responsive size — observe the .canvasArea parent (the stable flex container)
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    const wrap = containerRef.current;
+    const area = wrap?.parentElement;
+    if (!area) return;
     const measure = () => {
-      setCw(el.clientWidth);
-      setCh(el.clientHeight);
+      setCw(area.clientWidth);
+      setCh(area.clientHeight);
     };
     const ro = new ResizeObserver(measure);
-    ro.observe(el);
+    ro.observe(area);
     measure();
     window.addEventListener('resize', measure);
     return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
@@ -82,6 +83,8 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width  = cw * dpr;
     canvas.height = canvasH * dpr;
+    canvas.style.width  = `${cw}px`;
+    canvas.style.height = `${canvasH}px`;
 
     const ctx = canvas.getContext('2d')!;
     ctx.scale(dpr, dpr);
