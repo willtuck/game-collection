@@ -3,16 +3,16 @@ import type { PackableGame, PackedGame } from './types';
 export const KALLAX = { w: 33, h: 33, d: 38 }; // cm, interior dimensions
 export const MAX_TOP_HEIGHT = 25; // cm — max stack height on top of a unit
 
-/** Returns true if the game can physically fit inside a Kallax cell in any orientation. */
-export function fitsInCell(g: PackableGame): boolean {
+/** Returns true if the game can physically fit inside a cell of the given dimensions. */
+export function fitsInCell(g: PackableGame, dims = KALLAX): boolean {
   if (!g.width || !g.height || !g.depth) return false;
-  const { w: KW, h: KH, d: KD } = KALLAX;
+  const { w: KW, h: KH, d: KD } = dims;
   const gw = parseFloat(g.width), gh = parseFloat(g.height), gd = parseFloat(g.depth);
   // Upright: height vertical, width as depth-in-shelf, depth as spine width
   if (gh <= KH && gw <= KD && gd <= KW) return true;
   // Stacked: sorted dims, two footprint orientations
-  const dims = [gw, gh, gd].sort((a, b) => a - b);
-  if ((dims[1] <= KW && dims[2] <= KD) || (dims[1] <= KD && dims[2] <= KW)) return true;
+  const sorted = [gw, gh, gd].sort((a, b) => a - b);
+  if ((sorted[1] <= KW && sorted[2] <= KD) || (sorted[1] <= KD && sorted[2] <= KW)) return true;
   return false;
 }
 
@@ -28,8 +28,9 @@ export function packTop(
   games: PackableGame[],
   cols: number,
   rows: number,
+  dims = KALLAX,
 ): { topPacked: PackedGame[]; remaining: PackableGame[] } {
-  const { w: KW, h: KH, d: KD } = KALLAX;
+  const { w: KW, h: KH, d: KD } = dims;
   const yBase = rows * KH; // y=rows*KH is the visual top surface of the unit
   const totalW = cols * KW;
 
@@ -132,8 +133,9 @@ export function packCell(
   gamesPool: PackableGame[],
   isStacked: boolean,
   startUsed = 0,
+  dims = KALLAX,
 ): PackedGame[] {
-  const { w: KW, h: KH, d: KD } = KALLAX;
+  const { w: KW, h: KH, d: KD } = dims;
   const packed: PackedGame[] = [];
 
   if (!isStacked) {
@@ -180,6 +182,7 @@ export function packCellsGroupAware(
   inputQueue: PackableGame[],
   numCells: number,
   isStacked: boolean,
+  dims = KALLAX,
 ): { cellPacked: PackedGame[][]; remaining: PackableGame[] } {
   let queue = [...inputQueue];
   const cellPacked: PackedGame[][] = [];
@@ -203,18 +206,18 @@ export function packCellsGroupAware(
       let fillIds: Set<string>;
 
       if (isStacked) {
-        const allPacked = packCell([...groupGames, ...fillCandidates], isStacked);
+        const allPacked = packCell([...groupGames, ...fillCandidates], isStacked, 0, dims);
         const groupIdSet = new Set(groupGames.map(g => g.id));
         const packedGroupIds = new Set(allPacked.filter(g => groupIdSet.has(g.id)).map(g => g.id));
         notPackedGroup = groupGames.filter(g => !packedGroupIds.has(g.id));
         fillIds = new Set(allPacked.filter(g => !groupIdSet.has(g.id)).map(g => g.id));
         cellResult = allPacked;
       } else {
-        const groupPacked = packCell(groupGames, isStacked);
+        const groupPacked = packCell(groupGames, isStacked, 0, dims);
         const groupIdSet = new Set(groupPacked.map(g => g.id));
         notPackedGroup = groupGames.filter(g => !groupIdSet.has(g.id));
         const usedByGroup = groupPacked.reduce((s, g) => s + parseFloat(g.depth!), 0);
-        const fillPacked = packCell(fillCandidates, isStacked, usedByGroup);
+        const fillPacked = packCell(fillCandidates, isStacked, usedByGroup, dims);
         fillIds = new Set(fillPacked.map(g => g.id));
         cellResult = [...groupPacked, ...fillPacked];
       }
@@ -227,7 +230,7 @@ export function packCellsGroupAware(
       const leadingNonGroup = nextGroupIdx === -1 ? queue : queue.slice(0, nextGroupIdx);
       const afterNonGroup   = nextGroupIdx === -1 ? []    : queue.slice(nextGroupIdx);
 
-      const packed = packCell(leadingNonGroup, isStacked);
+      const packed = packCell(leadingNonGroup, isStacked, 0, dims);
       const packedIds = new Set(packed.map(g => g.id));
 
       cellPacked.push(packed);

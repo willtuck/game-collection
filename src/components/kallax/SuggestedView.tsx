@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { getSortedForKallax } from '../../lib/sorting';
 import { packCellsGroupAware, packTop, fitsInCell } from '../../lib/packing';
-import { kuGrid } from '../../lib/helpers';
+import { unitGrid, unitDims } from '../../lib/helpers';
 import type { PackedGame } from '../../lib/types';
 import { KallaxCanvas } from './KallaxCanvas';
 import { SuggestedSettings } from './SuggestedSettings';
@@ -16,6 +16,7 @@ interface UnitPacking {
   rows: number;
   cellPacked: PackedGame[][];
   topPacked: PackedGame[];
+  dims: { w: number; h: number; d: number };
 }
 
 export function SuggestedView() {
@@ -42,15 +43,14 @@ export function SuggestedView() {
     const units: UnitPacking[] = [];
     let rem = sortedGames;
     for (const ku of kallaxes) {
-      const [cols, rows] = kuGrid(ku.model);
-      // Oversized games (physically can't fit in any cell) go on top immediately.
-      // Normal-sized games try cells first; overflow passes to the next unit.
-      const oversized = rem.filter(g => !fitsInCell(g));
-      const cellable  = rem.filter(g =>  fitsInCell(g));
-      const { cellPacked, remaining: afterCells } = packCellsGroupAware(cellable, cols * rows, kallaxMode === 'stacked');
-      const { topPacked, remaining: afterTop }   = packTop(oversized, cols, rows);
+      const [cols, rows] = unitGrid(ku);
+      const dims = unitDims(ku);
+      const oversized = rem.filter(g => !fitsInCell(g, dims));
+      const cellable  = rem.filter(g =>  fitsInCell(g, dims));
+      const { cellPacked, remaining: afterCells } = packCellsGroupAware(cellable, cols * rows, kallaxMode === 'stacked', dims);
+      const { topPacked, remaining: afterTop }   = packTop(oversized, cols, rows, dims);
       rem = [...afterTop, ...afterCells];
-      units.push({ id: ku.id, label: ku.label, cols, rows, cellPacked, topPacked });
+      units.push({ id: ku.id, label: ku.label, cols, rows, cellPacked, topPacked, dims });
     }
     return { units, remaining: rem };
   }, [sortedGames, kallaxes, kallaxMode]);
@@ -102,7 +102,7 @@ export function SuggestedView() {
       <div className={styles.scroll}>
         {noUnits ? (
           <div className={styles.empty}>
-            <div className={styles.emptyTitle}>No Kallax units yet</div>
+            <div className={styles.emptyTitle}>No shelving units yet</div>
             <div className={styles.emptyBody}>
               Tap <strong>Units</strong> to add your first unit and see how your games fit.
             </div>
@@ -123,6 +123,7 @@ export function SuggestedView() {
               rows={activeUnit.rows}
               searchTerm={search.toLowerCase()}
               topPacked={activeUnit.topPacked}
+              cellDims={activeUnit.dims}
             />
 
             <div className={styles.stats}>

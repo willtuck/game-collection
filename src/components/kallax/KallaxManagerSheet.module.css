@@ -133,3 +133,71 @@
 
 .addBtn:hover { background: var(--accent-mid); }
 .addBtn:active { transform: scale(0.98); }
+
+/* ── Custom unit fields ── */
+.customFields {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px;
+}
+
+.customRow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.customGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.customGroupLabel {
+  font-size: 14px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-light);
+}
+
+.gridInputs, .dimsInputs {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.gridX {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--text-light);
+  padding-bottom: 9px;
+}
+
+.customField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.customFieldLabel {
+  font-size: 14px;
+  font-family: var(--mono);
+  color: var(--text-light);
+}
+
+.customInput {
+  width: 64px;
+  height: 38px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  padding: 0 8px;
+  font-family: var(--mono);
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+
+.customInput:focus { border-color: var(--accent-mid); }

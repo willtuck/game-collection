@@ -1,4 +1,5 @@
-import type { Game } from './types';
+import type { Game, KallaxUnit } from './types';
+import { KALLAX } from './packing';
 
 export function hasDims(g: Game): boolean {
   return !!(
@@ -50,4 +51,43 @@ export function kuLabel(model: string): string {
     '2x4': '2×4 tall', '4x2': '2×4 wide', '4x4': '4×4', '5x5': '5×5',
   };
   return labels[model] ?? model;
+}
+
+// ── Custom unit helpers ───────────────────────────────────────────────────────
+// Custom units encode their spec in the model string:
+//   'custom:{cols}:{rows}:{cellW}:{cellH}:{cellD}'  (dimensions in cm)
+
+export interface CustomUnitSpec {
+  cols: number; rows: number;
+  cellW: number; cellH: number; cellD: number;
+}
+
+export function parseCustomModel(model: string): CustomUnitSpec | null {
+  if (!model.startsWith('custom:')) return null;
+  const parts = model.slice(7).split(':').map(Number);
+  if (parts.length !== 5 || parts.some(isNaN)) return null;
+  const [cols, rows, cellW, cellH, cellD] = parts;
+  return { cols, rows, cellW, cellH, cellD };
+}
+
+export function buildCustomModel(spec: CustomUnitSpec): string {
+  return `custom:${spec.cols}:${spec.rows}:${spec.cellW}:${spec.cellH}:${spec.cellD}`;
+}
+
+export function unitGrid(ku: KallaxUnit): [number, number] {
+  const c = parseCustomModel(ku.model);
+  if (c) return [c.cols, c.rows];
+  return kuGrid(ku.model);
+}
+
+export function unitDims(ku: KallaxUnit): { w: number; h: number; d: number } {
+  const c = parseCustomModel(ku.model);
+  if (c) return { w: c.cellW, h: c.cellH, d: c.cellD };
+  return KALLAX;
+}
+
+export function unitBadgeLabel(ku: KallaxUnit): string {
+  const c = parseCustomModel(ku.model);
+  if (c) return `${c.cols}×${c.rows}`;
+  return kuLabel(ku.model);
 }

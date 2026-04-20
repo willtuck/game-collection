@@ -226,8 +226,9 @@ export function drawCell(
   searchTerm = '',
   hovered = false,
   cellIdx?: number,
+  dims = KALLAX,
 ): HitRegion[] {
-  const { w: KW, h: KH, d: KD } = KALLAX;
+  const { w: KW, h: KH, d: KD } = dims;
   const hitRegions: HitRegion[] = [];
 
   function kFace(pts: [number, number][], fill: string) {
@@ -346,8 +347,9 @@ export function drawTopGames(
   proj: (x: number, y: number, z: number) => [number, number],
   topPacked: PackedGame[],
   searchTerm = '',
+  dims = KALLAX,
 ): HitRegion[] {
-  const { d: KD } = KALLAX;
+  const { d: KD } = dims;
   const hitRegions: HitRegion[] = [];
 
   for (const g of topPacked) {
