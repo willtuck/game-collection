@@ -99,7 +99,7 @@ export function SuggestedView() {
         </div>
       )}
 
-      <div className={styles.scroll}>
+      <div className={styles.main}>
         {noUnits ? (
           <div className={styles.empty}>
             <div className={styles.emptyTitle}>No shelving units yet</div>
@@ -116,15 +116,17 @@ export function SuggestedView() {
           </div>
         ) : activeUnit ? (
           <>
-            <KallaxCanvas
-              key={activeUnit.id}
-              cellPacked={activeUnit.cellPacked}
-              cols={activeUnit.cols}
-              rows={activeUnit.rows}
-              searchTerm={search.toLowerCase()}
-              topPacked={activeUnit.topPacked}
-              cellDims={activeUnit.dims}
-            />
+            <div className={styles.canvasArea}>
+              <KallaxCanvas
+                key={activeUnit.id}
+                cellPacked={activeUnit.cellPacked}
+                cols={activeUnit.cols}
+                rows={activeUnit.rows}
+                searchTerm={search.toLowerCase()}
+                topPacked={activeUnit.topPacked}
+                cellDims={activeUnit.dims}
+              />
+            </div>
 
             <div className={styles.stats}>
               {activeUnit.label}

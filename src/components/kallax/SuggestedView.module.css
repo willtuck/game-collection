@@ -92,13 +92,23 @@
   border-color: var(--accent);
 }
 
-/* ── Scroll area ── */
+/* ── Main content area ── */
 
-.scroll {
+.main {
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 8px 16px 80px;
+  padding: 0 16px 12px;
+}
+
+/* ── Canvas wrapper — grows to fill available vertical space ── */
+
+.canvasArea {
+  flex: 1;
+  min-height: 200px;
 }
 
 /* ── Stats line ── */
@@ -110,6 +120,7 @@
   padding: 8px 2px 4px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  flex-shrink: 0;
 }
 
 /* ── Remaining games ── */
