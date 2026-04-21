@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { isoProject, drawCell, drawTopGames, pointInPoly, getRotation, setRotation } from '../../lib/rendering';
+import { isoProject, drawCell, drawCellShell, drawCellGames, drawTopGames, pointInPoly, getRotation, setRotation, rightFaceVisible } from '../../lib/rendering';
 import { KALLAX } from '../../lib/packing';
 import type { HitRegion } from '../../lib/rendering';
 import type { PackedGame } from '../../lib/types';
@@ -133,13 +133,56 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
       const { proj } = isoProject(allCorners, cw, canvasH, 8);
       const allHits: HitRegion[] = [];
 
+      const showRight = rightFaceVisible();
+
+      // Pass 1: draw ALL cell shells (opaque walls) first
       for (let r = 0; r < rows; r++) {
         for (let cIdx = 0; cIdx < cols; cIdx++) {
-          const c = cols - 1 - cIdx;
-          const i = (rows - 1 - r) * cols + (cols - 1 - c);
-          allHits.push(...drawCell(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i, i, dims));
+          const c = showRight ? (cols - 1 - cIdx) : cIdx;
+          drawCellShell(ctx, proj, r * KH, c * KW, dims);
         }
       }
+
+      // Pass 2: draw ALL games on top of all walls
+      for (let r = 0; r < rows; r++) {
+        for (let cIdx = 0; cIdx < cols; cIdx++) {
+          const c = showRight ? (cols - 1 - cIdx) : cIdx;
+          const i = (rows - 1 - r) * cols + (cols - 1 - c);
+          allHits.push(...drawCellGames(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i, i, dims));
+        }
+      }
+
+      // Pass 3: draw opaque panels — internal dividers + outer shell
+      // These cover internal cell edges so the unit looks like solid furniture
+      const oFace = (pts: [number,number][], fill: string) => {
+        ctx.beginPath(); pts.forEach((p, i) => i === 0 ? ctx.moveTo(...p) : ctx.lineTo(...p));
+        ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+      };
+      const oEdge = (p1: [number,number], p2: [number,number], col: string, lw: number) => {
+        ctx.beginPath(); ctx.moveTo(...p1); ctx.lineTo(...p2);
+        ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash([]); ctx.stroke();
+      };
+
+      // Outer near-side wall (full-height)
+      if (showRight) {
+        const r0 = proj(totalW, 0, 0), r1 = proj(totalW, 0, KD);
+        const r2 = proj(totalW, totalH, KD), r3 = proj(totalW, totalH, 0);
+        oFace([r0, r1, r2, r3], '#B8B0A4');
+        oEdge(r0, r1, '#9A9288', 1.5); oEdge(r1, r2, '#9A9288', 1.5);
+        oEdge(r2, r3, '#9A9288', 1.5); oEdge(r3, r0, '#9A9288', 1.5);
+      } else {
+        const l0 = proj(0, 0, 0), l1 = proj(0, 0, KD);
+        const l2 = proj(0, totalH, KD), l3 = proj(0, totalH, 0);
+        oFace([l0, l1, l2, l3], '#B8B0A4');
+        oEdge(l0, l1, '#9A9288', 1.5); oEdge(l1, l2, '#9A9288', 1.5);
+        oEdge(l2, l3, '#9A9288', 1.5); oEdge(l3, l0, '#9A9288', 1.5);
+      }
+      // Outer top panel
+      const t0 = proj(0, totalH, 0), t1 = proj(totalW, totalH, 0);
+      const t2 = proj(totalW, totalH, KD), t3 = proj(0, totalH, KD);
+      oFace([t0, t1, t2, t3], '#C2BAB0');
+      oEdge(t0, t1, '#9A9288', 1.5); oEdge(t1, t2, '#9A9288', 1.5);
+      oEdge(t2, t3, '#9A9288', 1.5); oEdge(t3, t0, '#9A9288', 1.5);
 
       allHits.push(...drawTopGames(ctx, proj, topPacked, effectiveSearch, dims));
 
@@ -155,9 +198,9 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
           ctx.beginPath();
           topFront.forEach((p, i) => i === 0 ? ctx.moveTo(...p) : ctx.lineTo(...p));
           ctx.closePath();
-          ctx.fillStyle = 'rgba(74,124,101,0.10)';
+          ctx.fillStyle = 'rgba(74,124,101,0.50)';
           ctx.fill();
-          ctx.strokeStyle = 'rgba(74,124,101,0.40)';
+          ctx.strokeStyle = 'rgba(74,124,101,0.80)';
           ctx.lineWidth = 1.5;
           ctx.setLineDash([]);
           ctx.stroke();

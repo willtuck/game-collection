@@ -163,9 +163,18 @@ export function drawBox(
 
 /* ── Shared game box renderer ── */
 
+/** Determine which side face is visible based on current azimuth */
+export function rightFaceVisible(): boolean {
+  // Right face normal is +x; rz component = -sin(kAzimuth)
+  return -Math.sin(kAzimuth) > 0;
+}
+
 /**
  * Draws a game box given 8 projected 2D screen corners.
- * Returns the 3 non-back side face polygons for hit testing.
+ * Dynamically picks which 3 faces to draw based on viewing angle.
+ * Corner layout:
+ *   Bottom (y=low): 0=front-left, 1=front-right, 2=back-right, 3=back-left
+ *   Top    (y=high): 4=front-left, 5=front-right, 6=back-right, 7=back-left
  */
 function renderGameBox(
   ctx: CanvasRenderingContext2D,
@@ -173,55 +182,123 @@ function renderGameBox(
   col: GameColor,
   isMatch: boolean,
   isDimmed: boolean,
-): { faceFront: [number,number][]; faceRight: [number,number][]; faceLeft: [number,number][] } {
+): { faceFront: [number,number][]; faceSide: [number,number][] } {
   function gFace(idx: number[], fill: string) {
     ctx.beginPath(); idx.forEach((i, n) => n === 0 ? ctx.moveTo(...P[i]) : ctx.lineTo(...P[i]));
     ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
   }
-  function gEdge(a: number, b: number, color: string, lw: number, dash?: number[]) {
+  function gEdge(a: number, b: number, color: string, lw: number) {
     ctx.beginPath(); ctx.moveTo(...P[a]); ctx.lineTo(...P[b]);
     ctx.strokeStyle = color; ctx.lineWidth = lw;
-    ctx.setLineDash(dash ?? []); ctx.stroke(); ctx.setLineDash([]);
+    ctx.setLineDash([]); ctx.stroke();
   }
 
-  // Only draw the 3 visible faces: right side, front, and top
-  if (isDimmed) {
-    const dimFill = 'rgba(160,152,140,0.08)';
-    gFace([1,2,6,5], dimFill); // right
-    gFace([0,1,5,4], dimFill); // front
-    gFace([4,5,6,7], dimFill); // top
-    [[4,5],[5,6],[6,7],[7,4],[4,0],[5,1],[6,2],[1,2]].forEach(([a,b]) => {
-      gEdge(a, b, 'rgba(160,152,140,0.2)', 0.75);
-    });
-  } else {
-    const baseFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.95)' : '0.90)');
-    const sideFill = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.90)' : '0.82)');
-    const topFill  = col.fill.replace(/[\d.]+\)$/, isMatch ? '0.98)' : '0.95)');
+  const showRight = rightFaceVisible();
+  // Side face indices: right = [1,2,6,5], left = [0,3,7,4]
+  const sideIdx = showRight ? [1,2,6,5] : [0,3,7,4];
 
-    gFace([1,2,6,5], sideFill); // right
+  if (isDimmed) {
+    gFace(sideIdx, '#C8C2BA');   // side — muted solid
+    gFace([0,1,5,4], '#D0CAC2'); // front
+    gFace([4,5,6,7], '#D8D2CA'); // top
+    const dimStroke = '#B0A89C';
+    const edges: [number,number][] = showRight
+      ? [[0,1],[1,5],[5,4],[4,0],[5,6],[6,2],[2,1],[4,7],[7,6]]
+      : [[0,1],[1,5],[5,4],[4,0],[0,3],[3,7],[7,4],[7,6],[6,5]];
+    edges.forEach(([a,b]) => gEdge(a, b, dimStroke, 0.75));
+  } else {
+    // Parse base RGB and darken/lighten for face shading — fully opaque
+    const rgbMatch = col.fill.match(/rgba?\((\d+),(\d+),(\d+)/);
+    const [br, bg, bb] = rgbMatch ? [+rgbMatch[1], +rgbMatch[2], +rgbMatch[3]] : [128,128,128];
+    const shade = (r: number, g: number, b: number, f: number) =>
+      `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;
+    const baseFill = shade(br, bg, bb, isMatch ? 1.0 : 0.92);   // front face
+    const sideFill = shade(br, bg, bb, isMatch ? 0.82 : 0.75);   // side face (darker)
+    const topFill  = shade(br, bg, bb, isMatch ? 1.08 : 1.0);    // top face (lighter)
+
+    // Draw back-to-front: side (furthest), then front, then top (nearest)
+    gFace(sideIdx, sideFill);
     gFace([0,1,5,4], baseFill); // front
     gFace([4,5,6,7], topFill);  // top
 
-    // Visible edges
-    [[4,5],[5,6],[6,7],[7,4],[4,0],[5,1],[6,2],[1,2]].forEach(([a,b]) => {
-      gEdge(a, b, col.stroke, isMatch ? 2 : 1.25);
-    });
+    // Visible edges — all edges of the 3 visible faces' outlines
+    const edges: [number,number][] = showRight
+      ? [[0,1],[1,5],[5,4],[4,0],[5,6],[6,7],[7,4],[6,2],[2,1]]
+      : [[0,1],[1,5],[5,4],[4,0],[0,3],[3,7],[7,4],[7,6],[6,5]];
+    edges.forEach(([a,b]) => gEdge(a, b, col.stroke, isMatch ? 1.75 : 1));
+
     if (isMatch) {
       ctx.beginPath();
-      [4,5,6,7,4].forEach((i, n) => n === 0 ? ctx.moveTo(...P[i]) : ctx.lineTo(...P[i]));
-      ctx.strokeStyle = col.stroke; ctx.lineWidth = 2.5; ctx.setLineDash([]); ctx.stroke();
+      [0,1,5,4,0].forEach((i, n) => n === 0 ? ctx.moveTo(...P[i]) : ctx.lineTo(...P[i]));
+      ctx.strokeStyle = col.stroke; ctx.lineWidth = 2.5; ctx.stroke();
     }
   }
-  return {
-    faceFront: [P[0],P[1],P[5],P[4]],
-    faceRight: [P[1],P[2],P[6],P[5]],
-    faceLeft:  [P[0],P[3],P[7],P[4]],
-  };
+  const faceFront: [number,number][] = [P[0],P[1],P[5],P[4]];
+  const faceSide: [number,number][] = showRight
+    ? [P[1],P[2],P[6],P[5]]
+    : [P[0],P[3],P[7],P[4]];
+  return { faceFront, faceSide };
 }
 
-/* ── Kallax cell renderer ── */
+/* ── Kallax cell renderer (two-pass) ── */
 
-export function drawCell(
+/** Pass 1: draw the 5 opaque cell walls (everything except the open front face). */
+export function drawCellShell(
+  ctx: CanvasRenderingContext2D,
+  proj: (x: number, y: number, z: number) => [number, number],
+  yBase: number,
+  xBase = 0,
+  dims = KALLAX,
+): void {
+  const { w: KW, h: KH, d: KD } = dims;
+
+  function kFace(pts: [number, number][], fill: string) {
+    ctx.beginPath(); pts.forEach((p, i) => i === 0 ? ctx.moveTo(...p) : ctx.lineTo(...p));
+    ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+  }
+  function kEdge(p1: [number,number], p2: [number,number], col: string, lw: number) {
+    ctx.beginPath(); ctx.moveTo(...p1); ctx.lineTo(...p2);
+    ctx.strokeStyle = col; ctx.lineWidth = lw;
+    ctx.setLineDash([]); ctx.stroke();
+  }
+
+  const c = [
+    proj(xBase,    yBase,    0),  proj(xBase+KW, yBase,    0),
+    proj(xBase+KW, yBase,    KD), proj(xBase,    yBase,    KD),
+    proj(xBase,    yBase+KH, 0),  proj(xBase+KW, yBase+KH, 0),
+    proj(xBase+KW, yBase+KH, KD), proj(xBase,    yBase+KH, KD),
+  ];
+
+  const showRight = rightFaceVisible();
+
+  kFace([c[3],c[7],c[6],c[2]], '#5C5449');  // back wall
+  if (showRight) {
+    kFace([c[0],c[3],c[7],c[4]], '#868072');  // left divider (far side)
+  } else {
+    kFace([c[1],c[2],c[6],c[5]], '#868072');  // right divider (far side)
+  }
+  kFace([c[0],c[1],c[2],c[3]], '#B0A89E');  // bottom shelf
+  if (showRight) {
+    kFace([c[1],c[2],c[6],c[5]], '#9A9488');  // right divider (near side)
+  } else {
+    kFace([c[0],c[3],c[7],c[4]], '#9A9488');  // left divider (near side)
+  }
+  kFace([c[4],c[5],c[6],c[7]], '#C2BAB0');  // top shelf
+
+  // Subtle cell edges — front frame lines only
+  kEdge(c[0],c[1],'#A8A09A',1);
+  kEdge(c[4],c[5],'#A8A09A',1);
+  if (showRight) {
+    kEdge(c[0],c[4],'#A8A09A',1);
+    kEdge(c[1],c[5],'#A8A09A',1);
+  } else {
+    kEdge(c[0],c[4],'#A8A09A',1);
+    kEdge(c[1],c[5],'#A8A09A',1);
+  }
+}
+
+/** Pass 2: draw games inside a cell + hover overlay + hit regions. */
+export function drawCellGames(
   ctx: CanvasRenderingContext2D,
   proj: (x: number, y: number, z: number) => [number, number],
   yBase: number,
@@ -235,34 +312,26 @@ export function drawCell(
   const { w: KW, h: KH, d: KD } = dims;
   const hitRegions: HitRegion[] = [];
 
-  function kFace(pts: [number, number][], fill: string) {
-    ctx.beginPath(); pts.forEach((p, i) => i === 0 ? ctx.moveTo(...p) : ctx.lineTo(...p));
-    ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
-  }
-  function kEdge(p1: [number,number], p2: [number,number], col: string, lw: number, dash?: number[]) {
-    ctx.beginPath(); ctx.moveTo(...p1); ctx.lineTo(...p2);
-    ctx.strokeStyle = col; ctx.lineWidth = lw;
-    ctx.setLineDash(dash ?? []); ctx.stroke(); ctx.setLineDash([]);
-  }
+  // Clip games to the cell's front face opening so they can't bleed into adjacent cells
+  const clip0 = proj(xBase, yBase, 0), clip1 = proj(xBase+KW, yBase, 0);
+  const clip4 = proj(xBase, yBase+KH, 0), clip5 = proj(xBase+KW, yBase+KH, 0);
+  ctx.save();
+  ctx.beginPath();
+  [clip0, clip1, clip5, clip4].forEach((p, i) => i === 0 ? ctx.moveTo(...p) : ctx.lineTo(...p));
+  ctx.closePath();
+  ctx.clip();
 
-  const c = [
-    proj(xBase,    yBase,    0),  proj(xBase+KW, yBase,    0),
-    proj(xBase+KW, yBase,    KD), proj(xBase,    yBase,    KD),
-    proj(xBase,    yBase+KH, 0),  proj(xBase+KW, yBase+KH, 0),
-    proj(xBase+KW, yBase+KH, KD), proj(xBase,    yBase+KH, KD),
-  ];
+  // Sort games for painter's algorithm: draw far-from-viewer first
+  const sortedGames = [...packedGames].sort((a, b) => {
+    if (a.mode === 'stacked' && b.mode === 'stacked') {
+      return a.yOffset - b.yOffset;
+    }
+    return rightFaceVisible()
+      ? a.xOffset - b.xOffset
+      : b.xOffset - a.xOffset;
+  });
 
-  // Phase 1: draw faces BEHIND the games (back wall, far-side divider, bottom)
-  kFace([c[3],c[7],c[6],c[2]], '#5C5449');  // back wall
-  kFace([c[0],c[3],c[7],c[4]], '#B0A89C');  // left divider (far side)
-  kFace([c[0],c[1],c[2],c[3]], '#A8A095');  // bottom shelf
-  // back edges
-  kEdge(c[3],c[7],'#3E3A33',2); kEdge(c[7],c[6],'#3E3A33',2);
-  kEdge(c[6],c[2],'#3E3A33',2); kEdge(c[2],c[3],'#3E3A33',2);
-  [[c[0],c[4]],[c[7],c[3]],[c[6],c[2]],[c[3],c[2]]]
-    .forEach(([p1,p2]) => kEdge(p1,p2,'#9A9288',1.5));
-
-  packedGames.forEach(g => {
+  sortedGames.forEach(g => {
     const gw = parseFloat(g.width!), gh = parseFloat(g.height!), gd = parseFloat(g.depth!);
     const isMatch = !!searchTerm && g.name.toLowerCase().includes(searchTerm);
     const isDimmed = !!searchTerm && !isMatch;
@@ -294,40 +363,35 @@ export function drawCell(
     const P = corners.map(([x,y,z]) => proj(x, y, z));
     const col = gameColor(g.id);
     const { faceFront } = renderGameBox(ctx, P, col, isMatch, isDimmed);
-    const frontPoly = g.mode === 'stacked' ? [P[0],P[1],P[5],P[4]] : [P[4],P[5],P[6],P[7]];
     hitRegions.push({
       id: g.id, name: g.name,
       poly: faceFront,
-      frontPoly,
+      frontPoly: faceFront,
     });
   });
 
-  // Phase 2: draw faces IN FRONT of games (right divider, top shelf, front edges)
-  kFace([c[1],c[2],c[6],c[5]], '#B8B0A4');  // right divider (near side)
-  kFace([c[4],c[5],c[6],c[7]], '#C2BAB0');  // top shelf
-  // front edges
-  kEdge(c[0],c[1],'#C5BEB2',1,[3,3]);
-  kEdge(c[4],c[5],'#C5BEB2',1,[3,3]);
-  kEdge(c[1],c[5],'#C5BEB2',1,[3,3]);
-  [[c[0],c[4]],[c[5],c[6]]]
-    .forEach(([p1,p2]) => kEdge(p1,p2,'#9A9288',1.5));
+  ctx.restore(); // remove clip
 
-  // Desktop hover: subtle accent tint on the front face (the cell opening)
+  // Desktop hover
   if (hovered) {
+    const c0 = proj(xBase, yBase, 0), c1 = proj(xBase+KW, yBase, 0);
+    const c4 = proj(xBase, yBase+KH, 0), c5 = proj(xBase+KW, yBase+KH, 0);
     ctx.beginPath();
-    [c[0], c[1], c[5], c[4]].forEach((p, i) => i === 0 ? ctx.moveTo(...p) : ctx.lineTo(...p));
+    [c0, c1, c5, c4].forEach((p, i) => i === 0 ? ctx.moveTo(...p) : ctx.lineTo(...p));
     ctx.closePath();
-    ctx.fillStyle = 'rgba(74,124,101,0.10)';
+    ctx.fillStyle = 'rgba(74,124,101,0.50)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(74,124,101,0.40)';
+    ctx.strokeStyle = 'rgba(74,124,101,0.80)';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([]);
     ctx.stroke();
   }
 
-  // Cell-level hit region: the front face quad (the opening of the cell).
-  // Pushed after game hits so game polygons take precedence in findHit.
-  const frontFace: [number, number][] = [c[0], c[1], c[5], c[4]];
+  // Cell-level hit region
+  const frontFace: [number, number][] = [
+    proj(xBase, yBase, 0), proj(xBase+KW, yBase, 0),
+    proj(xBase+KW, yBase+KH, 0), proj(xBase, yBase+KH, 0),
+  ];
   hitRegions.push({
     id: `__cell_${cellIdx ?? 0}`,
     name: '',
@@ -338,6 +402,23 @@ export function drawCell(
   });
 
   return hitRegions;
+
+}
+
+/** Legacy single-call wrapper used by zoomed view */
+export function drawCell(
+  ctx: CanvasRenderingContext2D,
+  proj: (x: number, y: number, z: number) => [number, number],
+  yBase: number,
+  packedGames: PackedGame[],
+  xBase = 0,
+  searchTerm = '',
+  hovered = false,
+  cellIdx?: number,
+  dims = KALLAX,
+): HitRegion[] {
+  drawCellShell(ctx, proj, yBase, xBase, dims);
+  return drawCellGames(ctx, proj, yBase, packedGames, xBase, searchTerm, hovered, cellIdx, dims);
 }
 
 /* ── Top-of-unit renderer ── */
@@ -375,11 +456,12 @@ export function drawTopGames(
     const isMatch = !!searchTerm && g.name.toLowerCase().includes(searchTerm);
     const isDimmed = !!searchTerm && !isMatch;
 
-    const { faceFront } = renderGameBox(ctx, P, col, isMatch, isDimmed);
+    renderGameBox(ctx, P, col, isMatch, isDimmed);
+    const frontPoly: [number,number][] = [P[0],P[1],P[5],P[4]];
     hitRegions.push({
       id: g.id, name: g.name,
-      poly: faceFront,
-      frontPoly: faceFront,
+      poly: frontPoly,
+      frontPoly,
     });
   }
 
