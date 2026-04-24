@@ -12,6 +12,10 @@ interface KallaxCanvasProps {
   searchTerm: string;
   topPacked?: PackedGame[];
   cellDims?: { w: number; h: number; d: number };
+  /** When provided, cell clicks call this instead of zooming into the canvas */
+  onCellClick?: (cellIndex: number) => void;
+  /** Force a persistent hover highlight on this cell index */
+  highlightCellIdx?: number;
 }
 
 const AZ_MIN = -Math.PI - Math.PI / 4;
@@ -23,7 +27,7 @@ interface DragState {
   moved: boolean;
 }
 
-export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [], cellDims }: KallaxCanvasProps) {
+export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [], cellDims, onCellClick, highlightCellIdx }: KallaxCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const hitRef       = useRef<HitRegion[]>([]);
@@ -148,7 +152,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
         for (let cIdx = 0; cIdx < cols; cIdx++) {
           const c = showRight ? (cols - 1 - cIdx) : cIdx;
           const i = (rows - 1 - r) * cols + (cols - 1 - c);
-          allHits.push(...drawCellGames(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i, i, dims));
+          allHits.push(...drawCellGames(ctx, proj, r * KH, cellPacked[i] ?? [], c * KW, effectiveSearch, hoveredCellIdx === i || highlightCellIdx === i, i, dims));
         }
       }
 
@@ -218,7 +222,7 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
 
       hitRef.current = allHits;
     }
-  }, [cellPacked, cols, rows, effectiveSearch, cw, ch, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx, topPacked, topCellIdx, dims, KW, KH, KD]);
+  }, [cellPacked, cols, rows, effectiveSearch, cw, ch, canvasH, azimuth, zoomedCellIdx, hoveredCellIdx, highlightCellIdx, topPacked, topCellIdx, dims, KW, KH, KD]);
 
   const testHit = useCallback((x: number, y: number, r: HitRegion): boolean => {
     return pointInPoly(x, y, r.poly);
@@ -303,7 +307,11 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
               return null;
             })();
         if (cellIdx !== null && cellIdx !== -1) {
-          setZoomedCellIdx(cellIdx);
+          if (onCellClick) {
+            onCellClick(cellIdx);
+          } else {
+            setZoomedCellIdx(cellIdx);
+          }
           setHoveredCellIdx(null);
         }
       }

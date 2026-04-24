@@ -71,3 +71,11 @@ export interface Placement {
   cellIndex: number;
   storageMode: StorageMode;
 }
+
+export interface ManualPlacement {
+  id: string;
+  gameId: string;
+  unitId: string;
+  cellIndex: number;
+  storageMode: StorageMode;
+}

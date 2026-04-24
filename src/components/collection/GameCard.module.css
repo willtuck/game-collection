@@ -116,6 +116,37 @@
 
 .date { font-size: 14px; font-family: var(--mono); color: var(--text-light); margin-top: 2px; }
 
+.manualStoreBtn {
+  align-self: flex-start;
+  margin-top: 4px;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--accent-mid);
+  border-radius: 20px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 13px;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.manualStoreBtn:hover {
+  background: var(--accent-mid);
+  color: #fff;
+}
+
+.manualStoredBtn {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.manualStoredBtn:hover {
+  background: var(--accent-mid);
+  border-color: var(--accent-mid);
+  color: #fff;
+}
+
 /* ── Edit mode ── */
 .editBody {
   padding: 14px;

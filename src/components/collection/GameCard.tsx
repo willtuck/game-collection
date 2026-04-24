@@ -20,6 +20,10 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const games = useGameStore(s => s.games);
   const updateGame = useGameStore(s => s.updateGame);
   const userId = useAuthStore(s => s.user?.id);
+  const manualKallaxes       = useGameStore(s => s.manualKallaxes);
+  const manualPlacements     = useGameStore(s => s.manualPlacements);
+  const setPendingManualNav  = useGameStore(s => s.setPendingManualNav);
+  const setPendingManualView = useGameStore(s => s.setPendingManualView);
   const col = gameColor(game.id);
   const [dimSuggestions, setDimSuggestions] = useState<DimSuggestion[]>([]);
   const [activeSugIdx, setActiveSugIdx] = useState<number | null>(null);
@@ -214,6 +218,31 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
           </div>
 
           <div className={styles.date}>Added {fmtDate(game.added)}</div>
+
+          {(() => {
+            const placement = manualPlacements.find(p => p.gameId === game.id);
+            if (placement) {
+              return (
+                <button
+                  className={`${styles.manualStoreBtn} ${styles.manualStoredBtn}`}
+                  onClick={() => setPendingManualView({ unitId: placement.unitId, cellIndex: placement.cellIndex })}
+                >
+                  Manually stored.
+                </button>
+              );
+            }
+            if (hasDims(game) && manualKallaxes.length > 0) {
+              return (
+                <button
+                  className={styles.manualStoreBtn}
+                  onClick={() => setPendingManualNav({ unitId: manualKallaxes[0].id, gameId: game.id })}
+                >
+                  Manually store →
+                </button>
+              );
+            }
+            return null;
+          })()}
         </div>
       </div>
     );

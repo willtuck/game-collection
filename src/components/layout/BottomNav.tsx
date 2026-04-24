@@ -1,6 +1,6 @@
 import styles from './BottomNav.module.css';
 
-export type TabName = 'collection' | 'suggested';
+export type TabName = 'collection' | 'suggested' | 'manual';
 
 interface BottomNavProps {
   active: TabName;
@@ -10,6 +10,7 @@ interface BottomNavProps {
 const TABS: { id: TabName; label: string }[] = [
   { id: 'collection', label: 'Collection' },
   { id: 'suggested',  label: 'Visualizer' },
+  { id: 'manual',     label: 'Manual' },
 ];
 
 export function BottomNav({ active, onChange }: BottomNavProps) {

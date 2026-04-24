@@ -3,6 +3,7 @@ import { Sheet } from '../shared/Sheet';
 import { useGameStore } from '../../store/useGameStore';
 import { kuLabel, unitBadgeLabel, buildCustomModel } from '../../lib/helpers';
 import { KALLAX } from '../../lib/packing';
+import type { KallaxUnit } from '../../lib/types';
 import styles from './KallaxManagerSheet.module.css';
 
 const PRESET_MODELS = ['1x1','1x2','2x1','1x4','4x1','2x2','2x4','4x2','4x4','5x5'];
@@ -10,6 +11,12 @@ const PRESET_MODELS = ['1x1','1x2','2x1','1x4','4x1','2x2','2x4','4x2','4x4','5x
 interface KallaxManagerSheetProps {
   open: boolean;
   onClose: () => void;
+  /** Optional: override the store's data/actions for a separate unit list (e.g. manual units) */
+  units?: KallaxUnit[];
+  onAdd?: (model: string, label: string) => void;
+  onRemove?: (id: string) => void;
+  onUpdateLabel?: (id: string, label: string) => void;
+  title?: string;
 }
 
 /** Convert a cm value to the display unit */
@@ -23,11 +30,16 @@ function toCm(val: string, unit: 'cm' | 'in'): number {
   return unit === 'in' ? n * 2.54 : n;
 }
 
-export function KallaxManagerSheet({ open, onClose }: KallaxManagerSheetProps) {
-  const kallaxes          = useGameStore(s => s.kallaxes);
-  const addKallax         = useGameStore(s => s.addKallax);
-  const removeKallax      = useGameStore(s => s.removeKallax);
-  const updateKallaxLabel = useGameStore(s => s.updateKallaxLabel);
+export function KallaxManagerSheet({ open, onClose, units: unitsProp, onAdd: onAddProp, onRemove: onRemoveProp, onUpdateLabel: onUpdateLabelProp, title = 'Shelving units' }: KallaxManagerSheetProps) {
+  const storeKallaxes          = useGameStore(s => s.kallaxes);
+  const storeAddKallax         = useGameStore(s => s.addKallax);
+  const storeRemoveKallax      = useGameStore(s => s.removeKallax);
+  const storeUpdateKallaxLabel = useGameStore(s => s.updateKallaxLabel);
+
+  const kallaxes          = unitsProp          ?? storeKallaxes;
+  const addKallax         = onAddProp          ?? storeAddKallax;
+  const removeKallax      = onRemoveProp       ?? storeRemoveKallax;
+  const updateKallaxLabel = onUpdateLabelProp  ?? storeUpdateKallaxLabel;
 
   const [newModel,    setNewModel]    = useState('2x4');
   const [newLabel,    setNewLabel]    = useState('');
@@ -82,7 +94,7 @@ export function KallaxManagerSheet({ open, onClose }: KallaxManagerSheetProps) {
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Shelving units">
+    <Sheet open={open} onClose={onClose} title={title}>
       {/* ── Existing units ── */}
       <div className={styles.list}>
         {kallaxes.map(ku => (

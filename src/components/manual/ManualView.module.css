@@ -1,0 +1,295 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Toolbar ── */
+
+.toolbar {
+  padding: 12px 16px 8px;
+  background: var(--bg);
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+}
+
+.toolbarBtn {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--text-mid);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.toolbarBtn:hover { background: var(--surface2); border-color: var(--accent-mid); }
+
+/* ── Pending-placement banner ── */
+
+.placeBanner {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--r);
+  font-size: 14px;
+  font-family: var(--sans);
+}
+
+.cancelPendingBtn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.1s;
+}
+
+.cancelPendingBtn:hover { color: #fff; }
+
+/* ── Orientation picker (inside Sheet) ── */
+
+.orientRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.orientLabel {
+  font-size: 13px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+
+.toggle {
+  display: flex;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.tbtn {
+  height: 36px;
+  padding: 0 16px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-mid);
+  background: transparent;
+  border: none;
+  transition: background 0.1s, color 0.1s;
+}
+
+.tbtn + .tbtn {
+  border-left: 1px solid var(--border-mid);
+}
+
+.tbtn.on {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── Picker game list ── */
+
+.pickList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.pickRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  border-radius: var(--r);
+  transition: background 0.1s;
+}
+
+.pickRow.dragOver {
+  border-color: var(--accent);
+  background: var(--surface2);
+}
+
+.dragHandle {
+  cursor: grab;
+  color: var(--text-light);
+  padding: 2px 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.dragHandle:active { cursor: grabbing; }
+
+.pickGameName {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pickGameDims {
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+
+.newBadge {
+  font-size: 11px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: var(--accent);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.pickActions {
+  display: flex;
+  gap: 10px;
+}
+
+.saveBtn {
+  flex: 1;
+  height: 44px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--r);
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+  transition: opacity 0.12s;
+}
+
+.saveBtn:hover { opacity: 0.88; }
+
+.cancelBtn {
+  flex: 1;
+  height: 44px;
+  background: transparent;
+  color: var(--text-mid);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  font-family: var(--mono);
+  font-size: 15px;
+  transition: background 0.12s;
+}
+
+.cancelBtn:hover { background: var(--surface2); }
+
+/* ── Unit tabs ── */
+
+.units {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px 8px;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.unitTab {
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--border-mid);
+  border-radius: 20px;
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--text-mid);
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.unitTab:hover { background: var(--surface2); }
+
+.unitTab.activeTab {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ── Main content area ── */
+
+.main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Canvas wrapper ── */
+
+.canvasArea {
+  flex: 1;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+/* ── Stats line ── */
+
+.stats {
+  font-size: 14px;
+  font-family: var(--mono);
+  color: var(--text-light);
+  padding: 8px 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ── Empty state ── */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 60px 32px;
+  gap: 10px;
+}
+
+.emptyTitle {
+  font-size: 15px;
+  font-family: var(--serif);
+  color: var(--text-mid);
+}
+
+.emptyBody {
+  font-size: 14px;
+  color: var(--text-light);
+  max-width: 260px;
+  line-height: 1.5;
+}

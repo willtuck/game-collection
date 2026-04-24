@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Game, KallaxUnit, Layout, StorageMode, KallaxSort } from '../lib/types';
+import type { Game, KallaxUnit, Layout, ManualPlacement, StorageMode, KallaxSort } from '../lib/types';
 import { kuLabel } from '../lib/helpers';
 import { useAuthStore } from './useAuthStore';
 import {
@@ -49,6 +49,27 @@ interface GameStore {
   updateLayout: (id: string, updates: Partial<Layout>) => void;
   deleteLayout: (id: string) => void;
 
+  // ── Manual layout state ──
+  manualKallaxes: KallaxUnit[];
+  activeManualKuId: string | null;
+  manualPlacements: ManualPlacement[];
+  pendingManualNav: { unitId: string; gameId: string } | null;
+  pendingManualView: { unitId: string; cellIndex: number } | null;
+
+  // ── Manual unit actions ──
+  addManualKallax: (model: string, label: string) => void;
+  removeManualKallax: (id: string) => void;
+  updateManualKallaxLabel: (id: string, label: string) => void;
+  setActiveManualKu: (id: string) => void;
+
+  // ── Manual placement actions ──
+  addManualPlacement: (p: ManualPlacement) => void;
+  removeManualPlacement: (id: string) => void;
+  updateManualCellMode: (unitId: string, cellIndex: number, mode: StorageMode) => void;
+  reorderManualCell: (unitId: string, cellIndex: number, orderedIds: string[]) => void;
+  setPendingManualNav: (nav: { unitId: string; gameId: string } | null) => void;
+  setPendingManualView: (nav: { unitId: string; cellIndex: number } | null) => void;
+
   // ── Settings ──
   setKallaxSort: (sort: KallaxSort) => void;
   setKallaxMode: (mode: StorageMode) => void;
@@ -63,6 +84,11 @@ export const useGameStore = create<GameStore>()(
       kallaxSort: 'alpha',
       kallaxMode: 'upright',
       activeKuId: null,
+      manualKallaxes: [],
+      activeManualKuId: null,
+      manualPlacements: [],
+      pendingManualNav: null,
+      pendingManualView: null,
 
       addGame: (game) => {
         set(s => ({ games: [game, ...s.games] }));
@@ -132,6 +158,75 @@ export const useGameStore = create<GameStore>()(
 
       deleteLayout: (id) =>
         set(s => ({ layouts: s.layouts.filter(l => l.id !== id) })),
+
+      addManualKallax: (model, label) => {
+        const id = 'mku' + Date.now().toString(36);
+        const resolvedLabel = label.trim() || kuLabel(model);
+        const ku: KallaxUnit = { id, model, label: resolvedLabel };
+        set(s => ({
+          manualKallaxes: [...s.manualKallaxes, ku],
+          activeManualKuId: id,
+        }));
+      },
+
+      removeManualKallax: (id) => {
+        set(s => {
+          const next = s.manualKallaxes.filter(k => k.id !== id);
+          return {
+            manualKallaxes: next,
+            activeManualKuId: s.activeManualKuId === id ? (next[0]?.id ?? null) : s.activeManualKuId,
+            manualPlacements: s.manualPlacements.filter(p => p.unitId !== id),
+          };
+        });
+      },
+
+      updateManualKallaxLabel: (id, label) => {
+        set(s => ({
+          manualKallaxes: s.manualKallaxes.map(k => k.id === id ? { ...k, label } : k),
+        }));
+      },
+
+      setActiveManualKu: (id) => set({ activeManualKuId: id }),
+
+      addManualPlacement: (p) => {
+        set(s => {
+          // If this game already has a placement in this unit, replace it
+          const existing = s.manualPlacements.findIndex(mp => mp.gameId === p.gameId && mp.unitId === p.unitId);
+          if (existing >= 0) {
+            const next = [...s.manualPlacements];
+            next[existing] = p;
+            return { manualPlacements: next };
+          }
+          return { manualPlacements: [...s.manualPlacements, p] };
+        });
+      },
+
+      removeManualPlacement: (id) => {
+        set(s => ({ manualPlacements: s.manualPlacements.filter(p => p.id !== id) }));
+      },
+
+      updateManualCellMode: (unitId, cellIndex, mode) => {
+        set(s => ({
+          manualPlacements: s.manualPlacements.map(p =>
+            p.unitId === unitId && p.cellIndex === cellIndex ? { ...p, storageMode: mode } : p
+          ),
+        }));
+      },
+
+      reorderManualCell: (unitId, cellIndex, orderedIds) => {
+        set(s => {
+          const cellPlacements = orderedIds
+            .map(id => s.manualPlacements.find(p => p.id === id))
+            .filter(Boolean) as ManualPlacement[];
+          const otherPlacements = s.manualPlacements.filter(
+            p => !(p.unitId === unitId && p.cellIndex === cellIndex)
+          );
+          return { manualPlacements: [...otherPlacements, ...cellPlacements] };
+        });
+      },
+
+      setPendingManualNav: (nav: { unitId: string; gameId: string } | null) => set({ pendingManualNav: nav }),
+      setPendingManualView: (nav: { unitId: string; cellIndex: number } | null) => set({ pendingManualView: nav }),
 
       setKallaxSort: (sort) => set({ kallaxSort: sort }),
       setKallaxMode: (mode) => set({ kallaxMode: mode }),
