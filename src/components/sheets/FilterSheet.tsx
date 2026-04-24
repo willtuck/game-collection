@@ -15,9 +15,10 @@ interface FilterSheetProps {
   onClose: () => void;
   onExportCSV: () => void;
   onImportCSV: () => void;
+  onImportBgg: () => void;
 }
 
-export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onImportCSV }: FilterSheetProps) {
+export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onImportCSV, onImportBgg }: FilterSheetProps) {
   function set<K extends keyof FilterState>(key: K, val: FilterState[K]) {
     onChange({ ...filters, [key]: val });
   }
@@ -86,6 +87,9 @@ export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onI
 
       <div className={styles.divider} />
 
+      <button className={styles.exportBtn} onClick={() => { onImportBgg(); onClose(); }}>
+        Import from BGG
+      </button>
       <button className={styles.exportBtn} onClick={() => { onImportCSV(); onClose(); }}>
         Import CSV
       </button>
