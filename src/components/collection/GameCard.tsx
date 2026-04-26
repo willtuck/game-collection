@@ -438,6 +438,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
           Saving will remove it from your manual shelf — you can reassign it later.
         </>}
         confirmLabel="Save & remove from shelf"
+        cancelLabel="Keep old dimensions"
         onConfirm={() => {
           if (!pendingFitWarning) return;
           const { name, storedInside, wCm, hCm, dCm } = pendingFitWarning;
