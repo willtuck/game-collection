@@ -20,7 +20,9 @@ const DEFAULT_FILTERS: FilterState = {
 
 export function CollectionView() {
   const games = useGameStore(s => s.games);
-  const deleteGame = useGameStore(s => s.deleteGame);
+  const deleteGame            = useGameStore(s => s.deleteGame);
+  const manualPlacements      = useGameStore(s => s.manualPlacements);
+  const removeManualPlacement = useGameStore(s => s.removeManualPlacement);
 
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
@@ -83,6 +85,9 @@ export function CollectionView() {
   }
 
   const pendingGame = pendingDeleteId ? games.find(g => g.id === pendingDeleteId) : null;
+  const pendingGamePlacements = pendingDeleteId
+    ? manualPlacements.filter(p => p.gameId === pendingDeleteId)
+    : [];
 
   return (
     <div className={styles.view}>
@@ -120,12 +125,20 @@ export function CollectionView() {
       <ConfirmSheet
         open={!!pendingDeleteId}
         title="Remove game"
-        message={<>Remove <strong>{pendingGame?.name}</strong> from your collection? This can't be undone.</>}
+        message={<>
+          Remove <strong>{pendingGame?.name}</strong> from your collection? This can't be undone.
+          {pendingGamePlacements.length > 0 && (
+            <div className={styles.placementCallout}>
+              This game is placed on your manual shelf. Removing it will also clear that placement.
+            </div>
+          )}
+        </>}
         confirmLabel="Remove"
         danger
         onConfirm={() => {
           if (!pendingDeleteId) return;
           const name = pendingGame?.name;
+          pendingGamePlacements.forEach(p => removeManualPlacement(p.id));
           deleteGame(pendingDeleteId);
           setPendingDeleteId(null);
           if (name) toast(`Removed "${name}"`);
