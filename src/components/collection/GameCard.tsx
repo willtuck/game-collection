@@ -6,6 +6,8 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { fetchDimSuggestions, contributeDims, type DimSuggestion } from '../../lib/supabaseSync';
 import { hasDims, toCm, fmtDims, fmtDate } from '../../lib/helpers';
 import { gameColor } from '../../lib/colors';
+import { ConfirmSheet } from '../shared/ConfirmSheet';
+import { fitsInCell } from '../../lib/packing';
 import { toast } from '../shared/Toast';
 import type { Game } from '../../lib/types';
 import styles from './GameCard.module.css';
@@ -23,11 +25,19 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const manualKallaxes       = useGameStore(s => s.manualKallaxes);
   const manualPlacements     = useGameStore(s => s.manualPlacements);
   const setPendingManualNav  = useGameStore(s => s.setPendingManualNav);
-  const setPendingManualView = useGameStore(s => s.setPendingManualView);
+  const setPendingManualView  = useGameStore(s => s.setPendingManualView);
+  const removeManualPlacement = useGameStore(s => s.removeManualPlacement);
   const col = gameColor(game.id);
   const [dimSuggestions, setDimSuggestions] = useState<DimSuggestion[]>([]);
   const [activeSugIdx, setActiveSugIdx] = useState<number | null>(null);
   const [savedDims, setSavedDims] = useState<{ width: string; height: string; depth: string } | null>(null);
+  const [pendingFitWarning, setPendingFitWarning] = useState<{
+    name: string;
+    storedInside: boolean;
+    wCm: string | null;
+    hCm: string | null;
+    dCm: string | null;
+  } | null>(null);
 
   // ── Edit form state ──
   const eu = game.unit || 'cm';
@@ -70,11 +80,12 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     setDimSuggestions([]);
     setActiveSugIdx(null);
     setSavedDims(null);
+    setPendingFitWarning(null);
     fetchDimSuggestions(game.name).then(setDimSuggestions);
     setEditing(true);
   }
 
-  function cancelEdit() { setEditing(false); setDimSuggestions([]); setActiveSugIdx(null); setSavedDims(null); }
+  function cancelEdit() { setEditing(false); setDimSuggestions([]); setActiveSugIdx(null); setSavedDims(null); setPendingFitWarning(null); }
 
   function toggleUnit() {
     const newUnit = form.unit === 'cm' ? 'in' : 'cm';
@@ -89,13 +100,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     }));
   }
 
-  function saveEdit() {
-    const name = form.name.trim();
-    if (!name) return;
-    const storedInside = form.type === 'expansion' && !!form.baseGameId && form.storageMode === 'inside';
-    const wCm = storedInside ? null : toCm(form.width, form.unit);
-    const hCm = storedInside ? null : toCm(form.height, form.unit);
-    const dCm = storedInside ? null : toCm(form.depth, form.unit);
+  function commitUpdate(name: string, storedInside: boolean, wCm: string | null, hCm: string | null, dCm: string | null) {
     updateGame(game.id, {
       name,
       type: form.type === 'expansion' ? 'expansion' : undefined,
@@ -115,6 +120,26 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     setDimSuggestions([]);
     setActiveSugIdx(null);
     setSavedDims(null);
+  }
+
+  function saveEdit() {
+    const name = form.name.trim();
+    if (!name) return;
+    const storedInside = form.type === 'expansion' && !!form.baseGameId && form.storageMode === 'inside';
+    const wCm = storedInside ? null : toCm(form.width, form.unit);
+    const hCm = storedInside ? null : toCm(form.height, form.unit);
+    const dCm = storedInside ? null : toCm(form.depth, form.unit);
+
+    const placement = manualPlacements.find(p => p.gameId === game.id);
+    if (placement && wCm && hCm && dCm) {
+      const testGame = { ...game, width: wCm, height: hCm, depth: dCm };
+      if (!fitsInCell(testGame)) {
+        setPendingFitWarning({ name, storedInside, wCm, hCm, dCm });
+        return;
+      }
+    }
+
+    commitUpdate(name, storedInside, wCm, hCm, dCm);
   }
 
   function applySuggestion(s: DimSuggestion, i: number) {
@@ -404,6 +429,25 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
           <button className={styles.cancelBtn} onClick={cancelEdit}>Cancel</button>
         </div>
       </div>
+
+      <ConfirmSheet
+        open={!!pendingFitWarning}
+        title="Game no longer fits"
+        message={<>
+          The new dimensions for <strong>{game.name}</strong> are too large to fit in a Kallax cell.
+          Saving will remove it from your manual shelf — you can reassign it later.
+        </>}
+        confirmLabel="Save & remove from shelf"
+        onConfirm={() => {
+          if (!pendingFitWarning) return;
+          const { name, storedInside, wCm, hCm, dCm } = pendingFitWarning;
+          const placement = manualPlacements.find(p => p.gameId === game.id);
+          if (placement) removeManualPlacement(placement.id);
+          commitUpdate(name, storedInside, wCm, hCm, dCm);
+          setPendingFitWarning(null);
+        }}
+        onClose={() => setPendingFitWarning(null)}
+      />
     </div>
   );
 }
