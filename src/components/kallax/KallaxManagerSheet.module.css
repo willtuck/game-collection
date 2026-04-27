@@ -44,7 +44,7 @@
 
 .modelBadge {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   color: var(--accent);
   background: var(--accent-light);
   padding: 3px 9px;
@@ -106,7 +106,7 @@
 
 .sectionLabel {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-light);
@@ -187,7 +187,7 @@
 
 .customGroupLabel {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-light);
@@ -209,7 +209,7 @@
 .unitToggleBtn {
   padding: 2px 8px;
   font-size: 12px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   border: none;
   background: transparent;
   color: var(--text-light);
@@ -229,7 +229,7 @@
 }
 
 .gridX {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   color: var(--text-light);
   padding-bottom: 9px;
@@ -243,7 +243,7 @@
 
 .customFieldLabel {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   color: var(--text-light);
 }
 
@@ -253,7 +253,7 @@
   border: 1px solid var(--border-mid);
   border-radius: var(--r);
   padding: 0 8px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   background: var(--bg);
   color: var(--text);

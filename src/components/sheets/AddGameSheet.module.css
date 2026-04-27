@@ -12,7 +12,7 @@
 
 .label {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-light);
@@ -27,7 +27,7 @@
 .err {
   font-size: 14px;
   color: var(--danger);
-  font-family: var(--mono);
+  font-family: var(--sans);
 }
 
 .input, .select {
@@ -66,7 +66,7 @@
   flex: 1;
   border: none;
   background: transparent;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   color: var(--text-mid);
   transition: background 0.12s, color 0.12s;
@@ -107,7 +107,7 @@
 
 .dimLabel {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   text-transform: uppercase;
   color: var(--text-light);
 }
@@ -117,7 +117,7 @@
   border: 1px solid var(--border-mid);
   border-radius: var(--r);
   padding: 0 8px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   background: var(--bg);
   color: var(--text);

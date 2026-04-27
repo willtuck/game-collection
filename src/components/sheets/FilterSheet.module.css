@@ -7,7 +7,7 @@
 
 .label {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-light);
@@ -24,7 +24,7 @@
   border: 1px solid var(--border-mid);
   border-radius: 20px;
   background: transparent;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   color: var(--text-mid);
   transition: background 0.12s, color 0.12s, border-color 0.12s;

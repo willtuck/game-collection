@@ -10,7 +10,7 @@
 }
 
 .label {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   color: var(--text-light);
   white-space: nowrap;
@@ -22,7 +22,7 @@
   border: 1px solid var(--border-mid);
   border-radius: var(--r);
   padding: 0 6px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   background: var(--surface);
   color: var(--text);

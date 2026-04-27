@@ -22,7 +22,7 @@
   border: 1px solid var(--border-mid);
   border-radius: var(--r);
   background: var(--surface);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   color: var(--text-mid);
   display: flex;
@@ -76,7 +76,7 @@
 
 .orientLabel {
   font-size: 13px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-light);
@@ -93,7 +93,7 @@
 .tbtn {
   height: 36px;
   padding: 0 16px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 13px;
   color: var(--text-mid);
   background: transparent;
@@ -158,14 +158,14 @@
 
 .pickGameDims {
   font-size: 12px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   color: var(--text-light);
   flex-shrink: 0;
 }
 
 .newBadge {
   font-size: 11px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 2px 7px;
@@ -187,7 +187,7 @@
   color: #fff;
   border: none;
   border-radius: var(--r);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 15px;
   font-weight: 600;
   transition: opacity 0.12s;
@@ -202,7 +202,7 @@
   color: var(--text-mid);
   border: 1px solid var(--border-mid);
   border-radius: var(--r);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 15px;
   transition: background 0.12s;
 }
@@ -225,7 +225,7 @@
   border: 1px solid var(--border-mid);
   border-radius: 20px;
   background: transparent;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   color: var(--text-mid);
   white-space: nowrap;
@@ -262,7 +262,7 @@
 
 .stats {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   color: var(--text-light);
   padding: 8px 16px;
   text-transform: uppercase;

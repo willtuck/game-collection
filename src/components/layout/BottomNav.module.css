@@ -15,7 +15,7 @@
   height: 40px;
   border: none;
   background: transparent;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   color: var(--text-light);
   cursor: pointer;

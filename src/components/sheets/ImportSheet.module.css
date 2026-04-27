@@ -50,7 +50,7 @@
   margin-top: 12px;
   font-size: 14px;
   color: var(--danger);
-  font-family: var(--mono);
+  font-family: var(--sans);
   background: var(--danger-bg);
   padding: 10px 12px;
   border-radius: var(--r);
@@ -76,7 +76,7 @@
 
 .skip {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   color: var(--text-light);
 }
 
@@ -111,14 +111,14 @@
 
 .previewMeta {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   color: var(--text-light);
   white-space: nowrap;
 }
 
 .dupeTag {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-light);

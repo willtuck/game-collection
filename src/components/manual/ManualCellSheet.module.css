@@ -9,7 +9,7 @@
 
 .orientLabel {
   font-size: 13px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-light);
@@ -27,7 +27,7 @@
 .tbtn {
   height: 32px;
   padding: 0 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 13px;
   color: var(--text-mid);
   background: transparent;
@@ -97,7 +97,7 @@
 
 .gameDims {
   font-size: 12px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   color: var(--text-light);
   flex-shrink: 0;
 }
@@ -129,7 +129,7 @@
   padding: 24px 0;
   font-size: 14px;
   color: var(--text-light);
-  font-family: var(--mono);
+  font-family: var(--sans);
 }
 
 /* ── Done button ── */
@@ -141,7 +141,7 @@
   color: #fff;
   border: none;
   border-radius: var(--r);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 15px;
   font-weight: 600;
   transition: opacity 0.12s;

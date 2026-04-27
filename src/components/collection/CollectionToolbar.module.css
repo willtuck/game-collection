@@ -32,7 +32,7 @@
   border: 1px solid var(--border-mid);
   border-radius: var(--r);
   background: var(--surface);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 14px;
   color: var(--text-mid);
   display: flex;
@@ -58,7 +58,7 @@
 
 .count {
   font-size: 14px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   color: var(--text-light);
   padding: 0 2px;
 }
