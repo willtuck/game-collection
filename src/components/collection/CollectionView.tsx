@@ -7,6 +7,7 @@ import { FilterSheet, type FilterState } from '../sheets/FilterSheet';
 import { ConfirmSheet } from '../shared/ConfirmSheet';
 import { useGameStore } from '../../store/useGameStore';
 import { hasDims } from '../../lib/helpers';
+import { toast } from '../shared/Toast';
 import styles from './CollectionView.module.css';
 
 const DEFAULT_FILTERS: FilterState = {
