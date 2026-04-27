@@ -34,8 +34,11 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       ));
 
-    const focusable = getFocusable();
-    focusable[0]?.focus();
+    // Skip auto-focus on touch devices — would immediately raise the keyboard
+    if (window.matchMedia('(hover: hover)').matches) {
+      const focusable = getFocusable();
+      focusable[0]?.focus();
+    }
 
     const handleTab = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
