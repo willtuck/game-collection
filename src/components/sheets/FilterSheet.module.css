@@ -55,31 +55,3 @@
 
 .select:focus { border-color: var(--accent-mid); }
 
-.divider {
-  height: 1px;
-  background: var(--border);
-  margin: 4px 0 16px;
-}
-
-.csvRow {
-  display: flex;
-  gap: 8px;
-}
-
-.exportBtn {
-  height: 40px;
-  padding: 0 16px;
-  border: 1px solid var(--border-mid);
-  border-radius: var(--r);
-  background: transparent;
-  font-family: var(--sans);
-  font-size: 14px;
-  color: var(--text-mid);
-  transition: background 0.12s, color 0.12s;
-  white-space: nowrap;
-}
-
-.exportBtn:hover {
-  background: var(--surface2);
-  color: var(--text);
-}

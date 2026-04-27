@@ -1,0 +1,120 @@
+.wrap {
+  position: relative;
+}
+
+/* Avatar tap target — 44×44 for mobile */
+.avatarBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.1s;
+}
+
+.avatarBtn:hover { opacity: 0.8; }
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.avatarBtn:hover .avatar,
+.avatarBtn[aria-expanded="true"] .avatar {
+  border-color: var(--accent);
+}
+
+.avatarFallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.avatarBtn:hover .avatarFallback,
+.avatarBtn[aria-expanded="true"] .avatarFallback {
+  border-color: var(--accent-dark);
+}
+
+/* Full-screen invisible backdrop catches outside taps on mobile */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 149;
+}
+
+/* Dropdown — fixed so it escapes the header's overflow:hidden */
+.menu {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  z-index: 150;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: 0 4px 24px rgba(26, 24, 20, 0.14);
+  min-width: 164px;
+  overflow: hidden;
+  animation: menuIn 0.12s ease;
+}
+
+@keyframes menuIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Menu items — 44px min height for comfortable mobile tapping */
+.item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.item:hover {
+  background: var(--surface2);
+}
+
+.menuDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.signOut {
+  color: var(--danger);
+}
+
+@media (max-width: 479px) {
+  .menu {
+    right: 8px;
+    min-width: 180px;
+  }
+}

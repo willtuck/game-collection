@@ -4,11 +4,9 @@ import { GameGrid } from './GameGrid';
 import { FAB } from '../shared/FAB';
 import { AddGameSheet } from '../sheets/AddGameSheet';
 import { FilterSheet, type FilterState } from '../sheets/FilterSheet';
-import { ImportSheet } from '../sheets/ImportSheet';
 import { ConfirmSheet } from '../shared/ConfirmSheet';
 import { useGameStore } from '../../store/useGameStore';
 import { hasDims } from '../../lib/helpers';
-import { toast } from '../shared/Toast';
 import styles from './CollectionView.module.css';
 
 const DEFAULT_FILTERS: FilterState = {
@@ -28,7 +26,6 @@ export function CollectionView() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [addOpen, setAddOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const activeFilterCount = [
@@ -68,22 +65,6 @@ export function CollectionView() {
     return list;
   }, [games, search, filters]);
 
-  function handleExportCSV() {
-    if (!games.length) { toast('Nothing to export yet.'); return; }
-    const cols = ['id','name','minPlayers','maxPlayers','width','height','depth','unit','type','baseGameId','storedInside','groupName','added'];
-    const rows = games.map(g => cols.map(k => {
-      const v = g[k as keyof typeof g];
-      const s = v == null ? '' : String(v);
-      return s.includes(',') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
-    }).join(','));
-    const blob = new Blob([[cols.join(','), ...rows].join('\n')], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'shelfgeek.csv';
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
-
   const pendingGame = pendingDeleteId ? games.find(g => g.id === pendingDeleteId) : null;
   const pendingGamePlacements = pendingDeleteId
     ? manualPlacements.filter(p => p.gameId === pendingDeleteId)
@@ -116,11 +97,7 @@ export function CollectionView() {
         filters={filters}
         onChange={setFilters}
         onClose={() => setFilterOpen(false)}
-        onExportCSV={handleExportCSV}
-        onImportCSV={() => setImportOpen(true)}
       />
-
-      <ImportSheet open={importOpen} onClose={() => setImportOpen(false)} />
 
       <ConfirmSheet
         open={!!pendingDeleteId}

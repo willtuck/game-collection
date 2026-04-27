@@ -14,11 +14,9 @@ interface FilterSheetProps {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
   onClose: () => void;
-  onExportCSV: () => void;
-  onImportCSV: () => void;
 }
 
-export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onImportCSV }: FilterSheetProps) {
+export function FilterSheet({ open, filters, onChange, onClose }: FilterSheetProps) {
   const sortId = useId();
 
   function set<K extends keyof FilterState>(key: K, val: FilterState[K]) {
@@ -91,16 +89,6 @@ export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onI
         </select>
       </div>
 
-      <div className={styles.divider} />
-
-      <div className={styles.csvRow}>
-        <button className={styles.exportBtn} onClick={() => { onImportCSV(); onClose(); }}>
-          Import CSV
-        </button>
-        <button className={styles.exportBtn} onClick={() => { onExportCSV(); onClose(); }}>
-          Export CSV
-        </button>
-      </div>
     </Sheet>
   );
 }
