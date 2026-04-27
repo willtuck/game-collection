@@ -81,7 +81,7 @@ export function ImportSheet({ open, onClose }: ImportSheetProps) {
   }
 
   return (
-    <Sheet open={open} onClose={handleClose} title="Import CSV" modal>
+    <Sheet open={open} onClose={handleClose} title="Import CSV">
       {phase === 'pick' ? (
         <>
           <div

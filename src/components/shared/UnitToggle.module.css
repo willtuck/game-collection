@@ -1,0 +1,21 @@
+.toggle {
+  display: flex;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.btn {
+  height: 30px;
+  padding: 0 10px;
+  border: none;
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-mid);
+  transition: background 0.12s, color 0.12s;
+}
+
+.btn + .btn { border-left: 1px solid var(--border-mid); }
+.btn.on { background: var(--accent); color: #fff; }
+.btn:not(.on):hover { background: var(--surface2); }

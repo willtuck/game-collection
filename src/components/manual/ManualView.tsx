@@ -336,7 +336,6 @@ export function ManualView() {
           open
           onClose={cancelPlacement}
           title={`Place "${pendingGameName}"`}
-          modal
         >
           {/* Orientation toggle */}
           <div className={styles.orientRow}>

@@ -47,6 +47,7 @@ export function GroupInput({ value, onChange, placeholder = 'e.g. Trilogy, Shelf
     <div className={styles.wrap}>
       <input
         ref={inputRef}
+        className={styles.input}
         type="text"
         value={value}
         placeholder={placeholder}

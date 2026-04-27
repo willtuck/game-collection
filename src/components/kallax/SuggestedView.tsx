@@ -68,6 +68,7 @@ export function SuggestedView() {
           type="text"
           className={styles.search}
           placeholder="Highlight a game…"
+          aria-label="Highlight a game"
           value={search}
           onChange={e => setSearch(e.target.value)}
           disabled={noUnits}
@@ -86,10 +87,12 @@ export function SuggestedView() {
 
       {/* Unit tabs */}
       {units.length > 1 && (
-        <div className={styles.units}>
+        <div className={styles.units} role="tablist" aria-label="Shelving units">
           {units.map(u => (
             <button
               key={u.id}
+              role="tab"
+              aria-selected={u.id === activeUnit?.id}
               className={`${styles.unitTab} ${u.id === activeUnit?.id ? styles.activeTab : ''}`}
               onClick={() => setActiveKu(u.id)}
             >

@@ -8,6 +8,7 @@ import { hasDims, toCm, fmtDims } from '../../lib/helpers';
 import { gameColor } from '../../lib/colors';
 import { Sheet } from '../shared/Sheet';
 import { ConfirmSheet } from '../shared/ConfirmSheet';
+import { UnitToggle } from '../shared/UnitToggle';
 import { fitsInCell } from '../../lib/packing';
 import { toast } from '../shared/Toast';
 import type { Game } from '../../lib/types';
@@ -89,8 +90,8 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
 
   function cancelEdit() { setEditing(false); setDimSuggestions([]); setActiveSugIdx(null); setSavedDims(null); setPendingFitWarning(null); }
 
-  function toggleUnit() {
-    const newUnit = form.unit === 'cm' ? 'in' : 'cm';
+  function setUnit(newUnit: 'cm' | 'in') {
+    if (newUnit === form.unit) return;
     function convert(v: string) {
       const n = parseFloat(v);
       if (isNaN(n) || n <= 0) return v;
@@ -278,7 +279,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
       </div>
 
       {/* ── Edit modal ── */}
-      <Sheet open={editing} onClose={cancelEdit} title={`Edit — ${game.name}`} modal>
+      <Sheet open={editing} onClose={cancelEdit} title={`Edit — ${game.name}`}>
         <div className={styles.editBody}>
           {/* Name */}
           <div className={styles.field}>
@@ -393,7 +394,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
             <div className={styles.field}>
               <div className={styles.dimHeader}>
                 <span className={styles.flabel}>Dimensions</span>
-                <button className={styles.unitBtn} onClick={toggleUnit}>{form.unit}</button>
+                <UnitToggle value={form.unit} onChange={setUnit} />
               </div>
               <div className={styles.dimRow}>
                 {(['width','height','depth'] as const).map((k, i) => (

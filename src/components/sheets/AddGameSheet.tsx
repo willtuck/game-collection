@@ -2,6 +2,7 @@ import { useState, useId } from 'react';
 import { Sheet } from '../shared/Sheet';
 import { GroupInput } from '../collection/GroupInput';
 import { BoxPreview } from '../collection/BoxPreview';
+import { UnitToggle } from '../shared/UnitToggle';
 import { useGameStore } from '../../store/useGameStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { contributeDims } from '../../lib/supabaseSync';
@@ -46,8 +47,8 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
     setForm(f => ({ ...f, [key]: val }));
   }
 
-  function toggleUnit() {
-    const newUnit = form.unit === 'cm' ? 'in' : 'cm';
+  function setUnit(newUnit: 'cm' | 'in') {
+    if (newUnit === form.unit) return;
     function convert(v: string) {
       const n = parseFloat(v);
       if (isNaN(n) || n <= 0) return v;
@@ -106,7 +107,7 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
   }
 
   return (
-    <Sheet open={open} onClose={handleClose} title="Add a game" modal>
+    <Sheet open={open} onClose={handleClose} title="Add a game">
       <div className={styles.form}>
         {/* Name */}
         <div className={styles.field}>
@@ -223,7 +224,7 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
           <div className={styles.field}>
             <div className={styles.dimHeader}>
               <span className={styles.label}>Box dimensions</span>
-              <button className={styles.unitBtn} onClick={toggleUnit}>{form.unit}</button>
+              <UnitToggle value={form.unit} onChange={setUnit} />
             </div>
             <div className={styles.dimRow}>
               {(['width','height','depth'] as const).map((k, i) => (

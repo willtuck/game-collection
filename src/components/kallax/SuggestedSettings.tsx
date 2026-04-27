@@ -15,7 +15,7 @@ export function SuggestedSettings({
   open, onClose, sort, mode, onSortChange, onModeChange,
 }: SuggestedSettingsProps) {
   return (
-    <Sheet open={open} onClose={onClose} title="Display settings" modal>
+    <Sheet open={open} onClose={onClose} title="Display settings">
       <div className={styles.section}>
         <div className={styles.label}>Storage mode</div>
         <div className={styles.toggle}>

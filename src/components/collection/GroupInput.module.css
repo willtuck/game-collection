@@ -2,6 +2,21 @@
   position: relative;
 }
 
+.input {
+  height: 38px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  padding: 0 10px;
+  font-family: var(--sans);
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  width: 100%;
+}
+
+.input:focus { border-color: var(--accent-mid); }
+
 .dropdown {
   position: absolute;
   top: calc(100% + 2px);

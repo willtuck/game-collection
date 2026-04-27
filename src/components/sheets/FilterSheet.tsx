@@ -26,7 +26,7 @@ export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onI
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Filter & Sort" modal>
+    <Sheet open={open} onClose={onClose} title="Filter & Sort">
       <div className={styles.section}>
         <div className={styles.label} id={`${sortId}-type`}>Type</div>
         <div className={styles.toggle} role="group" aria-labelledby={`${sortId}-type`}>
@@ -93,12 +93,14 @@ export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onI
 
       <div className={styles.divider} />
 
-      <button className={styles.exportBtn} onClick={() => { onImportCSV(); onClose(); }}>
-        Import CSV
-      </button>
-      <button className={styles.exportBtn} onClick={() => { onExportCSV(); onClose(); }}>
-        Export CSV
-      </button>
+      <div className={styles.csvRow}>
+        <button className={styles.exportBtn} onClick={() => { onImportCSV(); onClose(); }}>
+          Import CSV
+        </button>
+        <button className={styles.exportBtn} onClick={() => { onExportCSV(); onClose(); }}>
+          Export CSV
+        </button>
+      </div>
     </Sheet>
   );
 }

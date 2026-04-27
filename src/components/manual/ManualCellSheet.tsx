@@ -70,7 +70,7 @@ export function ManualCellSheet({ open, onClose, unitId, cellIndex, cellLabel }:
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title={cellLabel} modal>
+    <Sheet open={open} onClose={onClose} title={cellLabel}>
       {/* Orientation toggle */}
       {cellPlacements.length > 0 && (
         <div className={styles.orientRow}>

@@ -1,40 +1,4 @@
-/* ── Bottom sheet ── */
 .backdrop {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  overflow: hidden;
-  background: rgba(26, 24, 20, 0.4);
-  z-index: 200;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  animation: fadeIn 0.15s ease;
-}
-
-.sheet {
-  background: var(--surface);
-  border-radius: 16px 16px 0 0;
-  width: 100%;
-  max-width: 640px;
-  max-height: 92dvh;
-  display: flex;
-  flex-direction: column;
-  animation: slideUp 0.2s ease;
-  overflow: hidden;
-}
-
-.handle {
-  width: 36px;
-  height: 4px;
-  background: var(--border-mid);
-  border-radius: 2px;
-  margin: 12px auto 0;
-  flex-shrink: 0;
-}
-
-/* ── Centered modal ── */
-.modalBackdrop {
   position: fixed;
   inset: 0;
   overflow: hidden;
@@ -60,7 +24,6 @@
   box-shadow: 0 8px 40px rgba(26, 24, 20, 0.2);
 }
 
-/* ── Shared ── */
 .title {
   font-family: var(--display);
   font-weight: 700;
@@ -76,18 +39,12 @@
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
-  /* Extra bottom padding for mobile home indicator */
   padding-bottom: max(24px, env(safe-area-inset-bottom));
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
 }
 
 @keyframes modalIn {

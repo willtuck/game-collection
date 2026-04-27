@@ -1,17 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@400;500;600&family=Jost:wght@400;500;600;700;800&display=swap');
 
 :root {
+  color-scheme: light;
+
   --bg: #F2EFE9;
   --surface: #fff;
   --surface2: #EDE8E2;
   --border: #D0C8BE;
   --border-mid: #C3B6A7;
   --text: #344866;
-  --text-mid: #988064;
-  --text-light: #B8A898;
+  --text-mid: #786252;
+  --text-light: #7A6660;
   --accent: #F85A05;
   --accent-light: #FEF0E6;
   --accent-mid: #D44F04;
+  --accent-dark: #B04000;
   --warn: #7A4F1E;
   --warn-bg: #FBF0E4;
   --danger: #B01C1C;
@@ -64,10 +67,12 @@ body {
 h1, h2, h3 {
   font-weight: inherit;
   font-size: inherit;
+  text-wrap: balance;
 }
 
 button {
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 input, select, button {
