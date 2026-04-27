@@ -5,7 +5,6 @@ import { useGameStore } from '../../store/useGameStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { fetchDimSuggestions, contributeDims, type DimSuggestion } from '../../lib/supabaseSync';
 import { hasDims, toCm, fmtDims } from '../../lib/helpers';
-import { gameColor } from '../../lib/colors';
 import { Sheet } from '../shared/Sheet';
 import { ConfirmSheet } from '../shared/ConfirmSheet';
 import { UnitToggle } from '../shared/UnitToggle';
@@ -30,7 +29,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const setPendingManualNav  = useGameStore(s => s.setPendingManualNav);
   const setPendingManualView  = useGameStore(s => s.setPendingManualView);
   const removeManualPlacement = useGameStore(s => s.removeManualPlacement);
-  const col = gameColor(game.id);
   const [dimSuggestions, setDimSuggestions] = useState<DimSuggestion[]>([]);
   const [activeSugIdx, setActiveSugIdx] = useState<number | null>(null);
   const [savedDims, setSavedDims] = useState<{ width: string; height: string; depth: string } | null>(null);
@@ -185,23 +183,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   return (
     <>
       {/* ── View mode card (always rendered) ── */}
-      <div
-        className={styles.card}
-        style={hasDims(game) ? { borderTopColor: col.stroke } : undefined}
-      >
-        {/* Canvas strip */}
-        <div
-          className={styles.strip}
-          style={{ background: hasDims(game) ? col.fill.replace(/[\d.]+\)$/, '0.04)') : '#DED8D0' }}
-        >
-          {hasDims(game) && (
-            <BoxPreview
-              w={parseFloat(game.width!)} h={parseFloat(game.height!)} d={parseFloat(game.depth!)}
-              gameId={game.id}
-            />
-          )}
-        </div>
-
+      <div className={styles.card}>
         <div className={styles.body}>
           <div className={styles.top}>
             <div className={styles.name}>{game.name}</div>
