@@ -1,24 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=DM+Sans:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@400;500;600&family=Jost:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg: #F5F2EC;
+  --bg: #F2EFE9;
   --surface: #fff;
-  --surface2: #F0EDE6;
-  --border: #E0DAD0;
-  --border-mid: #C5BEB2;
-  --text: #1A1814;
-  --text-mid: #635E56;
-  --text-light: #9A9288;
-  --accent: #2B4C3F;
-  --accent-light: #E8F2EE;
-  --accent-mid: #4A7C65;
+  --surface2: #EDE8E2;
+  --border: #D0C8BE;
+  --border-mid: #C3B6A7;
+  --text: #344866;
+  --text-mid: #988064;
+  --text-light: #B8A898;
+  --accent: #F85A05;
+  --accent-light: #FEF0E6;
+  --accent-mid: #D44F04;
   --warn: #7A4F1E;
   --warn-bg: #FBF0E4;
-  --danger: #7A1E1E;
+  --danger: #B01C1C;
   --danger-bg: #FBE4E4;
 
   --sans: 'DM Sans', system-ui, sans-serif;
-  --serif: 'Fraunces', Georgia, serif;
+  --display: 'Jost', system-ui, sans-serif;
   --mono: 'DM Mono', monospace;
 
   --s1: 8px;

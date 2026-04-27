@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import { BoxPreview } from './BoxPreview';
 import { GroupInput } from './GroupInput';
 import { useGameStore } from '../../store/useGameStore';
@@ -18,6 +18,7 @@ interface GameCardProps {
 }
 
 export function GameCard({ game, onDeleteRequest }: GameCardProps) {
+  const formId = useId();
   const [editing, setEditing] = useState(false);
   const games = useGameStore(s => s.games);
   const updateGame = useGameStore(s => s.updateGame);
@@ -184,20 +185,15 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     return (
       <div className={styles.card} style={{ borderTopColor: col.stroke }}>
         {/* Canvas strip */}
-        <div className={styles.strip} style={{ background: col.fill.replace(/[\d.]+\)$/, '0.04)') }}>
-          {hasDims(game) ? (
+        <div
+          className={styles.strip}
+          style={{ background: hasDims(game) ? col.fill.replace(/[\d.]+\)$/, '0.04)') : '#DED8D0' }}
+        >
+          {hasDims(game) && (
             <BoxPreview
               w={parseFloat(game.width!)} h={parseFloat(game.height!)} d={parseFloat(game.depth!)}
               gameId={game.id}
             />
-          ) : isStoredInside ? (
-            <div className={styles.nodims}>
-              <span>📦</span><span>stored within base game</span>
-            </div>
-          ) : (
-            <div className={styles.nodims}>
-              <span style={{ opacity: 0.3 }}>⬜</span><span>needs dimensions</span>
-            </div>
           )}
         </div>
 
@@ -211,58 +207,56 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
             </div>
           </div>
 
-          {isExpansion && (
-            <div className={styles.expBadge}>
-              {baseGame ? `expansion · ${baseGame.name}` : 'expansion'}
+          {/* Status pills: type + placement only */}
+          {(isExpansion || (!isExpansion && hasExpansions) || manualPlacements.some(p => p.gameId === game.id)) && (
+            <div className={styles.statusRow}>
+              {isExpansion && <span className={styles.expPill}>Expansion</span>}
+              {!isExpansion && hasExpansions && <span className={styles.basePill}>Base Game</span>}
+              {manualPlacements.some(p => p.gameId === game.id) && (
+                <span className={styles.storedPill}>Manually stored</span>
+              )}
             </div>
           )}
-          {!isExpansion && hasExpansions && (
-            <div className={styles.baseBadge}>base game</div>
-          )}
-          {game.groupName && (
-            <div className={styles.groupBadge}>group · {game.groupName}</div>
-          )}
 
-          <div className={styles.meta}>
-            {isStoredInside ? (
-              <span className={styles.storedBadge}>
-                stored within{baseGame ? ` ${baseGame.name}` : ' base game'}
-              </span>
-            ) : hasDims(game) ? (
-              <span className={styles.dims}>{fmtDims(game)}</span>
-            ) : (
-              <span className={styles.dimsMissing}>dims missing</span>
+          {/* Flat metadata line: dims · players · group */}
+          <div className={styles.metaLine}>
+            {isStoredInside
+              ? <span className={styles.metaMuted}>stored within{baseGame ? ` ${baseGame.name}` : ' base game'}</span>
+              : hasDims(game)
+              ? fmtDims(game)
+              : <span className={styles.metaWarn}>no dimensions</span>
+            }
+            {(game.minPlayers || game.maxPlayers) && (
+              <span className={styles.metaSep}> · </span>
             )}
             {(game.minPlayers || game.maxPlayers) && (
-              <span className={styles.players}>
-                {game.minPlayers === game.maxPlayers || !game.maxPlayers
-                  ? `${game.minPlayers} ${parseInt(game.minPlayers!) === 1 ? 'player' : 'players'}`
-                  : `${game.minPlayers}–${game.maxPlayers} players`}
-              </span>
+              game.minPlayers === game.maxPlayers || !game.maxPlayers
+                ? `${game.minPlayers}p`
+                : `${game.minPlayers}–${game.maxPlayers}p`
             )}
+            {game.groupName && <><span className={styles.metaSep}> · </span>{game.groupName}</>}
           </div>
 
-          <div className={styles.date}>Added {fmtDate(game.added)}</div>
-
+          {/* Shelf action link */}
           {(() => {
             const placement = manualPlacements.find(p => p.gameId === game.id);
             if (placement) {
               return (
                 <button
-                  className={`${styles.manualStoreBtn} ${styles.manualStoredBtn}`}
+                  className={styles.actionLink}
                   onClick={() => setPendingManualView({ unitId: placement.unitId, cellIndex: placement.cellIndex })}
                 >
-                  Manually stored.
+                  View on shelf →
                 </button>
               );
             }
             if (hasDims(game) && manualKallaxes.length > 0) {
               return (
                 <button
-                  className={styles.manualStoreBtn}
+                  className={styles.actionLink}
                   onClick={() => setPendingManualNav({ unitId: manualKallaxes[0].id, gameId: game.id })}
                 >
-                  Manually store →
+                  Store manually →
                 </button>
               );
             }
@@ -279,10 +273,13 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
       <div className={styles.editBody}>
         {/* Name */}
         <div className={styles.field}>
-          <label className={styles.flabel}>Game name</label>
+          <label className={styles.flabel} htmlFor={`${formId}-name`}>Game name</label>
           <input
+            id={`${formId}-name`}
             className={styles.finput}
             type="text"
+            name="name"
+            autoComplete="off"
             value={form.name}
             onChange={e => setF('name', e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') saveEdit(); }}
@@ -352,9 +349,11 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
           </label>
           <div className={styles.playersRow}>
             <div className={styles.dimField}>
-              <label className={styles.dimLabel}>Min</label>
+              <label className={styles.dimLabel} htmlFor={`${formId}-minPlayers`}>Min</label>
               <input
+                id={`${formId}-minPlayers`}
                 type="number"
+                name="minPlayers"
                 className={styles.dimInput}
                 value={form.minPlayers}
                 onChange={e => setF('minPlayers', e.target.value)}
@@ -364,9 +363,11 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
               />
             </div>
             <div className={styles.dimField}>
-              <label className={styles.dimLabel}>Max</label>
+              <label className={styles.dimLabel} htmlFor={`${formId}-maxPlayers`}>Max</label>
               <input
+                id={`${formId}-maxPlayers`}
                 type="number"
+                name="maxPlayers"
                 className={styles.dimInput}
                 value={form.maxPlayers}
                 onChange={e => setF('maxPlayers', e.target.value)}
@@ -388,9 +389,12 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
             <div className={styles.dimRow}>
               {(['width','height','depth'] as const).map((k, i) => (
                 <div key={k} className={styles.dimField}>
-                  <label className={styles.dimLabel}>{['W','H','D'][i]}</label>
+                  <label className={styles.dimLabel} htmlFor={`${formId}-${k}`}>{['W','H','D'][i]}</label>
                   <input
+                    id={`${formId}-${k}`}
                     type="number"
+                    name={k}
+                    inputMode="decimal"
                     className={styles.dimInput}
                     value={form[k]}
                     onChange={e => setF(k, e.target.value)}

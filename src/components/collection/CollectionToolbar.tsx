@@ -17,7 +17,10 @@ export function CollectionToolbar({
     <div className={styles.wrap}>
       <div className={styles.row}>
         <input
-          type="text"
+          type="search"
+          name="search"
+          aria-label="Search your collection"
+          autoComplete="off"
           className={styles.search}
           value={search}
           onChange={e => onSearchChange(e.target.value)}

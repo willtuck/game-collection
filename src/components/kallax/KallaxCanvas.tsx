@@ -172,21 +172,21 @@ export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [
         const r0 = proj(totalW, 0, 0), r1 = proj(totalW, 0, KD);
         const r2 = proj(totalW, totalH, KD), r3 = proj(totalW, totalH, 0);
         oFace([r0, r1, r2, r3], '#B8B0A4');
-        oEdge(r0, r1, '#9A9288', 1.5); oEdge(r1, r2, '#9A9288', 1.5);
-        oEdge(r2, r3, '#9A9288', 1.5); oEdge(r3, r0, '#9A9288', 1.5);
+        oEdge(r0, r1, '#B8A898', 1.5); oEdge(r1, r2, '#B8A898', 1.5);
+        oEdge(r2, r3, '#B8A898', 1.5); oEdge(r3, r0, '#B8A898', 1.5);
       } else {
         const l0 = proj(0, 0, 0), l1 = proj(0, 0, KD);
         const l2 = proj(0, totalH, KD), l3 = proj(0, totalH, 0);
         oFace([l0, l1, l2, l3], '#B8B0A4');
-        oEdge(l0, l1, '#9A9288', 1.5); oEdge(l1, l2, '#9A9288', 1.5);
-        oEdge(l2, l3, '#9A9288', 1.5); oEdge(l3, l0, '#9A9288', 1.5);
+        oEdge(l0, l1, '#B8A898', 1.5); oEdge(l1, l2, '#B8A898', 1.5);
+        oEdge(l2, l3, '#B8A898', 1.5); oEdge(l3, l0, '#B8A898', 1.5);
       }
       // Outer top panel
       const t0 = proj(0, totalH, 0), t1 = proj(totalW, totalH, 0);
       const t2 = proj(totalW, totalH, KD), t3 = proj(0, totalH, KD);
       oFace([t0, t1, t2, t3], '#C2BAB0');
-      oEdge(t0, t1, '#9A9288', 1.5); oEdge(t1, t2, '#9A9288', 1.5);
-      oEdge(t2, t3, '#9A9288', 1.5); oEdge(t3, t0, '#9A9288', 1.5);
+      oEdge(t0, t1, '#B8A898', 1.5); oEdge(t1, t2, '#B8A898', 1.5);
+      oEdge(t2, t3, '#B8A898', 1.5); oEdge(t3, t0, '#B8A898', 1.5);
 
       allHits.push(...drawTopGames(ctx, proj, topPacked, effectiveSearch, dims));
 

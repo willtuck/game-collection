@@ -14,15 +14,14 @@
 }
 
 .title {
-  font-family: var(--serif);
-  font-weight: 300;
+  font-family: var(--display);
+  font-weight: 800;
   font-size: 22px;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.02em;
 }
 
-.title em {
-  font-style: italic;
-  color: var(--accent-mid);
+.title span {
+  color: var(--accent);
 }
 
 .build {
@@ -81,7 +80,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--accent-mid);
+  background: var(--accent);
   color: #fff;
   font-size: 14px;
   font-weight: 600;

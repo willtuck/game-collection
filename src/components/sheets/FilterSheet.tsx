@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Sheet } from '../shared/Sheet';
 import styles from './FilterSheet.module.css';
 
@@ -18,6 +19,8 @@ interface FilterSheetProps {
 }
 
 export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onImportCSV }: FilterSheetProps) {
+  const sortId = useId();
+
   function set<K extends keyof FilterState>(key: K, val: FilterState[K]) {
     onChange({ ...filters, [key]: val });
   }
@@ -25,13 +28,14 @@ export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onI
   return (
     <Sheet open={open} onClose={onClose} title="Filter & Sort">
       <div className={styles.section}>
-        <div className={styles.label}>Type</div>
-        <div className={styles.toggle}>
+        <div className={styles.label} id={`${sortId}-type`}>Type</div>
+        <div className={styles.toggle} role="group" aria-labelledby={`${sortId}-type`}>
           {(['all', 'base', 'expansion'] as const).map(v => (
             <button
               key={v}
               className={`${styles.tbtn} ${filters.typeFilter === v ? styles.on : ''}`}
               onClick={() => set('typeFilter', v)}
+              aria-pressed={filters.typeFilter === v}
             >
               {v === 'all' ? 'All' : v === 'base' ? 'Base games' : 'Expansions'}
             </button>
@@ -40,13 +44,14 @@ export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onI
       </div>
 
       <div className={styles.section}>
-        <div className={styles.label}>Dimensions</div>
-        <div className={styles.toggle}>
+        <div className={styles.label} id={`${sortId}-dims`}>Dimensions</div>
+        <div className={styles.toggle} role="group" aria-labelledby={`${sortId}-dims`}>
           {(['all', 'has', 'missing'] as const).map(v => (
             <button
               key={v}
               className={`${styles.tbtn} ${filters.dimsFilter === v ? styles.on : ''}`}
               onClick={() => set('dimsFilter', v)}
+              aria-pressed={filters.dimsFilter === v}
             >
               {v === 'all' ? 'All' : v === 'has' ? 'Has dims' : 'Missing'}
             </button>
@@ -55,13 +60,14 @@ export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onI
       </div>
 
       <div className={styles.section}>
-        <div className={styles.label}>Players</div>
-        <div className={styles.toggle} style={{ flexWrap: 'wrap' }}>
+        <div className={styles.label} id={`${sortId}-players`}>Players</div>
+        <div className={styles.toggle} role="group" aria-labelledby={`${sortId}-players`} style={{ flexWrap: 'wrap' }}>
           {(['all', '1', '2', '3', '4', '5', '6'] as const).map(v => (
             <button
               key={v}
               className={`${styles.tbtn} ${filters.playersFilter === v ? styles.on : ''}`}
               onClick={() => set('playersFilter', v)}
+              aria-pressed={filters.playersFilter === v}
             >
               {v === 'all' ? 'Any' : v === '6' ? '6+' : v}
             </button>
@@ -70,8 +76,9 @@ export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onI
       </div>
 
       <div className={styles.section}>
-        <div className={styles.label}>Sort</div>
+        <label className={styles.label} htmlFor={sortId}>Sort</label>
         <select
+          id={sortId}
           className={styles.select}
           value={filters.sort}
           onChange={e => set('sort', e.target.value as FilterState['sort'])}

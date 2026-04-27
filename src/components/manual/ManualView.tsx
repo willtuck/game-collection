@@ -261,10 +261,12 @@ export function ManualView() {
 
       {/* Unit tabs */}
       {manualKallaxes.length > 1 && (
-        <div className={styles.units}>
+        <div className={styles.units} role="tablist">
           {manualKallaxes.map(ku => (
             <button
               key={ku.id}
+              role="tab"
+              aria-selected={ku.id === activeUnit?.id}
               className={`${styles.unitTab} ${ku.id === activeUnit?.id ? styles.activeTab : ''}`}
               onClick={() => setActiveManualKu(ku.id)}
             >

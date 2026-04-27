@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import { Sheet } from '../shared/Sheet';
 import { GroupInput } from '../collection/GroupInput';
 import { BoxPreview } from '../collection/BoxPreview';
@@ -36,6 +36,7 @@ const EMPTY: AddFormState = {
 };
 
 export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
+  const formId = useId();
   const [form, setForm] = useState<AddFormState>(EMPTY);
   const [nameErr, setNameErr] = useState('');
   const games = useGameStore(s => s.games);
@@ -109,9 +110,12 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
       <div className={styles.form}>
         {/* Name */}
         <div className={styles.field}>
-          <label className={styles.label}>Game name</label>
+          <label className={styles.label} htmlFor={`${formId}-name`}>Game name</label>
           <input
+            id={`${formId}-name`}
             type="text"
+            name="name"
+            autoComplete="off"
             className={styles.input}
             value={form.name}
             onChange={e => { set('name', e.target.value); setNameErr(''); }}
@@ -184,9 +188,11 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
           </label>
           <div className={styles.playersRow}>
             <div className={styles.dimField}>
-              <label className={styles.dimLabel}>Min</label>
+              <label className={styles.dimLabel} htmlFor={`${formId}-minPlayers`}>Min</label>
               <input
+                id={`${formId}-minPlayers`}
                 type="number"
+                name="minPlayers"
                 className={styles.dimInput}
                 value={form.minPlayers}
                 onChange={e => set('minPlayers', e.target.value)}
@@ -196,9 +202,11 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
               />
             </div>
             <div className={styles.dimField}>
-              <label className={styles.dimLabel}>Max</label>
+              <label className={styles.dimLabel} htmlFor={`${formId}-maxPlayers`}>Max</label>
               <input
+                id={`${formId}-maxPlayers`}
                 type="number"
+                name="maxPlayers"
                 className={styles.dimInput}
                 value={form.maxPlayers}
                 onChange={e => set('maxPlayers', e.target.value)}
@@ -220,9 +228,12 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
             <div className={styles.dimRow}>
               {(['width','height','depth'] as const).map((k, i) => (
                 <div key={k} className={styles.dimField}>
-                  <label className={styles.dimLabel}>{['W','H','D'][i]}</label>
+                  <label className={styles.dimLabel} htmlFor={`${formId}-${k}`}>{['W','H','D'][i]}</label>
                   <input
+                    id={`${formId}-${k}`}
                     type="number"
+                    name={k}
+                    inputMode="decimal"
                     className={styles.dimInput}
                     value={form[k]}
                     onChange={e => set(k, e.target.value)}

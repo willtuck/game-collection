@@ -283,7 +283,8 @@
 
 .emptyTitle {
   font-size: 15px;
-  font-family: var(--serif);
+  font-family: var(--sans);
+  font-weight: 600;
   color: var(--text-mid);
 }
 

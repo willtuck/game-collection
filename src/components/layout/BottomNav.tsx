@@ -15,10 +15,12 @@ const TABS: { id: TabName; label: string }[] = [
 
 export function BottomNav({ active, onChange }: BottomNavProps) {
   return (
-    <nav className={styles.nav}>
+    <nav className={styles.nav} role="tablist">
       {TABS.map(tab => (
         <button
           key={tab.id}
+          role="tab"
+          aria-selected={active === tab.id}
           className={`${styles.tab} ${active === tab.id ? styles.active : ''}`}
           onClick={() => onChange(tab.id)}
         >
