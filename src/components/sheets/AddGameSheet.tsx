@@ -122,7 +122,7 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
             onChange={e => { set('name', e.target.value); setNameErr(''); }}
             onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
             placeholder="e.g. Wingspan"
-            autoFocus
+            autoFocus={window.matchMedia('(hover: hover)').matches}
           />
           {nameErr && <div className={styles.err}>{nameErr}</div>}
         </div>
