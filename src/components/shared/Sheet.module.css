@@ -1,3 +1,4 @@
+/* ── Bottom sheet ── */
 .backdrop {
   position: fixed;
   inset: 0;
@@ -32,17 +33,46 @@
   flex-shrink: 0;
 }
 
+/* ── Centered modal ── */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: rgba(26, 24, 20, 0.55);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  animation: fadeIn 0.15s ease;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  animation: modalIn 0.18s ease;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(26, 24, 20, 0.2);
+}
+
+/* ── Shared ── */
 .title {
   font-family: var(--display);
   font-weight: 700;
   font-size: 18px;
   letter-spacing: -0.01em;
-  padding: 16px 20px 8px;
+  padding: 20px 20px 8px;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
 }
 
 .body {
-  padding: 8px 20px 24px;
+  padding: 16px 20px 24px;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
@@ -58,4 +88,9 @@
 @keyframes slideUp {
   from { transform: translateY(100%); }
   to   { transform: translateY(0); }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.97) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }

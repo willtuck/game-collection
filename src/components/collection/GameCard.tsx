@@ -4,8 +4,9 @@ import { GroupInput } from './GroupInput';
 import { useGameStore } from '../../store/useGameStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { fetchDimSuggestions, contributeDims, type DimSuggestion } from '../../lib/supabaseSync';
-import { hasDims, toCm, fmtDims, fmtDate } from '../../lib/helpers';
+import { hasDims, toCm, fmtDims } from '../../lib/helpers';
 import { gameColor } from '../../lib/colors';
+import { Sheet } from '../shared/Sheet';
 import { ConfirmSheet } from '../shared/ConfirmSheet';
 import { fitsInCell } from '../../lib/packing';
 import { toast } from '../shared/Toast';
@@ -180,10 +181,13 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const pw = tc(form.width), ph = tc(form.height), pd = tc(form.depth);
   const storedInsideEdit = form.type === 'expansion' && !!form.baseGameId && form.storageMode === 'inside';
 
-  // ── View mode ──
-  if (!editing) {
-    return (
-      <div className={styles.card} style={{ borderTopColor: col.stroke }}>
+  return (
+    <>
+      {/* ── View mode card (always rendered) ── */}
+      <div
+        className={styles.card}
+        style={hasDims(game) ? { borderTopColor: col.stroke } : undefined}
+      >
         {/* Canvas strip */}
         <div
           className={styles.strip}
@@ -197,7 +201,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
           )}
         </div>
 
-        {/* Body */}
         <div className={styles.body}>
           <div className={styles.top}>
             <div className={styles.name}>{game.name}</div>
@@ -207,34 +210,43 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
             </div>
           </div>
 
-          {/* Status pills: type + placement only */}
-          {(isExpansion || (!isExpansion && hasExpansions) || manualPlacements.some(p => p.gameId === game.id)) && (
-            <div className={styles.statusRow}>
-              {isExpansion && <span className={styles.expPill}>Expansion</span>}
-              {!isExpansion && hasExpansions && <span className={styles.basePill}>Base Game</span>}
-              {manualPlacements.some(p => p.gameId === game.id) && (
-                <span className={styles.storedPill}>Manually stored</span>
-              )}
+          {/* Meta group: dims · players · pills */}
+          <div className={styles.metaGroup}>
+            {/* Dimensions line */}
+            <div className={styles.metaLine}>
+              {isStoredInside
+                ? <span className={styles.metaMuted}>stored within{baseGame ? ` ${baseGame.name}` : ' base game'}</span>
+                : hasDims(game)
+                ? fmtDims(game)
+                : <span className={styles.metaWarn}>no dimensions</span>
+              }
             </div>
-          )}
 
-          {/* Flat metadata line: dims · players · group */}
-          <div className={styles.metaLine}>
-            {isStoredInside
-              ? <span className={styles.metaMuted}>stored within{baseGame ? ` ${baseGame.name}` : ' base game'}</span>
-              : hasDims(game)
-              ? fmtDims(game)
-              : <span className={styles.metaWarn}>no dimensions</span>
-            }
-            {(game.minPlayers || game.maxPlayers) && (
-              <span className={styles.metaSep}> · </span>
+            {/* Players / group line */}
+            {(game.minPlayers || game.maxPlayers || game.groupName) && (
+              <div className={styles.metaLine}>
+                {(game.minPlayers || game.maxPlayers) && (
+                  game.minPlayers === game.maxPlayers || !game.maxPlayers
+                    ? `${game.minPlayers}p`
+                    : `${game.minPlayers}–${game.maxPlayers}p`
+                )}
+                {(game.minPlayers || game.maxPlayers) && game.groupName && (
+                  <span className={styles.metaSep}> · </span>
+                )}
+                {game.groupName}
+              </div>
             )}
-            {(game.minPlayers || game.maxPlayers) && (
-              game.minPlayers === game.maxPlayers || !game.maxPlayers
-                ? `${game.minPlayers}p`
-                : `${game.minPlayers}–${game.maxPlayers}p`
+
+            {/* Status pills: Base Game · Expansion · Manually Stored */}
+            {((!isExpansion && hasExpansions) || isExpansion || manualPlacements.some(p => p.gameId === game.id)) && (
+              <div className={styles.statusRow}>
+                {!isExpansion && hasExpansions && <span className={styles.basePill}>Base Game</span>}
+                {isExpansion && <span className={styles.expPill}>Expansion</span>}
+                {manualPlacements.some(p => p.gameId === game.id) && (
+                  <span className={styles.storedPill}>Manually stored</span>
+                )}
+              </div>
             )}
-            {game.groupName && <><span className={styles.metaSep}> · </span>{game.groupName}</>}
           </div>
 
           {/* Shelf action link */}
@@ -264,175 +276,173 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
           })()}
         </div>
       </div>
-    );
-  }
 
-  // ── Edit mode ──
-  return (
-    <div className={styles.card} style={{ borderTopColor: col.stroke }}>
-      <div className={styles.editBody}>
-        {/* Name */}
-        <div className={styles.field}>
-          <label className={styles.flabel} htmlFor={`${formId}-name`}>Game name</label>
-          <input
-            id={`${formId}-name`}
-            className={styles.finput}
-            type="text"
-            name="name"
-            autoComplete="off"
-            value={form.name}
-            onChange={e => setF('name', e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') saveEdit(); }}
-            autoFocus
-          />
-        </div>
-
-        {/* Type */}
-        <div className={styles.field}>
-          <label className={styles.flabel}>Type</label>
-          <div className={styles.toggle}>
-            <button
-              className={`${styles.tbtn} ${form.type === 'base' ? styles.on : ''}`}
-              onClick={() => setF('type', 'base')}
-            >Base Game</button>
-            <button
-              className={`${styles.tbtn} ${form.type === 'expansion' ? styles.on : ''}`}
-              onClick={() => setF('type', 'expansion')}
-            >Expansion</button>
-          </div>
-        </div>
-
-        {/* Expansion fields */}
-        {form.type === 'expansion' && (
-          <>
-            <div className={styles.field}>
-              <label className={styles.flabel}>Base Game</label>
-              <select
-                className={styles.fselect}
-                value={form.baseGameId}
-                onChange={e => { setF('baseGameId', e.target.value); setF('storageMode', 'box'); }}
-              >
-                <option value="">Select base game…</option>
-                {baseGames.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-              </select>
-            </div>
-            {form.baseGameId && (
-              <div className={styles.field}>
-                <label className={styles.flabel}>Storage</label>
-                <div className={styles.toggle}>
-                  <button
-                    className={`${styles.tbtn} ${form.storageMode === 'box' ? styles.on : ''}`}
-                    onClick={() => setF('storageMode', 'box')}
-                  >In Expansion Box</button>
-                  <button
-                    className={`${styles.tbtn} ${form.storageMode === 'inside' ? styles.on : ''}`}
-                    onClick={() => setF('storageMode', 'inside')}
-                  >Within Base Game</button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Group */}
-        <div className={styles.field}>
-          <label className={styles.flabel}>
-            Group <span className={styles.optional}>(optional)</span>
-          </label>
-          <GroupInput value={form.groupName} onChange={v => setF('groupName', v)} />
-        </div>
-
-        {/* Players */}
-        <div className={styles.field}>
-          <label className={styles.flabel}>
-            Players <span className={styles.optional}>(optional)</span>
-          </label>
-          <div className={styles.playersRow}>
-            <div className={styles.dimField}>
-              <label className={styles.dimLabel} htmlFor={`${formId}-minPlayers`}>Min</label>
-              <input
-                id={`${formId}-minPlayers`}
-                type="number"
-                name="minPlayers"
-                className={styles.dimInput}
-                value={form.minPlayers}
-                onChange={e => setF('minPlayers', e.target.value)}
-                placeholder="1"
-                min="1"
-                max="99"
-              />
-            </div>
-            <div className={styles.dimField}>
-              <label className={styles.dimLabel} htmlFor={`${formId}-maxPlayers`}>Max</label>
-              <input
-                id={`${formId}-maxPlayers`}
-                type="number"
-                name="maxPlayers"
-                className={styles.dimInput}
-                value={form.maxPlayers}
-                onChange={e => setF('maxPlayers', e.target.value)}
-                placeholder="4"
-                min="1"
-                max="99"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Dimensions */}
-        {!storedInsideEdit && (
+      {/* ── Edit modal ── */}
+      <Sheet open={editing} onClose={cancelEdit} title={`Edit — ${game.name}`} modal>
+        <div className={styles.editBody}>
+          {/* Name */}
           <div className={styles.field}>
-            <div className={styles.dimHeader}>
-              <span className={styles.flabel}>Dimensions</span>
-              <button className={styles.unitBtn} onClick={toggleUnit}>{form.unit}</button>
+            <label className={styles.flabel} htmlFor={`${formId}-name`}>Game name</label>
+            <input
+              id={`${formId}-name`}
+              className={styles.finput}
+              type="text"
+              name="name"
+              autoComplete="off"
+              value={form.name}
+              onChange={e => setF('name', e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') saveEdit(); }}
+              autoFocus
+            />
+          </div>
+
+          {/* Type */}
+          <div className={styles.field}>
+            <label className={styles.flabel}>Type</label>
+            <div className={styles.toggle}>
+              <button
+                className={`${styles.tbtn} ${form.type === 'base' ? styles.on : ''}`}
+                onClick={() => setF('type', 'base')}
+              >Base Game</button>
+              <button
+                className={`${styles.tbtn} ${form.type === 'expansion' ? styles.on : ''}`}
+                onClick={() => setF('type', 'expansion')}
+              >Expansion</button>
             </div>
-            <div className={styles.dimRow}>
-              {(['width','height','depth'] as const).map((k, i) => (
-                <div key={k} className={styles.dimField}>
-                  <label className={styles.dimLabel} htmlFor={`${formId}-${k}`}>{['W','H','D'][i]}</label>
-                  <input
-                    id={`${formId}-${k}`}
-                    type="number"
-                    name={k}
-                    inputMode="decimal"
-                    className={styles.dimInput}
-                    value={form[k]}
-                    onChange={e => setF(k, e.target.value)}
-                    placeholder={form.unit === 'cm' ? ['29.5','29.5','7.5'][i] : ['11.6','11.6','3.0'][i]}
-                    step="0.1"
-                    min="0"
-                  />
-                </div>
-              ))}
-            </div>
-            {(pw > 0 || ph > 0 || pd > 0) && (
-              <div className={styles.preview}>
-                <BoxPreview w={pw||1} h={ph||1} d={pd||1} gameId={game.id} />
+          </div>
+
+          {/* Expansion fields */}
+          {form.type === 'expansion' && (
+            <>
+              <div className={styles.field}>
+                <label className={styles.flabel}>Base Game</label>
+                <select
+                  className={styles.fselect}
+                  value={form.baseGameId}
+                  onChange={e => { setF('baseGameId', e.target.value); setF('storageMode', 'box'); }}
+                >
+                  <option value="">Select base game…</option>
+                  {baseGames.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                </select>
               </div>
-            )}
-            {dimSuggestions.length > 0 && (
-              <div className={styles.suggestions}>
-                <span className={styles.sugLabel}>Suggested</span>
-                {dimSuggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    className={`${styles.sugChip} ${activeSugIdx === i ? styles.sugChipActive : ''}`}
-                    onClick={() => applySuggestion(s, i)}
-                  >
-                    {fmtSug(s.width)} × {fmtSug(s.height)} × {fmtSug(s.depth)} {form.unit}
-                  </button>
+              {form.baseGameId && (
+                <div className={styles.field}>
+                  <label className={styles.flabel}>Storage</label>
+                  <div className={styles.toggle}>
+                    <button
+                      className={`${styles.tbtn} ${form.storageMode === 'box' ? styles.on : ''}`}
+                      onClick={() => setF('storageMode', 'box')}
+                    >In Expansion Box</button>
+                    <button
+                      className={`${styles.tbtn} ${form.storageMode === 'inside' ? styles.on : ''}`}
+                      onClick={() => setF('storageMode', 'inside')}
+                    >Within Base Game</button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Group */}
+          <div className={styles.field}>
+            <label className={styles.flabel}>
+              Group <span className={styles.optional}>(optional)</span>
+            </label>
+            <GroupInput value={form.groupName} onChange={v => setF('groupName', v)} />
+          </div>
+
+          {/* Players */}
+          <div className={styles.field}>
+            <label className={styles.flabel}>
+              Players <span className={styles.optional}>(optional)</span>
+            </label>
+            <div className={styles.playersRow}>
+              <div className={styles.dimField}>
+                <label className={styles.dimLabel} htmlFor={`${formId}-minPlayers`}>Min</label>
+                <input
+                  id={`${formId}-minPlayers`}
+                  type="number"
+                  name="minPlayers"
+                  className={styles.dimInput}
+                  value={form.minPlayers}
+                  onChange={e => setF('minPlayers', e.target.value)}
+                  placeholder="1"
+                  min="1"
+                  max="99"
+                />
+              </div>
+              <div className={styles.dimField}>
+                <label className={styles.dimLabel} htmlFor={`${formId}-maxPlayers`}>Max</label>
+                <input
+                  id={`${formId}-maxPlayers`}
+                  type="number"
+                  name="maxPlayers"
+                  className={styles.dimInput}
+                  value={form.maxPlayers}
+                  onChange={e => setF('maxPlayers', e.target.value)}
+                  placeholder="4"
+                  min="1"
+                  max="99"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Dimensions */}
+          {!storedInsideEdit && (
+            <div className={styles.field}>
+              <div className={styles.dimHeader}>
+                <span className={styles.flabel}>Dimensions</span>
+                <button className={styles.unitBtn} onClick={toggleUnit}>{form.unit}</button>
+              </div>
+              <div className={styles.dimRow}>
+                {(['width','height','depth'] as const).map((k, i) => (
+                  <div key={k} className={styles.dimField}>
+                    <label className={styles.dimLabel} htmlFor={`${formId}-${k}`}>{['W','H','D'][i]}</label>
+                    <input
+                      id={`${formId}-${k}`}
+                      type="number"
+                      name={k}
+                      inputMode="decimal"
+                      className={styles.dimInput}
+                      value={form[k]}
+                      onChange={e => setF(k, e.target.value)}
+                      placeholder={form.unit === 'cm' ? ['29.5','29.5','7.5'][i] : ['11.6','11.6','3.0'][i]}
+                      step="0.1"
+                      min="0"
+                    />
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
-        )}
+              {(pw > 0 || ph > 0 || pd > 0) && (
+                <div className={styles.preview}>
+                  <BoxPreview w={pw||1} h={ph||1} d={pd||1} gameId={game.id} />
+                </div>
+              )}
+              {dimSuggestions.length > 0 && (
+                <div className={styles.suggestions}>
+                  <span className={styles.sugLabel}>Suggested</span>
+                  {dimSuggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      className={`${styles.sugChip} ${activeSugIdx === i ? styles.sugChipActive : ''}`}
+                      onClick={() => applySuggestion(s, i)}
+                    >
+                      {fmtSug(s.width)} × {fmtSug(s.height)} × {fmtSug(s.depth)} {form.unit}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* Actions */}
-        <div className={styles.editActions}>
-          <button className={styles.saveBtn} onClick={saveEdit}>Save</button>
-          <button className={styles.cancelBtn} onClick={cancelEdit}>Cancel</button>
+          {/* Actions */}
+          <div className={styles.editActions}>
+            <button className={styles.saveBtn} onClick={saveEdit}>Save</button>
+            <button className={styles.cancelBtn} onClick={cancelEdit}>Cancel</button>
+          </div>
         </div>
-      </div>
+      </Sheet>
 
       <ConfirmSheet
         open={!!pendingFitWarning}
@@ -453,6 +463,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
         }}
         onClose={() => setPendingFitWarning(null)}
       />
-    </div>
+    </>
   );
 }

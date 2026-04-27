@@ -94,7 +94,7 @@ export function KallaxManagerSheet({ open, onClose, units: unitsProp, onAdd: onA
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title={title}>
+    <Sheet open={open} onClose={onClose} title={title} modal>
       {/* ── Existing units ── */}
       <div className={styles.list}>
         {kallaxes.map(ku => (

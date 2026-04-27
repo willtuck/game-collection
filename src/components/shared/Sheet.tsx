@@ -6,9 +6,10 @@ interface SheetProps {
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
+  modal?: boolean;
 }
 
-export function Sheet({ open, onClose, title, children }: SheetProps) {
+export function Sheet({ open, onClose, title, children, modal }: SheetProps) {
   const sheetRef     = useRef<HTMLDivElement>(null);
   const prevFocusRef = useRef<HTMLElement | null>(null);
   const titleId      = useId();
@@ -70,7 +71,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
 
   return (
     <div
-      className={styles.backdrop}
+      className={modal ? styles.modalBackdrop : styles.backdrop}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -78,10 +79,10 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
     >
       <div
         ref={sheetRef}
-        className={styles.sheet}
+        className={modal ? styles.modal : styles.sheet}
         onClick={e => e.stopPropagation()}
       >
-        <div className={styles.handle} />
+        {!modal && <div className={styles.handle} />}
         {title && <h2 id={titleId} className={styles.title}>{title}</h2>}
         <div className={styles.body}>{children}</div>
       </div>

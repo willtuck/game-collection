@@ -106,7 +106,7 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
   }
 
   return (
-    <Sheet open={open} onClose={handleClose} title="Add a game">
+    <Sheet open={open} onClose={handleClose} title="Add a game" modal>
       <div className={styles.form}>
         {/* Name */}
         <div className={styles.field}>

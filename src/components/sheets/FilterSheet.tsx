@@ -26,7 +26,7 @@ export function FilterSheet({ open, filters, onChange, onClose, onExportCSV, onI
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Filter & Sort">
+    <Sheet open={open} onClose={onClose} title="Filter & Sort" modal>
       <div className={styles.section}>
         <div className={styles.label} id={`${sortId}-type`}>Type</div>
         <div className={styles.toggle} role="group" aria-labelledby={`${sortId}-type`}>

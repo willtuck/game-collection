@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { BottomNav, type TabName } from './BottomNav';
-import { FontPicker } from './FontPicker';
 import { CollectionView } from '../collection/CollectionView';
 import { SuggestedView } from '../kallax/SuggestedView';
 import { ManualView } from '../manual/ManualView';
@@ -27,7 +26,6 @@ export function AppShell() {
 
   return (
     <div className={styles.shell}>
-      <FontPicker />
       <Header />
       <BottomNav active={activeTab} onChange={setActiveTab} />
       <main className={styles.main}>

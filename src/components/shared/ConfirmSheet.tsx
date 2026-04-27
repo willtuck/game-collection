@@ -16,7 +16,7 @@ export function ConfirmSheet({
   open, title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel', danger = false, onConfirm, onClose,
 }: ConfirmSheetProps) {
   return (
-    <Sheet open={open} onClose={onClose} title={title}>
+    <Sheet open={open} onClose={onClose} title={title} modal>
       <p className={styles.message}>{message}</p>
       <div className={styles.actions}>
         <button className={styles.cancel} onClick={onClose}>{cancelLabel}</button>
