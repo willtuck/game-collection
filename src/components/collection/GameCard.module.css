@@ -5,12 +5,21 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
   animation: fadeIn 0.18s ease both;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+.strip {
+  border-bottom: 1px solid var(--border);
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .body {
