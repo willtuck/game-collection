@@ -2,12 +2,12 @@
   position: fixed;
   bottom: calc(16px + env(safe-area-inset-bottom));
   right: 20px;
-  height: 52px;
+  height: 56px;
   padding: 0 20px;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 26px;
+  border-radius: 28px;
   font-family: var(--sans);
   font-size: 15px;
   font-weight: 500;

@@ -52,7 +52,7 @@
   color: var(--danger);
   font-family: var(--sans);
   background: var(--danger-bg);
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-radius: var(--r);
   line-height: 1.5;
 }
@@ -63,7 +63,7 @@
   display: flex;
   gap: 12px;
   align-items: baseline;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .found {
@@ -92,7 +92,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 12px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -123,7 +123,7 @@
   letter-spacing: 0.06em;
   color: var(--text-light);
   background: var(--surface2);
-  padding: 2px 7px;
+  padding: 4px 8px;
   border-radius: 20px;
   flex-shrink: 0;
 }

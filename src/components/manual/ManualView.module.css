@@ -27,7 +27,7 @@
   color: var(--text-mid);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   white-space: nowrap;
   flex-shrink: 0;
   transition: background 0.12s, border-color 0.12s;
@@ -70,7 +70,7 @@
 .orientRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 20px;
 }
 
@@ -115,7 +115,7 @@
 .pickList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 16px;
 }
 
@@ -123,7 +123,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-left: 3px solid transparent;
@@ -168,7 +168,7 @@
   font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: 2px 7px;
+  padding: 4px 8px;
   border-radius: 20px;
   background: var(--accent);
   color: #fff;
@@ -177,7 +177,7 @@
 
 .pickActions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .saveBtn {
@@ -221,7 +221,7 @@
 
 .unitTab {
   height: 32px;
-  padding: 0 14px;
+  padding: 0 16px;
   border: 1px solid var(--border-mid);
   border-radius: 20px;
   background: transparent;
@@ -278,7 +278,7 @@
   align-items: center;
   text-align: center;
   padding: 60px 32px;
-  gap: 10px;
+  gap: 8px;
 }
 
 .emptyTitle {

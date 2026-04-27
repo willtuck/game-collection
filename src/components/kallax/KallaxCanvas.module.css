@@ -10,10 +10,10 @@
 
 .backBtn {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  height: 30px;
-  padding: 0 10px 0 8px;
+  top: 8px;
+  left: 8px;
+  height: 32px;
+  padding: 0 8px;
   border: 1px solid var(--border-mid);
   border-radius: 20px;
   background: var(--surface);
@@ -40,7 +40,7 @@
   color: var(--bg);
   font-size: 14px;
   font-family: var(--sans);
-  padding: 4px 10px;
+  padding: 4px 8px;
   border-radius: 20px;
   pointer-events: none;
   white-space: nowrap;
