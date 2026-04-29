@@ -1,9 +1,16 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './LandingPage.module.css';
 import { useAuthStore } from '../../store/useAuthStore';
 
 export function LandingPage() {
-  const signIn = useAuthStore(s => s.signIn);
+  const signIn   = useAuthStore(s => s.signIn);
+  const session  = useAuthStore(s => s.session);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (session) navigate('/app', { replace: true });
+  }, [session, navigate]);
 
   return (
     <div className={styles.page}>
