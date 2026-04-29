@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import styles from './LandingPage.module.css';
 import { useAuthStore } from '../../store/useAuthStore';
 
@@ -63,8 +64,8 @@ export function LandingPage() {
           </div>
           <div className={styles.footerRight}>
             <div className={styles.footerLinks}>
-              <a href="/privacy" className={styles.footerLink}>Privacy Policy</a>
-              <a href="/terms" className={styles.footerLink}>Terms of Service</a>
+              <Link to="/privacy" className={styles.footerLink}>Privacy Policy</Link>
+              <Link to="/terms" className={styles.footerLink}>Terms of Service</Link>
             </div>
             <p className={styles.copyright}>© 2026 ShelfGeek</p>
           </div>
