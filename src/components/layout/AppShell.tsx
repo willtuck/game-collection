@@ -6,13 +6,11 @@ import { SuggestedView } from '../kallax/SuggestedView';
 import { ManualView } from '../manual/ManualView';
 import { ImportSheet } from '../sheets/ImportSheet';
 import { Toast } from '../shared/Toast';
-import { useAuthInit } from '../../hooks/useAuthInit';
 import { useGameStore } from '../../store/useGameStore';
 import { toast } from '../shared/Toast';
 import styles from './AppShell.module.css';
 
 export function AppShell() {
-  useAuthInit();
   const [activeTab, setActiveTab]   = useState<TabName>('collection');
   const [importOpen, setImportOpen] = useState(false);
   const pendingManualNav  = useGameStore(s => s.pendingManualNav);
