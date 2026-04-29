@@ -36,9 +36,6 @@ export function LandingPage() {
             Get started free
           </button>
         </div>
-      </section>
-
-      <section className={styles.features}>
         <div className={styles.featureGrid}>
           <div className={styles.featureCard}>
             <h3 className={styles.featureTitle}>Track your collection</h3>
