@@ -83,37 +83,63 @@ function HeroPattern() {
   return (
     <svg
       className={styles.heroPattern}
-      viewBox="0 0 1200 900"
+      viewBox="0 0 1200 1400"
       preserveAspectRatio="xMidYMid slice"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* Row 0 — bleeds off top */}
-      <rect x="-20" y="-70" width="72" height="88" rx="3" fill="#E8D8C4"/><rect x="56" y="-60" width="50" height="78" rx="3" fill="#DDD0BC"/><rect x="110" y="-75" width="88" height="93" rx="3" fill="#ECE0CC"/><rect x="202" y="-65" width="44" height="83" rx="3" fill="#D6C8B4"/><rect x="250" y="-70" width="82" height="88" rx="3" fill="#E4D4C0"/><rect x="336" y="-60" width="58" height="78" rx="3" fill="#DAC8B6"/><rect x="398" y="-72" width="96" height="90" rx="3" fill="#EAD8C4"/><rect x="498" y="-65" width="44" height="83" rx="3" fill="#E0D0BC"/><rect x="546" y="-68" width="80" height="86" rx="3" fill="#D4C4B0"/><rect x="630" y="-73" width="52" height="91" rx="3" fill="#ECDCC8"/><rect x="686" y="-62" width="74" height="80" rx="3" fill="#E6D6C2"/><rect x="764" y="-70" width="46" height="88" rx="3" fill="#DDD0BA"/><rect x="814" y="-65" width="92" height="83" rx="3" fill="#ECE0CC"/><rect x="910" y="-72" width="56" height="90" rx="3" fill="#D8C8B4"/><rect x="970" y="-60" width="78" height="78" rx="3" fill="#E4D4C0"/><rect x="1052" y="-68" width="48" height="86" rx="3" fill="#DACCB8"/><rect x="1104" y="-73" width="116" height="91" rx="3" fill="#EAD8C6"/>
-      {/* Shelf line 1 */}
-      <rect x="-20" y="18" width="1240" height="3" fill="#C8B8A8" rx="1"/>
-      {/* Row 1 */}
-      <rect x="-20" y="24" width="68" height="80" rx="3" fill="#EDE0D0"/><rect x="52" y="30" width="44" height="74" rx="3" fill="#E0D0BF"/><rect x="100" y="22" width="88" height="84" rx="3" fill="#E8D8C5"/><rect x="192" y="26" width="56" height="78" rx="3" fill="#D8CABB"/><rect x="252" y="22" width="74" height="82" rx="3" fill="#EAD8C4"/><rect x="330" y="30" width="44" height="74" rx="3" fill="#DDD0BF"/><rect x="378" y="20" width="92" height="84" rx="3" fill="#E5D5C0"/><rect x="474" y="24" width="58" height="80" rx="3" fill="#D4C5B2"/><rect x="536" y="28" width="72" height="76" rx="3" fill="#DFCFBC"/><rect x="612" y="22" width="50" height="82" rx="3" fill="#EAE0D0"/><rect x="666" y="25" width="84" height="79" rx="3" fill="#D8C8B4"/><rect x="754" y="22" width="62" height="82" rx="3" fill="#E2D2BE"/><rect x="820" y="28" width="44" height="76" rx="3" fill="#DAC8B6"/><rect x="868" y="20" width="96" height="84" rx="3" fill="#E8D6C2"/><rect x="968" y="24" width="54" height="80" rx="3" fill="#D0C0AC"/><rect x="1026" y="26" width="78" height="78" rx="3" fill="#DECEBE"/><rect x="1108" y="22" width="112" height="82" rx="3" fill="#EBD9C5"/>
-      {/* Shelf line 2 */}
-      <rect x="-20" y="108" width="1240" height="3" fill="#C8B8A8" rx="1"/>
-      {/* Row 2 */}
-      <rect x="-20" y="114" width="58" height="106" rx="3" fill="#E2D0BC"/><rect x="42" y="118" width="84" height="100" rx="3" fill="#ECDAC6"/><rect x="130" y="114" width="46" height="106" rx="3" fill="#D6C4B0"/><rect x="180" y="116" width="94" height="104" rx="3" fill="#E8D5C0"/><rect x="278" y="114" width="60" height="106" rx="3" fill="#DCCCB8"/><rect x="342" y="116" width="70" height="104" rx="3" fill="#E4D2BC"/><rect x="416" y="118" width="50" height="100" rx="3" fill="#D2C2AE"/><rect x="470" y="114" width="86" height="106" rx="3" fill="#EAD8C2"/><rect x="560" y="116" width="54" height="104" rx="3" fill="#DECEBE"/><rect x="618" y="118" width="76" height="100" rx="3" fill="#E6D4C0"/><rect x="698" y="114" width="46" height="106" rx="3" fill="#D4C4B0"/><rect x="748" y="116" width="90" height="104" rx="3" fill="#ECDCC8"/><rect x="842" y="118" width="58" height="100" rx="3" fill="#E0D0BC"/><rect x="904" y="114" width="66" height="106" rx="3" fill="#D8C8B2"/><rect x="974" y="116" width="48" height="104" rx="3" fill="#E4D2BC"/><rect x="1026" y="118" width="88" height="100" rx="3" fill="#ECDAC6"/><rect x="1118" y="114" width="102" height="106" rx="3" fill="#DAC8B4"/>
-      {/* Shelf line 3 */}
-      <rect x="-20" y="224" width="1240" height="3" fill="#C8B8A8" rx="1"/>
-      {/* Row 3 */}
-      <rect x="-20" y="230" width="74" height="88" rx="3" fill="#E8D8C4"/><rect x="58" y="234" width="50" height="84" rx="3" fill="#DDD0BC"/><rect x="112" y="228" width="92" height="90" rx="3" fill="#ECE0CC"/><rect x="208" y="232" width="42" height="86" rx="3" fill="#D6C8B4"/><rect x="254" y="228" width="80" height="90" rx="3" fill="#E4D4C0"/><rect x="338" y="232" width="62" height="86" rx="3" fill="#DAC8B6"/><rect x="404" y="228" width="46" height="90" rx="3" fill="#EAD8C4"/><rect x="454" y="230" width="96" height="88" rx="3" fill="#E0D0BC"/><rect x="554" y="228" width="56" height="90" rx="3" fill="#D4C4B0"/><rect x="614" y="230" width="80" height="88" rx="3" fill="#ECDCC8"/><rect x="698" y="228" width="50" height="90" rx="3" fill="#E6D6C2"/><rect x="752" y="232" width="70" height="86" rx="3" fill="#DDD0BA"/><rect x="826" y="228" width="90" height="90" rx="3" fill="#ECE0CC"/><rect x="920" y="230" width="48" height="88" rx="3" fill="#D8C8B4"/><rect x="972" y="228" width="78" height="90" rx="3" fill="#E4D4C0"/><rect x="1054" y="230" width="56" height="88" rx="3" fill="#DACCB8"/><rect x="1114" y="228" width="106" height="90" rx="3" fill="#EAD8C6"/>
-      {/* Shelf line 4 */}
-      <rect x="-20" y="320" width="1240" height="3" fill="#C8B8A8" rx="1"/>
-      {/* Row 4 */}
-      <rect x="-20" y="326" width="68" height="106" rx="3" fill="#EDE0D0"/><rect x="52" y="332" width="50" height="100" rx="3" fill="#E0D0BF"/><rect x="106" y="324" width="88" height="108" rx="3" fill="#E8D8C5"/><rect x="198" y="328" width="56" height="104" rx="3" fill="#D8CABB"/><rect x="258" y="324" width="74" height="108" rx="3" fill="#EAD8C4"/><rect x="336" y="330" width="44" height="102" rx="3" fill="#DDD0BF"/><rect x="384" y="326" width="96" height="106" rx="3" fill="#E5D5C0"/><rect x="484" y="324" width="58" height="108" rx="3" fill="#D4C5B2"/><rect x="546" y="328" width="72" height="104" rx="3" fill="#DFCFBC"/><rect x="622" y="324" width="52" height="108" rx="3" fill="#EAE0D0"/><rect x="678" y="330" width="80" height="102" rx="3" fill="#D8C8B4"/><rect x="762" y="324" width="62" height="108" rx="3" fill="#E2D2BE"/><rect x="828" y="326" width="44" height="106" rx="3" fill="#DAC8B6"/><rect x="876" y="324" width="90" height="108" rx="3" fill="#E8D6C2"/><rect x="970" y="328" width="54" height="104" rx="3" fill="#D0C0AC"/><rect x="1028" y="326" width="78" height="106" rx="3" fill="#DECEBE"/><rect x="1110" y="324" width="110" height="108" rx="3" fill="#EBD9C5"/>
-      {/* Shelf line 5 */}
-      <rect x="-20" y="434" width="1240" height="3" fill="#C8B8A8" rx="1"/>
-      {/* Row 5 */}
-      <rect x="-20" y="440" width="72" height="100" rx="3" fill="#E8D8C4"/><rect x="56" y="444" width="50" height="96" rx="3" fill="#DDD0BC"/><rect x="110" y="438" width="88" height="102" rx="3" fill="#ECE0CC"/><rect x="202" y="442" width="44" height="98" rx="3" fill="#D6C8B4"/><rect x="250" y="438" width="82" height="102" rx="3" fill="#E4D4C0"/><rect x="336" y="442" width="58" height="98" rx="3" fill="#DAC8B6"/><rect x="398" y="440" width="96" height="100" rx="3" fill="#EAD8C4"/><rect x="498" y="438" width="44" height="102" rx="3" fill="#E0D0BC"/><rect x="546" y="442" width="80" height="98" rx="3" fill="#D4C4B0"/><rect x="630" y="438" width="52" height="102" rx="3" fill="#ECDCC8"/><rect x="686" y="444" width="74" height="96" rx="3" fill="#E6D6C2"/><rect x="764" y="438" width="46" height="102" rx="3" fill="#DDD0BA"/><rect x="814" y="440" width="92" height="100" rx="3" fill="#ECE0CC"/><rect x="910" y="442" width="56" height="98" rx="3" fill="#D8C8B4"/><rect x="970" y="438" width="78" height="102" rx="3" fill="#E4D4C0"/><rect x="1052" y="444" width="48" height="96" rx="3" fill="#DACCB8"/><rect x="1104" y="438" width="116" height="102" rx="3" fill="#EAD8C6"/>
-      {/* Shelf line 6 */}
-      <rect x="-20" y="542" width="1240" height="3" fill="#C8B8A8" rx="1"/>
-      {/* Row 6 — bleeds off bottom */}
-      <rect x="-20" y="548" width="58" height="400" rx="3" fill="#E2D0BC"/><rect x="42" y="552" width="84" height="400" rx="3" fill="#ECDAC6"/><rect x="130" y="546" width="46" height="400" rx="3" fill="#D6C4B0"/><rect x="180" y="550" width="94" height="400" rx="3" fill="#E8D5C0"/><rect x="278" y="546" width="60" height="400" rx="3" fill="#DCCCB8"/><rect x="342" y="550" width="70" height="400" rx="3" fill="#E4D2BC"/><rect x="416" y="552" width="50" height="400" rx="3" fill="#D2C2AE"/><rect x="470" y="546" width="86" height="400" rx="3" fill="#EAD8C2"/><rect x="560" y="550" width="54" height="400" rx="3" fill="#DECEBE"/><rect x="618" y="552" width="76" height="400" rx="3" fill="#E6D4C0"/><rect x="698" y="546" width="46" height="400" rx="3" fill="#D4C4B0"/><rect x="748" y="550" width="90" height="400" rx="3" fill="#ECDCC8"/><rect x="842" y="552" width="58" height="400" rx="3" fill="#E0D0BC"/><rect x="904" y="546" width="66" height="400" rx="3" fill="#D8C8B2"/><rect x="974" y="550" width="50" height="400" rx="3" fill="#E4D2BC"/><rect x="1028" y="552" width="80" height="400" rx="3" fill="#ECDAC6"/><rect x="1112" y="546" width="108" height="400" rx="3" fill="#DAC8B4"/>
+      <defs>
+        <pattern
+          id="shelf-tile"
+          patternUnits="userSpaceOnUse"
+          x="0"
+          y="-80"
+          width="1200"
+          height="228"
+        >
+          {/* Row A — books bottom-aligned to shelf at y=111 */}
+          <rect x="0"    y="27" width="68" height="84" rx="3" fill="#EDE0D0"/>
+          <rect x="72"   y="35" width="44" height="76" rx="3" fill="#E0D0BF"/>
+          <rect x="120"  y="21" width="88" height="90" rx="3" fill="#E8D8C5"/>
+          <rect x="212"  y="31" width="56" height="80" rx="3" fill="#D8CABB"/>
+          <rect x="272"  y="25" width="74" height="86" rx="3" fill="#EAD8C4"/>
+          <rect x="350"  y="33" width="44" height="78" rx="3" fill="#DDD0BF"/>
+          <rect x="398"  y="23" width="92" height="88" rx="3" fill="#E5D5C0"/>
+          <rect x="494"  y="29" width="58" height="82" rx="3" fill="#D4C5B2"/>
+          <rect x="556"  y="35" width="72" height="76" rx="3" fill="#DFCFBC"/>
+          <rect x="632"  y="23" width="50" height="88" rx="3" fill="#EAE0D0"/>
+          <rect x="686"  y="27" width="84" height="84" rx="3" fill="#D8C8B4"/>
+          <rect x="774"  y="31" width="62" height="80" rx="3" fill="#E2D2BE"/>
+          <rect x="840"  y="21" width="44" height="90" rx="3" fill="#DAC8B6"/>
+          <rect x="888"  y="29" width="96" height="82" rx="3" fill="#E8D6C2"/>
+          <rect x="988"  y="33" width="54" height="78" rx="3" fill="#D0C0AC"/>
+          <rect x="1046" y="25" width="78" height="86" rx="3" fill="#DECEBE"/>
+          <rect x="1128" y="27" width="72" height="84" rx="3" fill="#EBD9C5"/>
+          {/* Shelf A */}
+          <rect x="0" y="111" width="1200" height="3" fill="#C8B8A8"/>
+          {/* Row B — books bottom-aligned to shelf at y=225 */}
+          <rect x="0"    y="139" width="58"  height="86"  rx="3" fill="#E2D0BC"/>
+          <rect x="62"   y="125" width="84"  height="100" rx="3" fill="#ECDAC6"/>
+          <rect x="150"  y="147" width="46"  height="78"  rx="3" fill="#D6C4B0"/>
+          <rect x="200"  y="123" width="94"  height="102" rx="3" fill="#E8D5C0"/>
+          <rect x="298"  y="143" width="60"  height="82"  rx="3" fill="#DCCCB8"/>
+          <rect x="362"  y="129" width="70"  height="96"  rx="3" fill="#E4D2BC"/>
+          <rect x="436"  y="151" width="50"  height="74"  rx="3" fill="#D2C2AE"/>
+          <rect x="490"  y="121" width="86"  height="104" rx="3" fill="#EAD8C2"/>
+          <rect x="580"  y="145" width="54"  height="80"  rx="3" fill="#DECEBE"/>
+          <rect x="638"  y="131" width="76"  height="94"  rx="3" fill="#E6D4C0"/>
+          <rect x="718"  y="147" width="46"  height="78"  rx="3" fill="#D4C4B0"/>
+          <rect x="768"  y="125" width="90"  height="100" rx="3" fill="#ECDCC8"/>
+          <rect x="862"  y="141" width="58"  height="84"  rx="3" fill="#E0D0BC"/>
+          <rect x="924"  y="127" width="66"  height="98"  rx="3" fill="#D8C8B2"/>
+          <rect x="994"  y="149" width="50"  height="76"  rx="3" fill="#E4D2BC"/>
+          <rect x="1048" y="123" width="80"  height="102" rx="3" fill="#ECDAC6"/>
+          <rect x="1132" y="137" width="68"  height="88"  rx="3" fill="#DAC8B4"/>
+          {/* Shelf B */}
+          <rect x="0" y="225" width="1200" height="3" fill="#C8B8A8"/>
+        </pattern>
+      </defs>
+      <rect width="1200" height="1400" fill="url(#shelf-tile)"/>
     </svg>
   );
 }
