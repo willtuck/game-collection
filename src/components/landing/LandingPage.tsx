@@ -1,9 +1,8 @@
-import { useNavigate } from 'react-router-dom';
 import styles from './LandingPage.module.css';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export function LandingPage() {
-  const navigate = useNavigate();
-  const goToApp = () => navigate('/app');
+  const signIn = useAuthStore(s => s.signIn);
 
   return (
     <div className={styles.page}>
@@ -11,7 +10,7 @@ export function LandingPage() {
         <div className={styles.wordmark}>
           Shelf<span className={styles.accent}>Geek</span>
         </div>
-        <button className={styles.signInBtn} onClick={goToApp}>
+        <button className={styles.signInBtn} onClick={signIn}>
           Sign in
         </button>
       </nav>
@@ -25,7 +24,7 @@ export function LandingPage() {
           <p className={styles.subhead}>
             Track every game. Plan your shelves.<br />Always know what fits where.
           </p>
-          <button className={styles.ctaBtn} onClick={goToApp}>
+          <button className={styles.ctaBtn} onClick={signIn}>
             Get started free
           </button>
         </div>
