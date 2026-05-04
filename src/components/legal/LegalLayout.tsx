@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './LegalLayout.module.css';
+import bggLogo from '../../assets/powered-by-bgg.svg';
 
 export function LegalLayout({ children }: { children: ReactNode }) {
   return (
@@ -32,6 +33,9 @@ export function LegalLayout({ children }: { children: ReactNode }) {
             </div>
             <p className={styles.copyright}>© 2026 ShelfGeek</p>
           </div>
+        </div>
+        <div className={styles.footerBgg}>
+          <img src={bggLogo} alt="Powered by BoardGameGeek" className={styles.bggLogo} />
         </div>
       </footer>
     </div>

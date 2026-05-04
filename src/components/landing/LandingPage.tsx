@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './LandingPage.module.css';
 import { useAuthStore } from '../../store/useAuthStore';
+import bggLogo from '../../assets/powered-by-bgg.svg';
 
 export function LandingPage() {
   const signIn   = useAuthStore(s => s.signIn);
@@ -73,6 +74,9 @@ export function LandingPage() {
             </div>
             <p className={styles.copyright}>© 2026 ShelfGeek</p>
           </div>
+        </div>
+        <div className={styles.footerBgg}>
+          <img src={bggLogo} alt="Powered by BoardGameGeek" className={styles.bggLogo} />
         </div>
       </footer>
     </div>
