@@ -101,22 +101,24 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
     if (!expansionBggIds.length) return;
 
     try {
-      // Chunk into batches of 50
-      const chunks: string[][] = [];
-      for (let i = 0; i < expansionBggIds.length; i += 50) {
-        chunks.push(expansionBggIds.slice(i, i + 50));
+      // Sequential batches of 20 to avoid proxy timeouts
+      const parentMap = new Map<string, string[]>();
+      for (let i = 0; i < expansionBggIds.length; i += 20) {
+        const chunk = expansionBggIds.slice(i, i + 20);
+        const chunkMap = await fetchExpansionParents(chunk);
+        chunkMap.forEach((v, k) => parentMap.set(k, v));
       }
-      const maps = await Promise.all(chunks.map(fetchExpansionParents));
-      const parentMap = new Map(maps.flatMap(m => [...m]));
+
+      // Read fresh store state — the `games` closure is stale after addGame calls
+      const currentGames = useGameStore.getState().games;
 
       parentMap.forEach((parentBggIds, expansionBggId) => {
         const localExpansionId = bggIdToLocalId.get(expansionBggId);
         if (!localExpansionId) return;
         for (const parentBggId of parentBggIds) {
-          // Parent may have just been added, or may already be in the collection
           const localParentId =
             bggIdToLocalId.get(parentBggId) ??
-            games.find(g => g.bggId === parentBggId)?.id;
+            currentGames.find(g => g.bggId === parentBggId)?.id;
           if (localParentId) {
             updateGame(localExpansionId, { baseGameId: localParentId });
             break;
