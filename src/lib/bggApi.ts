@@ -23,7 +23,7 @@ export interface BggVersion {
 
 async function bggFetch(path: string): Promise<Document> {
   const res = await fetch(`${PROXY}?path=${encodeURIComponent(path)}`, {
-    headers: { apikey: API_KEY },
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` },
   });
   if (res.status === 202) throw new Error('BGG_QUEUED');
   if (!res.ok) throw new Error(`BGG request failed (${res.status})`);
