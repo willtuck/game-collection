@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useGameStore } from '../../store/useGameStore';
+import { toast } from '../shared/Toast';
 import styles from './UserMenu.module.css';
 
 interface UserMenuProps {
@@ -8,9 +10,12 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ onImportCSV, onExportCSV }: UserMenuProps) {
-  const user    = useAuthStore(s => s.user);
-  const signOut = useAuthStore(s => s.signOut);
+  const user          = useAuthStore(s => s.user);
+  const signOut       = useAuthStore(s => s.signOut);
+  const clearAllGames = useGameStore(s => s.clearAllGames);
+  const gameCount     = useGameStore(s => s.games.length);
   const [open, setOpen] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   const avatar   = user?.user_metadata?.avatar_url as string | undefined;
   const username = user?.user_metadata?.user_name  as string | undefined;
@@ -22,7 +27,13 @@ export function UserMenu({ onImportCSV, onExportCSV }: UserMenuProps) {
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  function close() { setOpen(false); }
+  function close() { setOpen(false); setConfirming(false); }
+
+  function handleClearAll() {
+    clearAllGames();
+    toast('All games removed');
+    close();
+  }
 
   return (
     <div className={styles.wrap}>
@@ -49,6 +60,30 @@ export function UserMenu({ onImportCSV, onExportCSV }: UserMenuProps) {
             <button role="menuitem" className={styles.item} onClick={() => { onExportCSV(); close(); }}>
               Export CSV
             </button>
+
+            {gameCount > 0 && (
+              <>
+                <div className={styles.menuDivider} aria-hidden="true" />
+                {confirming ? (
+                  <div className={styles.confirmWrap}>
+                    <div className={styles.confirmLabel}>Remove all {gameCount} games?</div>
+                    <div className={styles.confirmActions}>
+                      <button className={styles.confirmYes} onClick={handleClearAll}>Remove all</button>
+                      <button className={styles.confirmNo} onClick={() => setConfirming(false)}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    role="menuitem"
+                    className={`${styles.item} ${styles.danger}`}
+                    onClick={() => setConfirming(true)}
+                  >
+                    Remove all games
+                  </button>
+                )}
+              </>
+            )}
+
             <div className={styles.menuDivider} aria-hidden="true" />
             <button role="menuitem" className={`${styles.item} ${styles.signOut}`} onClick={() => { signOut(); close(); }}>
               Sign out

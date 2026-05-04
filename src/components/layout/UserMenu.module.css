@@ -112,6 +112,51 @@
   color: var(--danger);
 }
 
+.danger {
+  color: var(--danger);
+}
+
+.confirmWrap {
+  padding: 8px 16px 12px;
+}
+
+.confirmLabel {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-mid);
+  margin-bottom: 8px;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 8px;
+}
+
+.confirmYes {
+  flex: 1;
+  height: 32px;
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: var(--r);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmNo {
+  flex: 1;
+  height: 32px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  font-family: var(--sans);
+  font-size: 13px;
+  cursor: pointer;
+}
+
 @media (max-width: 479px) {
   .menu {
     right: 8px;

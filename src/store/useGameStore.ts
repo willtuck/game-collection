@@ -4,7 +4,7 @@ import type { Game, KallaxUnit, Layout, ManualPlacement, StorageMode, KallaxSort
 import { kuLabel } from '../lib/helpers';
 import { useAuthStore } from './useAuthStore';
 import {
-  upsertGame, deleteGameDb,
+  upsertGame, deleteGameDb, deleteAllGamesDb,
   upsertKallax, deleteKallaxDb,
 } from '../lib/supabaseSync';
 
@@ -37,6 +37,7 @@ interface GameStore {
   addGame: (game: Game) => void;
   updateGame: (id: string, updates: Partial<Game>) => void;
   deleteGame: (id: string) => void;
+  clearAllGames: () => void;
 
   // ── Kallax unit actions ──
   addKallax: (model: string, label: string) => void;
@@ -109,6 +110,12 @@ export const useGameStore = create<GameStore>()(
         set(s => ({ games: s.games.filter(g => g.id !== id) }));
         const userId = uid();
         if (userId) deleteGameDb(id);
+      },
+
+      clearAllGames: () => {
+        const userId = uid();
+        set({ games: [], manualPlacements: [] });
+        if (userId) deleteAllGamesDb(userId);
       },
 
       addKallax: (model, label) => {

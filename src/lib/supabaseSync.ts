@@ -64,6 +64,11 @@ export async function deleteGameDb(id: string) {
   if (error) console.error('[sync] deleteGameDb:', error.message);
 }
 
+export async function deleteAllGamesDb(userId: string) {
+  const { error } = await supabase.from('games').delete().eq('user_id', userId);
+  if (error) console.error('[sync] deleteAllGamesDb:', error.message);
+}
+
 export async function upsertKallax(ku: KallaxUnit, userId: string) {
   const { error } = await supabase.from('kallax_units').upsert(kuToRow(ku, userId));
   if (error) console.error('[sync] upsertKallax:', error.message);
