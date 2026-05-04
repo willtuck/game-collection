@@ -41,15 +41,12 @@ function inToCm(val: string | null | undefined): string | null {
   return (n * 2.54).toFixed(1);
 }
 
-export async function fetchBggCollection(username: string): Promise<BggGame[]> {
-  const doc = await bggFetch(
-    `collection?username=${encodeURIComponent(username)}&own=1&stats=1`,
-  );
+function parseCollectionItems(doc: Document, type: BggGame['type']): BggGame[] {
   return Array.from(doc.querySelectorAll('item'))
     .map(item => ({
       bggId: item.getAttribute('objectid') ?? '',
       name: item.querySelector('name')?.textContent?.trim() ?? '',
-      type: (item.getAttribute('subtype') ?? 'boardgame') as BggGame['type'],
+      type,
       thumbnail: (item.querySelector('thumbnail')?.textContent?.trim() ?? '')
         .replace(/^\/\//, 'https://'),
       yearPublished: item.querySelector('yearpublished')?.textContent?.trim() ?? '',
@@ -57,6 +54,20 @@ export async function fetchBggCollection(username: string): Promise<BggGame[]> {
       maxPlayers: item.querySelector('stats')?.getAttribute('maxplayers') ?? '',
     }))
     .filter(g => g.bggId && g.name);
+}
+
+export async function fetchBggCollection(username: string): Promise<BggGame[]> {
+  const base = `collection?username=${encodeURIComponent(username)}&own=1&stats=1`;
+  // BGG returns correct subtypes only when filtered per type — fetch both in parallel
+  const [baseDoc, expansionDoc] = await Promise.all([
+    bggFetch(`${base}&subtype=boardgame`),
+    bggFetch(`${base}&subtype=boardgameexpansion`),
+  ]);
+  const baseGames  = parseCollectionItems(baseDoc,      'boardgame');
+  const expansions = parseCollectionItems(expansionDoc, 'boardgameexpansion');
+  // Deduplicate by bggId (expansions take precedence for typing)
+  const seen = new Set(expansions.map(g => g.bggId));
+  return [...baseGames.filter(g => !seen.has(g.bggId)), ...expansions];
 }
 
 // Returns a map of expansion bggId → parent game bggIds (inbound links).
