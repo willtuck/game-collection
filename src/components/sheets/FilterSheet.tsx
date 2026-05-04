@@ -14,9 +14,10 @@ interface FilterSheetProps {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
   onClose: () => void;
+  onImportBgg: () => void;
 }
 
-export function FilterSheet({ open, filters, onChange, onClose }: FilterSheetProps) {
+export function FilterSheet({ open, filters, onChange, onClose, onImportBgg }: FilterSheetProps) {
   const sortId = useId();
 
   function set<K extends keyof FilterState>(key: K, val: FilterState[K]) {
@@ -89,6 +90,11 @@ export function FilterSheet({ open, filters, onChange, onClose }: FilterSheetPro
         </select>
       </div>
 
+      <div className={styles.divider} />
+
+      <button className={styles.exportBtn} onClick={() => { onImportBgg(); onClose(); }}>
+        Import from BGG
+      </button>
     </Sheet>
   );
 }

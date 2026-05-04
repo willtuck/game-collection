@@ -1,0 +1,132 @@
+.gameMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.expansionBadge {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #EDE8F5;
+  color: #6B3D7A;
+}
+
+.year, .players {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+/* ── Loading / error ── */
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0;
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-mid);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error, .noVersions {
+  font-size: 14px;
+  color: var(--text-light);
+  margin: 0;
+  padding: 16px 0;
+}
+
+.error { color: var(--danger, #c0392b); }
+
+/* ── Version list ── */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.versionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  text-align: left;
+  transition: border-color 0.12s, background 0.12s;
+  width: 100%;
+}
+
+.versionRow:hover {
+  border-color: var(--accent-mid);
+  background: var(--accent-light, var(--surface2));
+}
+
+.versionInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.versionName {
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.versionDetail {
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dims {
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text-mid);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.noDims {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--text-light);
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}

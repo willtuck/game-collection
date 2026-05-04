@@ -1,0 +1,227 @@
+/* ── Username phase ── */
+
+.usernamePhase {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hint {
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  height: 42px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  padding: 0 12px;
+  font-family: var(--sans);
+  font-size: 15px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+
+.input:focus { border-color: var(--accent-mid); }
+
+.fetchBtn {
+  height: 42px;
+  padding: 0 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--r);
+  font-size: 15px;
+  font-weight: 500;
+  transition: opacity 0.12s;
+  white-space: nowrap;
+}
+
+.fetchBtn:hover:not(:disabled) { opacity: 0.88; }
+.fetchBtn:disabled { opacity: 0.4; }
+
+/* ── Loading ── */
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 0;
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid var(--border-mid);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Error phase ── */
+
+.errorPhase {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.errorMsg {
+  margin: 0;
+  font-size: 14px;
+  color: var(--danger, #c0392b);
+  line-height: 1.5;
+}
+
+.retryBtn {
+  height: 38px;
+  padding: 0 18px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--text-mid);
+  transition: background 0.12s;
+}
+
+.retryBtn:hover { background: var(--surface2); }
+
+/* ── Collection phase ── */
+
+.collectionPhase {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.collectionMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.collectionUser {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.collectionCount {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+/* ── Section ── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-light);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+
+/* ── Game row ── */
+
+.gameRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r);
+  transition: background 0.1s;
+}
+
+.gameRow:not(.done):hover { background: var(--surface2); }
+.gameRow.done { opacity: 0.55; }
+
+.thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: var(--surface2);
+  flex-shrink: 0;
+}
+
+.thumbPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  background: var(--surface2);
+  flex-shrink: 0;
+}
+
+.gameInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gameName {
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gameMeta {
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text-light);
+}
+
+.addBtn {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--accent-mid);
+  border-radius: 20px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.addBtn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.addedBadge {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  flex-shrink: 0;
+}

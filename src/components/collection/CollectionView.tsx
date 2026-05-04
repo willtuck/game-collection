@@ -4,6 +4,7 @@ import { GameGrid } from './GameGrid';
 import { FAB } from '../shared/FAB';
 import { AddGameSheet } from '../sheets/AddGameSheet';
 import { FilterSheet, type FilterState } from '../sheets/FilterSheet';
+import { BggImportSheet } from '../bgg/BggImportSheet';
 import { ConfirmSheet } from '../shared/ConfirmSheet';
 import { useGameStore } from '../../store/useGameStore';
 import { hasDims } from '../../lib/helpers';
@@ -27,6 +28,7 @@ export function CollectionView() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [addOpen, setAddOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [bggImportOpen, setBggImportOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const activeFilterCount = [
@@ -98,7 +100,10 @@ export function CollectionView() {
         filters={filters}
         onChange={setFilters}
         onClose={() => setFilterOpen(false)}
+        onImportBgg={() => setBggImportOpen(true)}
       />
+
+      <BggImportSheet open={bggImportOpen} onClose={() => setBggImportOpen(false)} />
 
       <ConfirmSheet
         open={!!pendingDeleteId}

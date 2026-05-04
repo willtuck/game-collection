@@ -2,6 +2,7 @@
 
 export interface Game {
   id: string;
+  bggId?: string;
   name: string;
   type?: 'expansion';
   baseGameId?: string;

@@ -55,3 +55,28 @@
 
 .select:focus { border-color: var(--accent-mid); }
 
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0 16px;
+}
+
+.exportBtn {
+  display: block;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text);
+  text-align: left;
+  padding: 0 16px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: background 0.12s;
+}
+
+.exportBtn:hover { background: var(--surface2); }
+
