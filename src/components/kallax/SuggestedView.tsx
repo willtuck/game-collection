@@ -57,8 +57,7 @@ export function SuggestedView() {
 
   const activeUnit = units.find(u => u.id === activeKuId) ?? units[0];
 
-  const noUnits    = kallaxes.length === 0;
-  const noDims     = !noUnits && sortedGames.length === 0;
+  const noUnits = kallaxes.length === 0;
 
   return (
     <div className={styles.view}>
@@ -110,13 +109,6 @@ export function SuggestedView() {
               Tap <strong>Units</strong> to add your first unit and see how your games fit.
             </div>
           </div>
-        ) : noDims ? (
-          <div className={styles.empty}>
-            <div className={styles.emptyTitle}>No games with dimensions</div>
-            <div className={styles.emptyBody}>
-              Add box dimensions to your games in the Collection tab to see them arranged here.
-            </div>
-          </div>
         ) : activeUnit ? (
           <>
             <div className={styles.canvasArea}>
@@ -133,8 +125,10 @@ export function SuggestedView() {
 
             <div className={styles.stats}>
               {activeUnit.label}
-              {' · '}{activeUnit.cellPacked.flat().length}{' '}
-              {activeUnit.cellPacked.flat().length === 1 ? 'game' : 'games'} inside
+              {activeUnit.cellPacked.flat().length > 0 && (
+                <>{' · '}{activeUnit.cellPacked.flat().length}{' '}
+                  {activeUnit.cellPacked.flat().length === 1 ? 'game' : 'games'} inside</>
+              )}
               {activeUnit.topPacked.length > 0 && (
                 <>{' · '}{activeUnit.topPacked.length}{' '}
                   {activeUnit.topPacked.length === 1 ? 'game' : 'games'} on top</>
