@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Sheet } from '../shared/Sheet';
 import { BggVersionSheet } from './BggVersionSheet';
-import { fetchBggCollection, type BggGame } from '../../lib/bggApi';
+import { fetchBggCollection, fetchExpansionParents, type BggGame } from '../../lib/bggApi';
 import { useGameStore } from '../../store/useGameStore';
 import type { Game } from '../../lib/types';
 import styles from './BggImportSheet.module.css';
@@ -14,8 +14,9 @@ interface BggImportSheetProps {
 type Phase = 'username' | 'loading' | 'collection' | 'error';
 
 export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
-  const games   = useGameStore(s => s.games);
-  const addGame = useGameStore(s => s.addGame);
+  const games      = useGameStore(s => s.games);
+  const addGame    = useGameStore(s => s.addGame);
+  const updateGame = useGameStore(s => s.updateGame);
 
   const [phase, setPhase]           = useState<Phase>('username');
   const [username, setUsername]     = useState('');
@@ -66,12 +67,17 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
     setVersionGame(null);
   }
 
-  function addAllGames() {
+  async function addAllGames() {
     const toAdd = collection.filter(g => !alreadyIn(g));
+
+    // Add all games, track bggId → local id for linking
+    const bggIdToLocalId = new Map<string, string>();
     const newIds: string[] = [];
+    const ts = Date.now().toString(36);
     toAdd.forEach((g, i) => {
+      const localId = `g${ts}${i.toString(36)}`;
       const newGame: Game = {
-        id: `g${Date.now().toString(36)}${i.toString(36)}`,
+        id: localId,
         bggId: g.bggId,
         thumbnail: g.thumbnail || undefined,
         name: g.name,
@@ -83,9 +89,43 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
         added: new Date().toISOString(),
       };
       addGame(newGame);
+      bggIdToLocalId.set(g.bggId, localId);
       newIds.push(g.bggId);
     });
     setAddedIds(s => new Set([...s, ...newIds]));
+
+    // Auto-link expansions to their parent games (non-blocking)
+    const expansionBggIds = toAdd
+      .filter(g => g.type === 'boardgameexpansion')
+      .map(g => g.bggId);
+    if (!expansionBggIds.length) return;
+
+    try {
+      // Chunk into batches of 50
+      const chunks: string[][] = [];
+      for (let i = 0; i < expansionBggIds.length; i += 50) {
+        chunks.push(expansionBggIds.slice(i, i + 50));
+      }
+      const maps = await Promise.all(chunks.map(fetchExpansionParents));
+      const parentMap = new Map(maps.flatMap(m => [...m]));
+
+      parentMap.forEach((parentBggIds, expansionBggId) => {
+        const localExpansionId = bggIdToLocalId.get(expansionBggId);
+        if (!localExpansionId) return;
+        for (const parentBggId of parentBggIds) {
+          // Parent may have just been added, or may already be in the collection
+          const localParentId =
+            bggIdToLocalId.get(parentBggId) ??
+            games.find(g => g.bggId === parentBggId)?.id;
+          if (localParentId) {
+            updateGame(localExpansionId, { baseGameId: localParentId });
+            break;
+          }
+        }
+      });
+    } catch {
+      // Non-fatal — games were imported, linking just didn't complete
+    }
   }
 
   const alreadyIn  = (g: BggGame) => existingBggIds.has(g.bggId) || addedIds.has(g.bggId);
@@ -152,7 +192,7 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
             </div>
 
             {collection.some(g => !alreadyIn(g)) && (
-              <button className={styles.addAllBtn} onClick={addAllGames}>
+              <button className={styles.addAllBtn} onClick={() => { void addAllGames(); }}>
                 Add all games
               </button>
             )}

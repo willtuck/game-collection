@@ -59,6 +59,24 @@ export async function fetchBggCollection(username: string): Promise<BggGame[]> {
     .filter(g => g.bggId && g.name);
 }
 
+// Returns a map of expansion bggId → parent game bggIds (inbound links).
+// Accepts up to 50 IDs per call; caller should chunk if needed.
+export async function fetchExpansionParents(bggIds: string[]): Promise<Map<string, string[]>> {
+  if (!bggIds.length) return new Map();
+  const doc = await bggFetch(`thing?id=${bggIds.join(',')}`);
+  const result = new Map<string, string[]>();
+  doc.querySelectorAll('item').forEach(item => {
+    const id = item.getAttribute('id') ?? '';
+    const parents = Array.from(
+      item.querySelectorAll('link[type="boardgameexpansion"][inbound="true"]')
+    )
+      .map(l => l.getAttribute('id') ?? '')
+      .filter(Boolean);
+    if (id && parents.length) result.set(id, parents);
+  });
+  return result;
+}
+
 export async function fetchBggVersions(bggId: string): Promise<BggVersion[]> {
   const doc = await bggFetch(`thing?id=${bggId}&versions=1`);
   return Array.from(doc.querySelectorAll('versions item')).map(v => {
