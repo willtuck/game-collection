@@ -7,6 +7,8 @@ function gameToRow(game: Game, userId: string) {
   return {
     id:            game.id,
     user_id:       userId,
+    bgg_id:        game.bggId         ?? null,
+    thumbnail:     game.thumbnail     ?? null,
     name:          game.name,
     type:          game.type          ?? null,
     base_game_id:  game.baseGameId    ?? null,
@@ -25,6 +27,8 @@ function gameToRow(game: Game, userId: string) {
 function rowToGame(row: Record<string, unknown>): Game {
   return {
     id:           row.id           as string,
+    bggId:        (row.bgg_id      as string | null) ?? undefined,
+    thumbnail:    (row.thumbnail   as string | null) ?? undefined,
     name:         row.name         as string,
     type:         row.type         as 'expansion' | undefined,
     baseGameId:   row.base_game_id as string | undefined,

@@ -36,8 +36,16 @@ async function syncOnSignIn(userId: string) {
   const { games: dbGames, kallaxes: dbKallaxes } = await fetchUserData(userId);
 
   if (dbGames.length > 0 || dbKallaxes.length > 0) {
-    // Cloud has data — it's the source of truth
-    useGameStore.setState({ games: dbGames, kallaxes: dbKallaxes });
+    // Cloud has data — it's the source of truth, but preserve local-only
+    // fields (bggId, thumbnail) that the DB schema may not yet store.
+    const localById = new Map(useGameStore.getState().games.map(g => [g.id, g]));
+    const mergedGames = dbGames.map(g => {
+      const local = localById.get(g.id);
+      return local
+        ? { ...g, bggId: local.bggId ?? g.bggId, thumbnail: local.thumbnail ?? g.thumbnail }
+        : g;
+    });
+    useGameStore.setState({ games: mergedGames, kallaxes: dbKallaxes });
   } else {
     // Cloud is empty — push whatever is stored locally
     const { games: localGames, kallaxes: localKallaxes } = useGameStore.getState();
