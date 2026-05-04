@@ -3,6 +3,7 @@
 export interface Game {
   id: string;
   bggId?: string;
+  thumbnail?: string;
   name: string;
   type?: 'expansion';
   baseGameId?: string;

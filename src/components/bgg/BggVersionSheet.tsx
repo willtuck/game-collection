@@ -35,6 +35,7 @@ export function BggVersionSheet({ open, game, onAdded, onClose }: BggVersionShee
     const newGame: Game = {
       id: 'g' + Date.now().toString(36),
       bggId: game.bggId,
+      thumbnail: game.thumbnail || undefined,
       name: game.name,
       type: game.type === 'boardgameexpansion' ? 'expansion' : undefined,
       width:  hasDims ? v.widthCm  : null,

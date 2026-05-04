@@ -1,9 +1,10 @@
-import { useState, useId } from 'react';
+import { useState, useId, useRef } from 'react';
 import { BoxPreview } from './BoxPreview';
 import { GroupInput } from './GroupInput';
 import { useGameStore } from '../../store/useGameStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { fetchDimSuggestions, contributeDims, type DimSuggestion } from '../../lib/supabaseSync';
+import { fetchBggVersions, type BggVersion } from '../../lib/bggApi';
 import { hasDims, toCm, fmtDims } from '../../lib/helpers';
 import { gameColor } from '../../lib/colors';
 import { Sheet } from '../shared/Sheet';
@@ -34,6 +35,10 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const [dimSuggestions, setDimSuggestions] = useState<DimSuggestion[]>([]);
   const [activeSugIdx, setActiveSugIdx] = useState<number | null>(null);
   const [savedDims, setSavedDims] = useState<{ width: string; height: string; depth: string } | null>(null);
+  const [bggVersions, setBggVersions] = useState<BggVersion[]>([]);
+  const [selectedVersionId, setSelectedVersionId] = useState('');
+  // track whether the current dims came from a version pick (so manual edits can reset it)
+  const versionDimsRef = useRef<{ w: string; h: string; d: string } | null>(null);
   const [pendingFitWarning, setPendingFitWarning] = useState<{
     name: string;
     storedInside: boolean;
@@ -84,11 +89,24 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     setActiveSugIdx(null);
     setSavedDims(null);
     setPendingFitWarning(null);
+    setBggVersions([]);
+    setSelectedVersionId('');
+    versionDimsRef.current = null;
     fetchDimSuggestions(game.name).then(setDimSuggestions);
+    if (game.bggId) fetchBggVersions(game.bggId).then(setBggVersions);
     setEditing(true);
   }
 
-  function cancelEdit() { setEditing(false); setDimSuggestions([]); setActiveSugIdx(null); setSavedDims(null); setPendingFitWarning(null); }
+  function cancelEdit() {
+    setEditing(false);
+    setDimSuggestions([]);
+    setActiveSugIdx(null);
+    setSavedDims(null);
+    setPendingFitWarning(null);
+    setBggVersions([]);
+    setSelectedVersionId('');
+    versionDimsRef.current = null;
+  }
 
   function setUnit(newUnit: 'cm' | 'in') {
     if (newUnit === form.unit) return;
@@ -171,6 +189,31 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     return (parseFloat(v) / 2.54).toFixed(1);
   }
 
+  function selectVersion(id: string) {
+    setSelectedVersionId(id);
+    if (!id) { versionDimsRef.current = null; return; }
+    const v = bggVersions.find(v => v.id === id);
+    if (!v || !v.widthCm || !v.heightCm || !v.depthCm) return;
+    const w = form.unit === 'cm' ? v.widthCm  : (parseFloat(v.widthCm)  / 2.54).toFixed(2);
+    const h = form.unit === 'cm' ? v.heightCm : (parseFloat(v.heightCm) / 2.54).toFixed(2);
+    const d = form.unit === 'cm' ? v.depthCm  : (parseFloat(v.depthCm)  / 2.54).toFixed(2);
+    versionDimsRef.current = { w, h, d };
+    setForm(f => ({ ...f, width: w, height: h, depth: d }));
+  }
+
+  function setDimField(key: 'width' | 'height' | 'depth', val: string) {
+    // If user types something different from what the version populated, clear the selection
+    if (versionDimsRef.current) {
+      const vd = versionDimsRef.current;
+      const expected = key === 'width' ? vd.w : key === 'height' ? vd.h : vd.d;
+      if (val !== expected) {
+        setSelectedVersionId('');
+        versionDimsRef.current = null;
+      }
+    }
+    setF(key, val);
+  }
+
   const isExpansion = game.type === 'expansion';
   const isStoredInside = isExpansion && game.storedInside;
   const baseGame = isExpansion && game.baseGameId ? games.find(g => g.id === game.baseGameId) : null;
@@ -203,8 +246,13 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
           <div className={styles.top}>
             <div className={styles.name}>{game.name}</div>
             <div className={styles.actions}>
-              <button className={styles.ico} onClick={openEdit} aria-label="Edit game">✎</button>
-              <button className={`${styles.ico} ${styles.del}`} onClick={() => onDeleteRequest(game.id)} aria-label="Delete game">✕</button>
+              <div className={styles.actionBtns}>
+                <button className={styles.ico} onClick={openEdit} aria-label="Edit game">✎</button>
+                <button className={`${styles.ico} ${styles.del}`} onClick={() => onDeleteRequest(game.id)} aria-label="Delete game">✕</button>
+              </div>
+              {game.thumbnail && (
+                <img src={game.thumbnail} alt="" className={styles.thumbImg} aria-hidden="true" />
+              )}
             </div>
           </div>
 
@@ -341,6 +389,26 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
             </>
           )}
 
+          {/* BGG Version */}
+          {game.bggId && bggVersions.length > 0 && (
+            <div className={styles.field}>
+              <label className={styles.flabel}>Version</label>
+              <select
+                className={styles.fselect}
+                value={selectedVersionId}
+                onChange={e => selectVersion(e.target.value)}
+              >
+                <option value="">Select edition to fill dimensions…</option>
+                {bggVersions.map(v => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}{v.year ? ` (${v.year})` : ''}{v.publisher ? ` — ${v.publisher}` : ''}
+                    {v.widthCm && v.heightCm && v.depthCm ? ` · ${v.widthCm}×${v.heightCm}×${v.depthCm}cm` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Group */}
           <div className={styles.field}>
             <label className={styles.flabel}>
@@ -404,7 +472,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
                       inputMode="decimal"
                       className={styles.dimInput}
                       value={form[k]}
-                      onChange={e => setF(k, e.target.value)}
+                      onChange={e => setDimField(k, e.target.value)}
                       placeholder={form.unit === 'cm' ? ['29.5','29.5','7.5'][i] : ['11.6','11.6','3.0'][i]}
                       step="0.1"
                       min="0"

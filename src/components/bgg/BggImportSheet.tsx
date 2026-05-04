@@ -73,6 +73,7 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
       const newGame: Game = {
         id: `g${Date.now().toString(36)}${i.toString(36)}`,
         bggId: g.bggId,
+        thumbnail: g.thumbnail || undefined,
         name: g.name,
         type: g.type === 'boardgameexpansion' ? 'expansion' : undefined,
         width: null, height: null, depth: null,
