@@ -3,6 +3,7 @@ import { Sheet } from '../shared/Sheet';
 import { BggVersionSheet } from './BggVersionSheet';
 import { fetchBggCollection, type BggGame } from '../../lib/bggApi';
 import { useGameStore } from '../../store/useGameStore';
+import type { Game } from '../../lib/types';
 import styles from './BggImportSheet.module.css';
 
 interface BggImportSheetProps {
@@ -13,7 +14,8 @@ interface BggImportSheetProps {
 type Phase = 'username' | 'loading' | 'collection' | 'error';
 
 export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
-  const games = useGameStore(s => s.games);
+  const games   = useGameStore(s => s.games);
+  const addGame = useGameStore(s => s.addGame);
 
   const [phase, setPhase]           = useState<Phase>('username');
   const [username, setUsername]     = useState('');
@@ -62,6 +64,27 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
   function markAdded(bggId: string) {
     setAddedIds(s => new Set([...s, bggId]));
     setVersionGame(null);
+  }
+
+  function addAllGames() {
+    const toAdd = collection.filter(g => !alreadyIn(g));
+    const newIds: string[] = [];
+    toAdd.forEach((g, i) => {
+      const newGame: Game = {
+        id: `g${Date.now().toString(36)}${i.toString(36)}`,
+        bggId: g.bggId,
+        name: g.name,
+        type: g.type === 'boardgameexpansion' ? 'expansion' : undefined,
+        width: null, height: null, depth: null,
+        unit: 'cm',
+        minPlayers: g.minPlayers || undefined,
+        maxPlayers: g.maxPlayers || undefined,
+        added: new Date().toISOString(),
+      };
+      addGame(newGame);
+      newIds.push(g.bggId);
+    });
+    setAddedIds(s => new Set([...s, ...newIds]));
   }
 
   const alreadyIn  = (g: BggGame) => existingBggIds.has(g.bggId) || addedIds.has(g.bggId);
@@ -126,6 +149,12 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
               <span className={styles.collectionUser}>{username}</span>
               <span className={styles.collectionCount}>{collection.length} games</span>
             </div>
+
+            {collection.some(g => !alreadyIn(g)) && (
+              <button className={styles.addAllBtn} onClick={addAllGames}>
+                Add all games
+              </button>
+            )}
 
             {baseGames.length > 0 && (
               <GameSection
