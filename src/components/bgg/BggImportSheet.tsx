@@ -11,7 +11,15 @@ interface BggImportSheetProps {
   onClose: () => void;
 }
 
-type Phase = 'username' | 'loading' | 'collection' | 'error';
+type Phase = 'username' | 'loading' | 'collection' | 'error' | 'adding';
+
+interface AddProgress {
+  gamesTotal: number;
+  linkingBatches: number;
+  linkingBatchDone: number;
+  linkedCount: number;
+  done: boolean;
+}
 
 export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
   const games      = useGameStore(s => s.games);
@@ -24,6 +32,9 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
   const [errorMsg, setErrorMsg]     = useState('');
   const [addedIds, setAddedIds]     = useState<Set<string>>(new Set());
   const [versionGame, setVersionGame] = useState<BggGame | null>(null);
+  const [addProgress, setAddProgress] = useState<AddProgress>({
+    gamesTotal: 0, linkingBatches: 0, linkingBatchDone: 0, linkedCount: 0, done: false,
+  });
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -59,6 +70,7 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
     setErrorMsg('');
     setAddedIds(new Set());
     setVersionGame(null);
+    setAddProgress({ gamesTotal: 0, linkingBatches: 0, linkingBatchDone: 0, linkedCount: 0, done: false });
     onClose();
   }
 
@@ -69,14 +81,28 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
 
   async function addAllGames() {
     const toAdd = collection.filter(g => !alreadyIn(g));
+    const expansionBggIds = toAdd
+      .filter(g => g.type === 'boardgameexpansion')
+      .map(g => g.bggId);
+    const totalBatches = Math.ceil(expansionBggIds.length / 20);
 
-    // Add all games, track bggId → local id for linking
+    // Switch to progress view before any async work
+    setPhase('adding');
+    setAddProgress({
+      gamesTotal: toAdd.length,
+      linkingBatches: totalBatches,
+      linkingBatchDone: 0,
+      linkedCount: 0,
+      done: false,
+    });
+
+    // Add all games synchronously
     const bggIdToLocalId = new Map<string, string>();
     const newIds: string[] = [];
     const ts = Date.now().toString(36);
     toAdd.forEach((g, i) => {
       const localId = `g${ts}${i.toString(36)}`;
-      const newGame: Game = {
+      addGame({
         id: localId,
         bggId: g.bggId,
         thumbnail: g.thumbnail || undefined,
@@ -87,30 +113,29 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
         minPlayers: g.minPlayers || undefined,
         maxPlayers: g.maxPlayers || undefined,
         added: new Date().toISOString(),
-      };
-      addGame(newGame);
+      });
       bggIdToLocalId.set(g.bggId, localId);
       newIds.push(g.bggId);
     });
     setAddedIds(s => new Set([...s, ...newIds]));
 
-    // Auto-link expansions to their parent games (non-blocking)
-    const expansionBggIds = toAdd
-      .filter(g => g.type === 'boardgameexpansion')
-      .map(g => g.bggId);
-    if (!expansionBggIds.length) return;
+    if (!expansionBggIds.length) {
+      setAddProgress(p => ({ ...p, done: true }));
+      return;
+    }
 
     try {
-      // Sequential batches of 20 to avoid proxy timeouts
       const parentMap = new Map<string, string[]>();
       for (let i = 0; i < expansionBggIds.length; i += 20) {
         const chunk = expansionBggIds.slice(i, i + 20);
         const chunkMap = await fetchExpansionParents(chunk);
         chunkMap.forEach((v, k) => parentMap.set(k, v));
+        setAddProgress(p => ({ ...p, linkingBatchDone: p.linkingBatchDone + 1 }));
       }
 
       // Read fresh store state — the `games` closure is stale after addGame calls
       const currentGames = useGameStore.getState().games;
+      let linkedCount = 0;
 
       parentMap.forEach((parentBggIds, expansionBggId) => {
         const localExpansionId = bggIdToLocalId.get(expansionBggId);
@@ -121,12 +146,16 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
             currentGames.find(g => g.bggId === parentBggId)?.id;
           if (localParentId) {
             updateGame(localExpansionId, { baseGameId: localParentId });
+            linkedCount++;
             break;
           }
         }
       });
+
+      setAddProgress(p => ({ ...p, linkedCount, done: true }));
     } catch {
       // Non-fatal — games were imported, linking just didn't complete
+      setAddProgress(p => ({ ...p, done: true }));
     }
   }
 
@@ -140,6 +169,7 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
         open={open && !versionGame}
         onClose={handleClose}
         title="Import from BGG"
+        disableClose={phase === 'adding' && !addProgress.done}
       >
         {phase === 'username' && (
           <div className={styles.usernamePhase}>
@@ -183,6 +213,39 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
             <button className={styles.retryBtn} onClick={() => setPhase('username')}>
               Try again
             </button>
+          </div>
+        )}
+
+        {phase === 'adding' && (
+          <div className={styles.addingPhase}>
+            <div className={styles.addingTitle}>
+              {addProgress.done ? 'All done!' : 'Adding your games…'}
+            </div>
+            <div className={styles.addingStep}>
+              <span className={styles.stepLabel}>
+                {addProgress.gamesTotal} game{addProgress.gamesTotal !== 1 ? 's' : ''} added
+              </span>
+              <span className={styles.stepCheck}>✓</span>
+            </div>
+            {addProgress.linkingBatches > 0 && (
+              <div className={styles.addingStep}>
+                <span className={styles.stepLabel}>
+                  {addProgress.done
+                    ? `${addProgress.linkedCount} expansion connection${addProgress.linkedCount !== 1 ? 's' : ''} made`
+                    : `Connecting expansions… (${addProgress.linkingBatchDone}/${addProgress.linkingBatches})`
+                  }
+                </span>
+                {addProgress.linkingBatchDone >= addProgress.linkingBatches
+                  ? <span className={styles.stepCheck}>✓</span>
+                  : <div className={styles.spinner} />
+                }
+              </div>
+            )}
+            {addProgress.done ? (
+              <button className={styles.doneBtn} onClick={handleClose}>Done</button>
+            ) : (
+              <p className={styles.addingHint}>Please wait…</p>
+            )}
           </div>
         )}
 

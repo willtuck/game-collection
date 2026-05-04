@@ -217,7 +217,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const isExpansion = game.type === 'expansion';
   const isStoredInside = isExpansion && game.storedInside;
   const baseGame = isExpansion && game.baseGameId ? games.find(g => g.id === game.baseGameId) : null;
-  const hasExpansions = !isExpansion && games.some(e => e.type === 'expansion' && e.baseGameId === game.id);
   const baseGames = games.filter(g => g.type !== 'expansion' && g.id !== game.id).sort((a,b) => a.name.localeCompare(b.name));
 
   // Preview dims for edit form
@@ -284,15 +283,13 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
             )}
 
             {/* Status pills: Base Game · Expansion · Manually Stored */}
-            {((!isExpansion && hasExpansions) || isExpansion || manualPlacements.some(p => p.gameId === game.id)) && (
-              <div className={styles.statusRow}>
-                {!isExpansion && hasExpansions && <span className={styles.basePill}>Base Game</span>}
-                {isExpansion && <span className={styles.expPill}>Expansion</span>}
-                {manualPlacements.some(p => p.gameId === game.id) && (
-                  <span className={styles.storedPill}>Manually stored</span>
-                )}
-              </div>
-            )}
+            <div className={styles.statusRow}>
+              {!isExpansion && <span className={styles.basePill}>Base Game</span>}
+              {isExpansion && <span className={styles.expPill}>Expansion</span>}
+              {manualPlacements.some(p => p.gameId === game.id) && (
+                <span className={styles.storedPill}>Manually stored</span>
+              )}
+            </div>
           </div>
 
           {/* Shelf action link */}
