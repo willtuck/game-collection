@@ -1,6 +1,11 @@
 import type { Game, PackableGame, KallaxSort } from './types';
 import { hasDims } from './helpers';
 
+// Strip leading articles so "A War of Whispers" sorts as "War of Whispers"
+function sortKey(name: string) {
+  return name.replace(/^(the|a|an)\s+/i, '').trim();
+}
+
 export function getSortedForKallax(games: Game[], kallaxSort: KallaxSort): PackableGame[] {
   const eligible = games.filter(
     g => hasDims(g) && !(g.type === 'expansion' && g.storedInside)
@@ -12,8 +17,8 @@ export function getSortedForKallax(games: Game[], kallaxSort: KallaxSort): Packa
 
   const sorted = [...eligible];
   switch (kallaxSort) {
-    case 'alpha':      sorted.sort((a,b) => a.name.localeCompare(b.name)); break;
-    case 'alpha-desc': sorted.sort((a,b) => b.name.localeCompare(a.name)); break;
+    case 'alpha':      sorted.sort((a,b) => sortKey(a.name).localeCompare(sortKey(b.name))); break;
+    case 'alpha-desc': sorted.sort((a,b) => sortKey(b.name).localeCompare(sortKey(a.name))); break;
     case 'players':
       sorted.sort((a,b) => {
         const am = parseInt(a.minPlayers ?? '') || 99;
