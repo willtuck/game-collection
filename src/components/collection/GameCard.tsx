@@ -244,51 +244,53 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
         <div className={styles.body}>
           <div className={styles.top}>
             <div className={styles.name}>{game.name}</div>
-            <div className={styles.actions}>
-              <div className={styles.actionBtns}>
-                <button className={styles.ico} onClick={openEdit} aria-label="Edit game">✎</button>
-                <button className={`${styles.ico} ${styles.del}`} onClick={() => onDeleteRequest(game.id)} aria-label="Delete game">✕</button>
-              </div>
-              {game.thumbnail && (
-                <img src={game.thumbnail} alt="" className={styles.thumbImg} aria-hidden="true" />
-              )}
+            <div className={styles.actionBtns}>
+              <button className={styles.ico} onClick={openEdit} aria-label="Edit game">✎</button>
+              <button className={`${styles.ico} ${styles.del}`} onClick={() => onDeleteRequest(game.id)} aria-label="Delete game">✕</button>
             </div>
           </div>
 
-          {/* Meta group: dims · players · pills */}
-          <div className={styles.metaGroup}>
-            {/* Dimensions line */}
-            <div className={styles.metaLine}>
-              {isStoredInside
-                ? <span className={styles.metaMuted}>stored within{baseGame ? ` ${baseGame.name}` : ' base game'}</span>
-                : hasDims(game)
-                ? fmtDims(game)
-                : <span className={styles.metaWarn}>no dimensions</span>
-              }
-            </div>
-
-            {/* Players / group line */}
-            {(game.minPlayers || game.maxPlayers || game.groupName) && (
-              <div className={styles.metaLine}>
-                {(game.minPlayers || game.maxPlayers) && (
-                  game.minPlayers === game.maxPlayers || !game.maxPlayers
-                    ? `${game.minPlayers}p`
-                    : `${game.minPlayers}–${game.maxPlayers}p`
-                )}
-                {(game.minPlayers || game.maxPlayers) && game.groupName && (
-                  <span className={styles.metaSep}> · </span>
-                )}
-                {game.groupName}
-              </div>
+          {/* Thumbnail + meta side by side */}
+          <div className={styles.contentRow}>
+            {game.thumbnail && (
+              <img src={game.thumbnail} alt="" className={styles.thumbImg} aria-hidden="true" />
             )}
 
-            {/* Status pills: Base Game · Expansion · Manually Stored */}
-            <div className={styles.statusRow}>
-              {!isExpansion && <span className={styles.basePill}>Base Game</span>}
-              {isExpansion && <span className={styles.expPill}>Expansion</span>}
-              {manualPlacements.some(p => p.gameId === game.id) && (
-                <span className={styles.storedPill}>Manually stored</span>
+            {/* Meta group: dims · players · pills */}
+            <div className={styles.metaGroup}>
+              {/* Dimensions line */}
+              <div className={styles.metaLine}>
+                {isStoredInside
+                  ? <span className={styles.metaMuted}>stored within{baseGame ? ` ${baseGame.name}` : ' base game'}</span>
+                  : hasDims(game)
+                  ? fmtDims(game)
+                  : <span className={styles.metaWarn}>no dimensions</span>
+                }
+              </div>
+
+              {/* Players / group line */}
+              {(game.minPlayers || game.maxPlayers || game.groupName) && (
+                <div className={styles.metaLine}>
+                  {(game.minPlayers || game.maxPlayers) && (
+                    game.minPlayers === game.maxPlayers || !game.maxPlayers
+                      ? `${game.minPlayers}p`
+                      : `${game.minPlayers}–${game.maxPlayers}p`
+                  )}
+                  {(game.minPlayers || game.maxPlayers) && game.groupName && (
+                    <span className={styles.metaSep}> · </span>
+                  )}
+                  {game.groupName}
+                </div>
               )}
+
+              {/* Status pills: Base Game · Expansion · Manually Stored */}
+              <div className={styles.statusRow}>
+                {!isExpansion && <span className={styles.basePill}>Base Game</span>}
+                {isExpansion && <span className={styles.expPill}>Expansion</span>}
+                {manualPlacements.some(p => p.gameId === game.id) && (
+                  <span className={styles.storedPill}>Manually stored</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -399,7 +401,9 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
                 {bggVersions.map(v => (
                   <option key={v.id} value={v.id}>
                     {v.name}{v.year ? ` (${v.year})` : ''}{v.publisher ? ` — ${v.publisher}` : ''}
-                    {v.widthCm && v.heightCm && v.depthCm ? ` · ${v.widthCm}×${v.heightCm}×${v.depthCm}cm` : ''}
+                    {v.widthCm && v.heightCm && v.depthCm
+                      ? ` · ${v.widthCm}×${v.heightCm}×${v.depthCm}cm`
+                      : ' · no dimensions available'}
                   </option>
                 ))}
               </select>

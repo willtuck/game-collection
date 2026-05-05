@@ -5,27 +5,24 @@ import { useGameStore } from '../store/useGameStore';
 import { fetchUserData, pushAllToDb } from '../lib/supabaseSync';
 
 /**
- * Called once at the app root. Restores any existing session and subscribes
- * to auth state changes so the rest of the app stays in sync.
+ * Called once at the app root. Subscribes to auth state changes so the rest
+ * of the app stays in sync. Data sync only runs on actual sign-in events —
+ * not on token refreshes — to prevent periodic overwrites of local state.
  *
  * Sign-in merge strategy:
- *   • If the DB already has data → DB wins (replace local state).
+ *   • If the DB has data → DB wins, but locally-only games are preserved and pushed up.
  *   • If the DB is empty but local has data → push local data up to DB.
  */
 export function useAuthInit() {
   const setSession = useAuthStore(s => s.setSession);
 
   useEffect(() => {
-    // Restore session on mount (handles page refresh and OAuth redirect)
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      if (session?.user) syncOnSignIn(session.user.id);
-    });
-
-    // Listen for future sign-in / sign-out events
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session?.user) syncOnSignIn(session.user.id);
+      // Only sync on real sign-in events; TOKEN_REFRESHED must not overwrite local state
+      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        syncOnSignIn(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -34,21 +31,31 @@ export function useAuthInit() {
 
 async function syncOnSignIn(userId: string) {
   const { games: dbGames, kallaxes: dbKallaxes } = await fetchUserData(userId);
+  const localGames = useGameStore.getState().games;
+  const localKallaxes = useGameStore.getState().kallaxes;
 
   if (dbGames.length > 0 || dbKallaxes.length > 0) {
-    // Cloud has data — it's the source of truth, but preserve local-only
-    // fields (bggId, thumbnail) that the DB schema may not yet store.
-    const localById = new Map(useGameStore.getState().games.map(g => [g.id, g]));
+    // Cloud has data — DB wins, but preserve local-only fields and locally-only games.
+    const localById = new Map(localGames.map(g => [g.id, g]));
+    const dbById    = new Map(dbGames.map(g => [g.id, g]));
+
     const mergedGames = dbGames.map(g => {
       const local = localById.get(g.id);
       return local
         ? { ...g, bggId: local.bggId ?? g.bggId, thumbnail: local.thumbnail ?? g.thumbnail }
         : g;
     });
+
+    // Preserve games that exist locally but not yet in DB (e.g. upsert hadn't completed)
+    const localOnly = localGames.filter(g => !dbById.has(g.id));
+    if (localOnly.length > 0) {
+      await pushAllToDb(localOnly, [], userId);
+      mergedGames.push(...localOnly);
+    }
+
     useGameStore.setState({ games: mergedGames, kallaxes: dbKallaxes });
   } else {
     // Cloud is empty — push whatever is stored locally
-    const { games: localGames, kallaxes: localKallaxes } = useGameStore.getState();
     await pushAllToDb(localGames, localKallaxes, userId);
   }
 }

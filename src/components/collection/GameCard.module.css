@@ -50,26 +50,26 @@
   overflow: hidden;
 }
 
-.actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
 .actionBtns {
   display: flex;
   gap: 4px;
+  flex-shrink: 0;
+}
+
+.contentRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 .thumbImg {
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   border-radius: 4px;
   object-fit: cover;
   border: 1px solid var(--border);
   display: block;
+  flex-shrink: 0;
 }
 
 .ico {
@@ -115,6 +115,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 /* Flat metadata line */

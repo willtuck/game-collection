@@ -321,14 +321,16 @@ export function drawCellGames(
   ctx.closePath();
   ctx.clip();
 
-  // Sort games for painter's algorithm: draw far-from-viewer first
+  // Sort games for painter's algorithm: draw far-from-viewer first.
+  // After mirroring upright xOffset (xOffset=0 → screen-left = near viewer),
+  // large xOffset is far, so descending order when right face is visible.
   const sortedGames = [...packedGames].sort((a, b) => {
     if (a.mode === 'stacked' && b.mode === 'stacked') {
       return a.yOffset - b.yOffset;
     }
     return rightFaceVisible()
-      ? a.xOffset - b.xOffset
-      : b.xOffset - a.xOffset;
+      ? b.xOffset - a.xOffset
+      : a.xOffset - b.xOffset;
   });
 
   sortedGames.forEach(g => {
@@ -338,7 +340,10 @@ export function drawCellGames(
 
     let corners: [number, number, number][];
     if (g.mode === 'upright') {
-      const xOff = xBase + g.xOffset, yOff = yBase, spineW = gd;
+      // Mirror xOffset so xOffset=0 → screen-left; packing fills left-to-right.
+      const spineW = gd;
+      const xOff = xBase + KW - g.xOffset - spineW;
+      const yOff = yBase;
       corners = [
         [xOff,         yOff,    0 ], [xOff+spineW,  yOff,    0 ],
         [xOff+spineW,  yOff,    gw], [xOff,         yOff,    gw],
