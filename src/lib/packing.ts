@@ -232,13 +232,34 @@ export function packCellsGroupAware(
 
       const packed = packCell(leadingNonGroup, isStacked, 0, dims);
       const packedIds = new Set(packed.map(g => g.id));
+      const unpackedNonGroup = leadingNonGroup.filter(g => !packedIds.has(g.id));
 
-      cellPacked.push(packed);
-      if (packed.length === 0) {
-        queue = [...afterNonGroup, ...leadingNonGroup];
+      let cellResult: PackedGame[] = packed;
+      let nextQueue: PackableGame[];
+
+      // In upright mode, fill remaining cell width by starting the next group early.
+      // The group can overflow naturally into subsequent cells.
+      if (!isStacked && packed.length > 0 && afterNonGroup.length > 0) {
+        const usedWidth = packed.reduce((s, g) => s + parseFloat(g.depth!), 0);
+        const nextGroupId = afterNonGroup[0]._cellGroup;
+        if (nextGroupId) {
+          const nextGroupGames = afterNonGroup.filter(g => g._cellGroup === nextGroupId);
+          const afterNextGroup  = afterNonGroup.filter(g => g._cellGroup !== nextGroupId);
+          const fillPacked = packCell(nextGroupGames, false, usedWidth, dims);
+          const fillIds = new Set(fillPacked.map(g => g.id));
+          cellResult = [...packed, ...fillPacked];
+          nextQueue  = [...unpackedNonGroup, ...nextGroupGames.filter(g => !fillIds.has(g.id)), ...afterNextGroup];
+        } else {
+          nextQueue = [...unpackedNonGroup, ...afterNonGroup];
+        }
+      } else if (packed.length === 0) {
+        nextQueue = [...afterNonGroup, ...leadingNonGroup];
       } else {
-        queue = [...leadingNonGroup.filter(g => !packedIds.has(g.id)), ...afterNonGroup];
+        nextQueue = [...unpackedNonGroup, ...afterNonGroup];
       }
+
+      cellPacked.push(cellResult);
+      queue = nextQueue;
     }
   }
 
