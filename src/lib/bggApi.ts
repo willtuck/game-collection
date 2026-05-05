@@ -97,14 +97,24 @@ export async function fetchBggVersions(bggId: string): Promise<BggVersion[]> {
     // BGG width+length are the two face dimensions; larger becomes H, smaller becomes W
     const a = parseFloat(wIn) || 0;
     const b = parseFloat(lIn) || 0;
+    // When both face dims are present, normalize so smaller=W and larger=H.
+    // When BGG only provides one (the other is 0 or absent), use it for both.
+    let widthCm: string | null, heightCm: string | null;
+    if (a > 0 && b > 0) {
+      widthCm  = inToCm(String(Math.min(a, b)));
+      heightCm = inToCm(String(Math.max(a, b)));
+    } else {
+      const face = a || b;
+      widthCm = heightCm = face > 0 ? inToCm(String(face)) : null;
+    }
     return {
       id: v.getAttribute('id') ?? '',
       name: v.querySelector('name[type="primary"]')?.getAttribute('value') ?? 'Unknown edition',
       publisher: v.querySelector('link[type="boardgamepublisher"]')?.getAttribute('value') ?? '',
       year: v.querySelector('yearpublished')?.getAttribute('value') ?? '',
-      widthCm:  inToCm(String(Math.min(a, b) || '')),
-      heightCm: inToCm(String(Math.max(a, b) || '')),
-      depthCm:  inToCm(dIn),
+      widthCm,
+      heightCm,
+      depthCm: inToCm(dIn),
     };
   });
 }

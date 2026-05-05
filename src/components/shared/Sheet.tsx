@@ -5,10 +5,11 @@ interface SheetProps {
   open: boolean;
   onClose: () => void;
   title?: string;
+  disableClose?: boolean;
   children: React.ReactNode;
 }
 
-export function Sheet({ open, onClose, title, children }: SheetProps) {
+export function Sheet({ open, onClose, title, disableClose, children }: SheetProps) {
   const sheetRef     = useRef<HTMLDivElement>(null);
   const prevFocusRef = useRef<HTMLElement | null>(null);
   const titleId      = useId();
@@ -57,11 +58,11 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
   }, [open]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || disableClose) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [open, onClose, disableClose]);
 
   // Prevent body scroll when sheet is open
   useEffect(() => {
@@ -74,7 +75,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
   return (
     <div
       className={styles.backdrop}
-      onClick={onClose}
+      onClick={disableClose ? undefined : onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}

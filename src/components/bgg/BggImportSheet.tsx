@@ -120,6 +120,8 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
     setAddedIds(s => new Set([...s, ...newIds]));
 
     if (!expansionBggIds.length) {
+      // Yield so React can paint the 'adding' phase before marking done
+      await Promise.resolve();
       setAddProgress(p => ({ ...p, done: true }));
       return;
     }
