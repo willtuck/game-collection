@@ -3,7 +3,6 @@ import { Sheet } from '../shared/Sheet';
 import { BggVersionSheet } from './BggVersionSheet';
 import { fetchBggCollection, fetchExpansionParents, type BggGame } from '../../lib/bggApi';
 import { useGameStore } from '../../store/useGameStore';
-import type { Game } from '../../lib/types';
 import styles from './BggImportSheet.module.css';
 
 interface BggImportSheetProps {
