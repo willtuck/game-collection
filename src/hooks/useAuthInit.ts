@@ -42,7 +42,7 @@ async function syncOnSignIn(userId: string) {
     const mergedGames = dbGames.map(g => {
       const local = localById.get(g.id);
       return local
-        ? { ...g, bggId: local.bggId ?? g.bggId, thumbnail: local.thumbnail ?? g.thumbnail }
+        ? { ...g, bggId: local.bggId ?? g.bggId, thumbnail: local.thumbnail ?? g.thumbnail, accentColor: local.accentColor ?? g.accentColor }
         : g;
     });
 

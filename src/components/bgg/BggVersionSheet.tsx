@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sheet } from '../shared/Sheet';
 import { fetchBggVersions, type BggGame, type BggVersion } from '../../lib/bggApi';
 import { useGameStore } from '../../store/useGameStore';
+import { extractDominantColor } from '../../lib/colorExtractor';
 import type { Game } from '../../lib/types';
 import styles from './BggVersionSheet.module.css';
 
@@ -13,7 +14,8 @@ interface BggVersionSheetProps {
 }
 
 export function BggVersionSheet({ open, game, onAdded, onClose }: BggVersionSheetProps) {
-  const addGame = useGameStore(s => s.addGame);
+  const addGame    = useGameStore(s => s.addGame);
+  const updateGame = useGameStore(s => s.updateGame);
 
   const [versions, setVersions] = useState<BggVersion[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -47,6 +49,11 @@ export function BggVersionSheet({ open, game, onAdded, onClose }: BggVersionShee
       added: new Date().toISOString(),
     };
     addGame(newGame);
+    if (newGame.thumbnail) {
+      extractDominantColor(newGame.thumbnail).then(color => {
+        if (color) updateGame(newGame.id, { accentColor: color });
+      });
+    }
     onAdded();
   }
 

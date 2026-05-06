@@ -366,7 +366,7 @@ export function drawCellGames(
     }
 
     const P = corners.map(([x,y,z]) => proj(x, y, z));
-    const col = gameColor(g.id);
+    const col = gameColor(g.id, g.accentColor);
     const { faceFront } = renderGameBox(ctx, P, col, isMatch, isDimmed);
     hitRegions.push({
       id: g.id, name: g.name,
@@ -457,7 +457,7 @@ export function drawTopGames(
       [xOff+footW, yOff+thickness, zCenter+footD ], [xOff,       yOff+thickness, zCenter+footD ],
     ];
     const P = corners.map(([x, y, z]) => proj(x, y, z));
-    const col = gameColor(g.id);
+    const col = gameColor(g.id, g.accentColor);
     const isMatch = !!searchTerm && g.name.toLowerCase().includes(searchTerm);
     const isDimmed = !!searchTerm && !isMatch;
 

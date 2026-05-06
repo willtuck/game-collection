@@ -14,7 +14,18 @@ const GAME_COLORS: GameColor[] = [
 const gameColorMap: Record<string, number> = {};
 let gameColorCounter = 0;
 
-export function gameColor(id: string): GameColor {
+function colorFromAccent(rgb: string): GameColor {
+  const m = rgb.match(/rgb\((\d+),(\d+),(\d+)\)/);
+  if (!m) return GAME_COLORS[0];
+  const [r, g, b] = [+m[1], +m[2], +m[3]];
+  return {
+    fill:   `rgba(${r},${g},${b},1)`,
+    stroke: `rgb(${Math.round(r * 0.55)},${Math.round(g * 0.55)},${Math.round(b * 0.55)})`,
+  };
+}
+
+export function gameColor(id: string, accentColor?: string): GameColor {
+  if (accentColor) return colorFromAccent(accentColor);
   if (!(id in gameColorMap)) {
     gameColorMap[id] = gameColorCounter++ % GAME_COLORS.length;
   }

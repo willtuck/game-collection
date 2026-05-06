@@ -1,10 +1,11 @@
-import { useState, useId, useRef } from 'react';
+import { useState, useId, useRef, useEffect } from 'react';
 import { BoxPreview } from './BoxPreview';
 import { GroupInput } from './GroupInput';
 import { useGameStore } from '../../store/useGameStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { fetchDimSuggestions, contributeDims, type DimSuggestion } from '../../lib/supabaseSync';
 import { fetchBggVersions, type BggVersion } from '../../lib/bggApi';
+import { extractDominantColor } from '../../lib/colorExtractor';
 import { hasDims, toCm, fmtDims } from '../../lib/helpers';
 import { gameColor } from '../../lib/colors';
 import { Sheet } from '../shared/Sheet';
@@ -31,7 +32,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const setPendingManualNav  = useGameStore(s => s.setPendingManualNav);
   const setPendingManualView  = useGameStore(s => s.setPendingManualView);
   const removeManualPlacement = useGameStore(s => s.removeManualPlacement);
-  const col = gameColor(game.id);
+  const col = gameColor(game.id, game.accentColor);
   const [dimSuggestions, setDimSuggestions] = useState<DimSuggestion[]>([]);
   const [activeSugIdx, setActiveSugIdx] = useState<number | null>(null);
   const [savedDims, setSavedDims] = useState<{ width: string; height: string; depth: string } | null>(null);
@@ -214,6 +215,15 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     setF(key, val);
   }
 
+  // Lazily extract accent color from thumbnail if not already stored
+  useEffect(() => {
+    if (game.thumbnail && !game.accentColor) {
+      extractDominantColor(game.thumbnail).then(color => {
+        if (color) updateGame(game.id, { accentColor: color });
+      });
+    }
+  }, [game.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const isExpansion = game.type === 'expansion';
   const isStoredInside = isExpansion && game.storedInside;
   const baseGame = isExpansion && game.baseGameId ? games.find(g => g.id === game.baseGameId) : null;
@@ -227,7 +237,10 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   return (
     <>
       {/* ── View mode card (always rendered) ── */}
-      <div className={styles.card}>
+      <div
+        className={styles.card}
+        style={game.accentColor ? { borderColor: game.accentColor } : undefined}
+      >
         {/* Canvas strip */}
         <div
           className={styles.strip}
@@ -236,7 +249,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
           {hasDims(game) && (
             <BoxPreview
               w={parseFloat(game.width!)} h={parseFloat(game.height!)} d={parseFloat(game.depth!)}
-              gameId={game.id}
+              color={col}
             />
           )}
         </div>

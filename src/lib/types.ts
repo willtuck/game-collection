@@ -4,6 +4,7 @@ export interface Game {
   id: string;
   bggId?: string;
   thumbnail?: string;
+  accentColor?: string; // dominant color extracted from thumbnail, stored locally
   name: string;
   type?: 'expansion';
   baseGameId?: string;
