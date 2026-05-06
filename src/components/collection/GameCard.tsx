@@ -515,8 +515,8 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
 
           {/* Actions */}
           <div className={styles.editActions}>
-            <button className={styles.saveBtn} onClick={saveEdit}>Save</button>
             <button className={styles.cancelBtn} onClick={cancelEdit}>Cancel</button>
+            <button className={styles.saveBtn} onClick={saveEdit}>Save</button>
           </div>
         </div>
       </Sheet>
