@@ -1,4 +1,4 @@
-import { useState, useId } from 'react';
+import { useState, useId, useEffect } from 'react';
 import { Sheet } from '../shared/Sheet';
 import { GroupInput } from '../collection/GroupInput';
 import { BoxPreview } from '../collection/BoxPreview';
@@ -8,6 +8,8 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { contributeDims } from '../../lib/supabaseSync';
 import { toCm } from '../../lib/helpers';
 import { toast } from '../shared/Toast';
+import { searchBgg, fetchBggGameDetails } from '../../lib/bggApi';
+import type { BggSearchResult, BggVersion } from '../../lib/bggApi';
 import type { Game } from '../../lib/types';
 import styles from './AddGameSheet.module.css';
 
@@ -36,15 +38,84 @@ const EMPTY: AddFormState = {
   minPlayers: '', maxPlayers: '',
 };
 
+interface BggSelection {
+  bggId: string;
+  thumbnail: string;
+  versions: BggVersion[];
+  loadingDetails: boolean;
+}
+
 export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
   const formId = useId();
   const [form, setForm] = useState<AddFormState>(EMPTY);
   const [nameErr, setNameErr] = useState('');
+  const [bggResults, setBggResults] = useState<BggSearchResult[]>([]);
+  const [bggSearching, setBggSearching] = useState(false);
+  const [showBggDropdown, setShowBggDropdown] = useState(false);
+  const [bggSelected, setBggSelected] = useState<BggSelection | null>(null);
+  const [bggVersionId, setBggVersionId] = useState('');
   const games = useGameStore(s => s.games);
   const addGame = useGameStore(s => s.addGame);
 
   function set<K extends keyof AddFormState>(key: K, val: AddFormState[K]) {
     setForm(f => ({ ...f, [key]: val }));
+  }
+
+  useEffect(() => {
+    const name = form.name.trim();
+    if (name.length < 3 || bggSelected) {
+      setBggResults([]);
+      setShowBggDropdown(false);
+      return;
+    }
+    setBggSearching(true);
+    const tid = setTimeout(async () => {
+      try {
+        const results = await searchBgg(name);
+        setBggResults(results);
+        setShowBggDropdown(results.length > 0);
+      } catch {
+        setBggResults([]);
+      } finally {
+        setBggSearching(false);
+      }
+    }, 500);
+    return () => clearTimeout(tid);
+  }, [form.name, bggSelected]);
+
+  async function handleBggSelect(result: BggSearchResult) {
+    setShowBggDropdown(false);
+    setBggResults([]);
+    set('name', result.name);
+    set('type', result.type === 'boardgameexpansion' ? 'expansion' : 'base');
+    setBggSelected({ bggId: result.bggId, thumbnail: '', versions: [], loadingDetails: true });
+    try {
+      const details = await fetchBggGameDetails(result.bggId);
+      set('minPlayers', details.minPlayers);
+      set('maxPlayers', details.maxPlayers);
+      setBggSelected({ bggId: result.bggId, thumbnail: details.thumbnail, versions: details.versions, loadingDetails: false });
+    } catch {
+      setBggSelected(s => s ? { ...s, loadingDetails: false } : null);
+    }
+  }
+
+  function handleVersionChange(versionId: string) {
+    setBggVersionId(versionId);
+    if (!bggSelected || !versionId) return;
+    const v = bggSelected.versions.find(v => v.id === versionId);
+    if (!v) return;
+    set('unit', 'cm');
+    if (v.widthCm)  set('width',  v.widthCm);
+    if (v.heightCm) set('height', v.heightCm);
+    if (v.depthCm)  set('depth',  v.depthCm);
+  }
+
+  function resetBgg() {
+    setBggSelected(null);
+    setBggVersionId('');
+    setBggResults([]);
+    setShowBggDropdown(false);
+    setBggSearching(false);
   }
 
   function setUnit(newUnit: 'cm' | 'in') {
@@ -76,6 +147,8 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
 
     const game: Game = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      bggId: bggSelected?.bggId || undefined,
+      thumbnail: bggSelected?.thumbnail || undefined,
       name,
       type: form.type === 'expansion' ? 'expansion' : undefined,
       baseGameId: (form.type === 'expansion' && form.baseGameId) ? form.baseGameId : undefined,
@@ -97,12 +170,14 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
     }
     toast(`Added "${name}"`);
     setForm(EMPTY);
+    resetBgg();
     onClose();
   }
 
   function handleClose() {
     setForm(EMPTY);
     setNameErr('');
+    resetBgg();
     onClose();
   }
 
@@ -111,21 +186,73 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
       <div className={styles.form}>
         {/* Name */}
         <div className={styles.field}>
-          <label className={styles.label} htmlFor={`${formId}-name`}>Game name</label>
-          <input
-            id={`${formId}-name`}
-            type="text"
-            name="name"
-            autoComplete="off"
-            className={styles.input}
-            value={form.name}
-            onChange={e => { set('name', e.target.value); setNameErr(''); }}
-            onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
-            placeholder="e.g. Wingspan"
-            autoFocus={window.matchMedia('(hover: hover)').matches}
-          />
+          <label className={styles.label} htmlFor={`${formId}-name`}>
+            Game name
+            {bggSearching && <span className={styles.searchingHint}> — searching BGG…</span>}
+          </label>
+          <div className={styles.nameWrap}>
+            <input
+              id={`${formId}-name`}
+              type="text"
+              name="name"
+              autoComplete="off"
+              className={styles.input}
+              value={form.name}
+              onChange={e => { set('name', e.target.value); setNameErr(''); setBggSelected(null); setBggVersionId(''); }}
+              onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); if (e.key === 'Escape') setShowBggDropdown(false); }}
+              onBlur={() => setShowBggDropdown(false)}
+              placeholder="e.g. Wingspan"
+              autoFocus={window.matchMedia('(hover: hover)').matches}
+            />
+            {showBggDropdown && bggResults.length > 0 && (
+              <div className={styles.suggestions} role="listbox">
+                {bggResults.map(r => (
+                  <button
+                    key={r.bggId}
+                    type="button"
+                    className={styles.suggestion}
+                    role="option"
+                    onMouseDown={e => { e.preventDefault(); handleBggSelect(r); }}
+                  >
+                    <span className={styles.suggestionName}>{r.name}</span>
+                    {r.yearPublished && <span className={styles.suggestionYear}>{r.yearPublished}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {nameErr && <div className={styles.err}>{nameErr}</div>}
         </div>
+
+        {/* BGG selection: thumbnail + edition picker */}
+        {bggSelected && (
+          <div className={styles.bggRow}>
+            {bggSelected.thumbnail && (
+              <img src={bggSelected.thumbnail} alt="" className={styles.bggThumb} />
+            )}
+            <div className={styles.bggVersionWrap}>
+              <label className={styles.label}>Edition <span className={styles.optional}>(fills dimensions)</span></label>
+              {bggSelected.loadingDetails ? (
+                <span className={styles.bggHint}>Loading editions…</span>
+              ) : bggSelected.versions.length > 0 ? (
+                <select
+                  className={styles.select}
+                  value={bggVersionId}
+                  onChange={e => handleVersionChange(e.target.value)}
+                >
+                  <option value="">Select edition…</option>
+                  {bggSelected.versions.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}{v.year ? ` (${v.year})` : ''}{v.publisher ? ` — ${v.publisher}` : ''}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className={styles.bggHint}>No editions found on BGG</span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Type */}
         <div className={styles.field}>
@@ -253,9 +380,10 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
           </div>
         )}
 
-        <button className={styles.submit} onClick={handleSubmit}>
-          Add to collection
-        </button>
+        <div className={styles.actions}>
+          <button className={styles.cancel} onClick={handleClose}>Cancel</button>
+          <button className={styles.submit} onClick={handleSubmit}>Add to collection</button>
+        </div>
       </div>
     </Sheet>
   );

@@ -88,6 +88,67 @@ export async function fetchExpansionParents(bggIds: string[]): Promise<Map<strin
   return result;
 }
 
+export interface BggSearchResult {
+  bggId: string;
+  name: string;
+  type: 'boardgame' | 'boardgameexpansion';
+  yearPublished: string;
+}
+
+export async function searchBgg(query: string): Promise<BggSearchResult[]> {
+  const doc = await bggFetch(`search?query=${encodeURIComponent(query)}&type=boardgame,boardgameexpansion`);
+  return Array.from(doc.querySelectorAll('item'))
+    .map(item => ({
+      bggId: item.getAttribute('id') ?? '',
+      name: item.querySelector('name[type="primary"]')?.getAttribute('value') ?? '',
+      type: (item.getAttribute('type') ?? 'boardgame') as 'boardgame' | 'boardgameexpansion',
+      yearPublished: item.querySelector('yearpublished')?.getAttribute('value') ?? '',
+    }))
+    .filter(g => g.bggId && g.name)
+    .slice(0, 8);
+}
+
+export interface BggGameDetails {
+  thumbnail: string;
+  minPlayers: string;
+  maxPlayers: string;
+  versions: BggVersion[];
+}
+
+export async function fetchBggGameDetails(bggId: string): Promise<BggGameDetails> {
+  const doc = await bggFetch(`thing?id=${bggId}&versions=1`);
+  const item = doc.querySelector('item');
+  const thumbnail = (item?.querySelector('thumbnail')?.textContent?.trim() ?? '')
+    .replace(/^\/\//, 'https://');
+  const minPlayers = item?.querySelector('minplayers')?.getAttribute('value') ?? '';
+  const maxPlayers = item?.querySelector('maxplayers')?.getAttribute('value') ?? '';
+  const versions: BggVersion[] = Array.from(doc.querySelectorAll('versions item')).map(v => {
+    const wIn = v.querySelector('width')?.getAttribute('value') ?? '';
+    const lIn = v.querySelector('length')?.getAttribute('value') ?? '';
+    const dIn = v.querySelector('depth')?.getAttribute('value') ?? '';
+    const a = parseFloat(wIn) || 0;
+    const b = parseFloat(lIn) || 0;
+    let widthCm: string | null, heightCm: string | null;
+    if (a > 0 && b > 0) {
+      widthCm  = inToCm(String(Math.min(a, b)));
+      heightCm = inToCm(String(Math.max(a, b)));
+    } else {
+      const face = a || b;
+      widthCm = heightCm = face > 0 ? inToCm(String(face)) : null;
+    }
+    return {
+      id: v.getAttribute('id') ?? '',
+      name: v.querySelector('name[type="primary"]')?.getAttribute('value') ?? 'Unknown edition',
+      publisher: v.querySelector('link[type="boardgamepublisher"]')?.getAttribute('value') ?? '',
+      year: v.querySelector('yearpublished')?.getAttribute('value') ?? '',
+      widthCm,
+      heightCm,
+      depthCm: inToCm(dIn),
+    };
+  });
+  return { thumbnail, minPlayers, maxPlayers, versions };
+}
+
 export async function fetchBggVersions(bggId: string): Promise<BggVersion[]> {
   const doc = await bggFetch(`thing?id=${bggId}&versions=1`);
   return Array.from(doc.querySelectorAll('versions item')).map(v => {

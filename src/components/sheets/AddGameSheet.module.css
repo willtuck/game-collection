@@ -135,8 +135,29 @@
   margin-top: 4px;
 }
 
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cancel {
+  height: 48px;
+  padding: 0 20px;
+  background: transparent;
+  color: var(--text-mid);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  font-family: var(--sans);
+  font-size: 15px;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.cancel:hover { background: var(--surface2); color: var(--text); }
+
 .submit {
-  width: 100%;
+  flex: 1;
   height: 48px;
   background: var(--accent);
   color: #fff;
@@ -146,8 +167,94 @@
   font-size: 15px;
   font-weight: 500;
   transition: background 0.15s;
-  margin-top: 4px;
 }
 
 .submit:hover { background: var(--accent-mid); }
 .submit:active { transform: scale(0.98); }
+
+/* BGG search */
+.searchingHint {
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+.nameWrap {
+  position: relative;
+}
+
+.suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 10;
+  overflow: hidden;
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--sans);
+  gap: 8px;
+}
+
+.suggestion:hover { background: var(--surface2); }
+.suggestion + .suggestion { border-top: 1px solid var(--border); }
+
+.suggestionName {
+  font-size: 14px;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestionYear {
+  font-size: 12px;
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+
+/* BGG game selection row */
+.bggRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.bggThumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.bggVersionWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bggHint {
+  font-size: 13px;
+  color: var(--text-light);
+  font-family: var(--sans);
+}
