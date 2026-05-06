@@ -6,9 +6,10 @@ import styles from './Header.module.css';
 interface HeaderProps {
   onImportCSV: () => void;
   onExportCSV: () => void;
+  onImportBgg: () => void;
 }
 
-export function Header({ onImportCSV, onExportCSV }: HeaderProps) {
+export function Header({ onImportCSV, onExportCSV, onImportBgg }: HeaderProps) {
   const count   = useGameStore(s => s.games.length);
   const user    = useAuthStore(s => s.user);
   const loading = useAuthStore(s => s.loading);
@@ -27,7 +28,7 @@ export function Header({ onImportCSV, onExportCSV }: HeaderProps) {
       <div className={styles.auth}>
         {!loading && (
           user ? (
-            <UserMenu onImportCSV={onImportCSV} onExportCSV={onExportCSV} />
+            <UserMenu onImportCSV={onImportCSV} onExportCSV={onExportCSV} onImportBgg={onImportBgg} />
           ) : (
             <button className={styles.signInBtn} onClick={signIn}>
               Sign in

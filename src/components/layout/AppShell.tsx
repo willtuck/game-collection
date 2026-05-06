@@ -5,6 +5,7 @@ import { CollectionView } from '../collection/CollectionView';
 import { SuggestedView } from '../kallax/SuggestedView';
 import { ManualView } from '../manual/ManualView';
 import { ImportSheet } from '../sheets/ImportSheet';
+import { BggImportSheet } from '../bgg/BggImportSheet';
 import { Toast } from '../shared/Toast';
 import { useGameStore } from '../../store/useGameStore';
 import { toast } from '../shared/Toast';
@@ -13,6 +14,7 @@ import styles from './AppShell.module.css';
 export function AppShell() {
   const [activeTab, setActiveTab]   = useState<TabName>('collection');
   const [importOpen, setImportOpen] = useState(false);
+  const [bggImportOpen, setBggImportOpen] = useState(false);
   const pendingManualNav  = useGameStore(s => s.pendingManualNav);
   const pendingManualView = useGameStore(s => s.pendingManualView);
   const games = useGameStore(s => s.games);
@@ -43,7 +45,7 @@ export function AppShell() {
 
   return (
     <div className={styles.shell}>
-      <Header onImportCSV={() => setImportOpen(true)} onExportCSV={handleExportCSV} />
+      <Header onImportCSV={() => setImportOpen(true)} onExportCSV={handleExportCSV} onImportBgg={() => setBggImportOpen(true)} />
       <BottomNav active={activeTab} onChange={setActiveTab} />
       <main className={styles.main}>
         <div className={`${styles.tabPanel} ${activeTab === 'collection' ? styles.tabPanelActive : ''}`}>
@@ -57,6 +59,7 @@ export function AppShell() {
         </div>
       </main>
       <ImportSheet open={importOpen} onClose={() => setImportOpen(false)} />
+      <BggImportSheet open={bggImportOpen} onClose={() => setBggImportOpen(false)} />
       <Toast />
     </div>
   );

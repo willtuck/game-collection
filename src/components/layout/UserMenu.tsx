@@ -7,9 +7,10 @@ import styles from './UserMenu.module.css';
 interface UserMenuProps {
   onImportCSV: () => void;
   onExportCSV: () => void;
+  onImportBgg: () => void;
 }
 
-export function UserMenu({ onImportCSV, onExportCSV }: UserMenuProps) {
+export function UserMenu({ onImportCSV, onExportCSV, onImportBgg }: UserMenuProps) {
   const user          = useAuthStore(s => s.user);
   const signOut       = useAuthStore(s => s.signOut);
   const clearAllGames = useGameStore(s => s.clearAllGames);
@@ -54,6 +55,9 @@ export function UserMenu({ onImportCSV, onExportCSV }: UserMenuProps) {
         <>
           <div className={styles.backdrop} onClick={close} aria-hidden="true" />
           <div className={styles.menu} role="menu">
+            <button role="menuitem" className={styles.item} onClick={() => { onImportBgg(); close(); }}>
+              Import from BGG
+            </button>
             <button role="menuitem" className={styles.item} onClick={() => { onImportCSV(); close(); }}>
               Import CSV
             </button>
