@@ -8,6 +8,23 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
 
   const { searchParams } = new URL(req.url);
+
+  // Image proxy — fetch a remote image server-side and return it with CORS headers
+  // so the client can draw it to a canvas without tainting it.
+  const imageUrl = searchParams.get('imageUrl');
+  if (imageUrl) {
+    try {
+      const res = await fetch(imageUrl);
+      if (!res.ok) return new Response(null, { status: res.status, headers: CORS });
+      const blob = await res.blob();
+      return new Response(blob, {
+        headers: { ...CORS, 'Content-Type': res.headers.get('Content-Type') ?? 'image/jpeg' },
+      });
+    } catch {
+      return new Response(null, { status: 502, headers: CORS });
+    }
+  }
+
   const path = searchParams.get('path');
   if (!path) {
     return new Response(JSON.stringify({ error: 'path parameter required' }), {
