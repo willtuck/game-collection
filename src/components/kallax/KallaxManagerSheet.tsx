@@ -148,6 +148,7 @@ export function KallaxManagerSheet({ open, onClose, units: unitsProp, onAdd: onA
                 <option key={m} value={m}>{kuLabel(m)}</option>
               ))}
             </optgroup>
+            <option disabled>──────────</option>
             <option value="custom">Custom…</option>
           </select>
           <input
