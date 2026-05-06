@@ -53,7 +53,8 @@ export type KallaxSort =
 export interface GameColor {
   fill: string;   // vivid accent — used for the outlined box preview in the card
   stroke: string; // darkened accent — used for box edges and strokes
-  light: string;  // very pale tint — used for strip background and shelf box fill
+  light: string;  // very pale tint (L≈93%) — used for strip background
+  mid: string;    // medium tint (L≈78%) — used for shelf box fill
 }
 
 export interface Layout {

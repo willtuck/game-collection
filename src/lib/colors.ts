@@ -36,11 +36,18 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   ];
 }
 
-// Derive a very pale tint: same hue, saturation capped at 35%, lightness at 93%
+// Very pale tint: same hue, saturation capped at 35%, lightness at 93%
 function lightenRgb(r: number, g: number, b: number): string {
   const [h, s] = rgbToHsl(r, g, b);
   const [lr, lg, lb] = hslToRgb(h, Math.min(s, 0.35), 0.93);
   return `rgb(${lr},${lg},${lb})`;
+}
+
+// Medium tint: same hue, mostly original saturation, lightness at 78%
+function midRgb(r: number, g: number, b: number): string {
+  const [h, s] = rgbToHsl(r, g, b);
+  const [mr, mg, mb] = hslToRgb(h, Math.min(s, 0.70), 0.78);
+  return `rgb(${mr},${mg},${mb})`;
 }
 
 function parseRgb(fill: string): [number, number, number] {
@@ -61,7 +68,7 @@ const BASE_COLORS = [
 
 const GAME_COLORS: GameColor[] = BASE_COLORS.map(c => {
   const [r, g, b] = parseRgb(c.fill);
-  return { ...c, light: lightenRgb(r, g, b) };
+  return { ...c, light: lightenRgb(r, g, b), mid: midRgb(r, g, b) };
 });
 
 const gameColorMap: Record<string, number> = {};
@@ -73,6 +80,7 @@ function colorFromAccent(rgb: string): GameColor {
     fill:   `rgba(${r},${g},${b},1)`,
     stroke: `rgb(${Math.round(r * 0.55)},${Math.round(g * 0.55)},${Math.round(b * 0.55)})`,
     light:  lightenRgb(r, g, b),
+    mid:    midRgb(r, g, b),
   };
 }
 
