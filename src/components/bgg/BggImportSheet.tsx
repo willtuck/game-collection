@@ -3,6 +3,7 @@ import { Sheet } from '../shared/Sheet';
 import { BggVersionSheet } from './BggVersionSheet';
 import { fetchBggCollection, fetchExpansionParents, type BggGame } from '../../lib/bggApi';
 import { useGameStore } from '../../store/useGameStore';
+import type { Game } from '../../lib/types';
 import styles from './BggImportSheet.module.css';
 
 interface BggImportSheetProps {
@@ -24,12 +25,14 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
   const games      = useGameStore(s => s.games);
   const addGame    = useGameStore(s => s.addGame);
   const updateGame = useGameStore(s => s.updateGame);
+  const deleteGame = useGameStore(s => s.deleteGame);
 
   const [phase, setPhase]           = useState<Phase>('username');
   const [username, setUsername]     = useState('');
   const [collection, setCollection] = useState<BggGame[]>([]);
   const [errorMsg, setErrorMsg]     = useState('');
   const [addedIds, setAddedIds]     = useState<Set<string>>(new Set());
+  const [removedGames, setRemovedGames] = useState<Game[]>([]);
   const [versionGame, setVersionGame] = useState<BggGame | null>(null);
   const [addProgress, setAddProgress] = useState<AddProgress>({
     gamesTotal: 0, linkingBatches: 0, linkingBatchDone: 0, linkedCount: 0, done: false,
@@ -48,6 +51,11 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
       const list = await fetchBggCollection(u);
       setCollection(list);
       setAddedIds(new Set());
+
+      // Games in ShelfGeek that have a bggId but aren't in the fetched collection
+      const fetchedIds = new Set(list.map(g => g.bggId));
+      setRemovedGames(games.filter(g => g.bggId && !fetchedIds.has(g.bggId)));
+
       setPhase('collection');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Unknown error';
@@ -68,6 +76,7 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
     setCollection([]);
     setErrorMsg('');
     setAddedIds(new Set());
+    setRemovedGames([]);
     setVersionGame(null);
     setAddProgress({ gamesTotal: 0, linkingBatches: 0, linkingBatchDone: 0, linkedCount: 0, done: false });
     onClose();
@@ -78,14 +87,28 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
     setVersionGame(null);
   }
 
+  function removeRemovedGame(id: string) {
+    deleteGame(id);
+    setRemovedGames(r => r.filter(g => g.id !== id));
+  }
+
+  function removeAllRemovedGames() {
+    removedGames.forEach(g => deleteGame(g.id));
+    setRemovedGames([]);
+  }
+
+  // Games from BGG not yet in the ShelfGeek collection
+  const newGames   = collection.filter(g => !existingBggIds.has(g.bggId));
+  const baseGames  = newGames.filter(g => g.type === 'boardgame');
+  const expansions = newGames.filter(g => g.type === 'boardgameexpansion');
+
   async function addAllGames() {
-    const toAdd = collection.filter(g => !alreadyIn(g));
+    const toAdd = newGames.filter(g => !addedIds.has(g.bggId));
     const expansionBggIds = toAdd
       .filter(g => g.type === 'boardgameexpansion')
       .map(g => g.bggId);
     const totalBatches = Math.ceil(expansionBggIds.length / 20);
 
-    // Switch to progress view before any async work
     setPhase('adding');
     setAddProgress({
       gamesTotal: toAdd.length,
@@ -95,7 +118,6 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
       done: false,
     });
 
-    // Add all games synchronously
     const bggIdToLocalId = new Map<string, string>();
     const newIds: string[] = [];
     const ts = Date.now().toString(36);
@@ -119,7 +141,6 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
     setAddedIds(s => new Set([...s, ...newIds]));
 
     if (!expansionBggIds.length) {
-      // Yield so React can paint the 'adding' phase before marking done
       await Promise.resolve();
       setAddProgress(p => ({ ...p, done: true }));
       return;
@@ -134,7 +155,6 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
         setAddProgress(p => ({ ...p, linkingBatchDone: p.linkingBatchDone + 1 }));
       }
 
-      // Read fresh store state — the `games` closure is stale after addGame calls
       const currentGames = useGameStore.getState().games;
       let linkedCount = 0;
 
@@ -155,14 +175,9 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
 
       setAddProgress(p => ({ ...p, linkedCount, done: true }));
     } catch {
-      // Non-fatal — games were imported, linking just didn't complete
       setAddProgress(p => ({ ...p, done: true }));
     }
   }
-
-  const alreadyIn  = (g: BggGame) => existingBggIds.has(g.bggId) || addedIds.has(g.bggId);
-  const baseGames  = collection.filter(g => g.type === 'boardgame');
-  const expansions = collection.filter(g => g.type === 'boardgameexpansion');
 
   return (
     <>
@@ -254,30 +269,69 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
           <div className={styles.collectionPhase}>
             <div className={styles.collectionMeta}>
               <span className={styles.collectionUser}>{username}</span>
-              <span className={styles.collectionCount}>{collection.length} games</span>
+              <span className={styles.collectionCount}>{collection.length} games on BGG</span>
             </div>
 
-            {collection.some(g => !alreadyIn(g)) && (
-              <button className={styles.addAllBtn} onClick={() => { void addAllGames(); }}>
-                Add all games
-              </button>
+            {/* New games to add */}
+            {newGames.length > 0 ? (
+              <>
+                {newGames.some(g => !addedIds.has(g.bggId)) && (
+                  <button className={styles.addAllBtn} onClick={() => { void addAllGames(); }}>
+                    Add all new games
+                  </button>
+                )}
+                {baseGames.length > 0 && (
+                  <GameSection
+                    title="Base Games"
+                    games={baseGames}
+                    addedIds={addedIds}
+                    onSelect={setVersionGame}
+                  />
+                )}
+                {expansions.length > 0 && (
+                  <GameSection
+                    title="Expansions"
+                    games={expansions}
+                    addedIds={addedIds}
+                    onSelect={setVersionGame}
+                  />
+                )}
+              </>
+            ) : (
+              <p className={styles.allSynced}>
+                All your BGG games are already in your collection.
+              </p>
             )}
 
-            {baseGames.length > 0 && (
-              <GameSection
-                title="Base Games"
-                games={baseGames}
-                alreadyIn={alreadyIn}
-                onSelect={setVersionGame}
-              />
-            )}
-            {expansions.length > 0 && (
-              <GameSection
-                title="Expansions"
-                games={expansions}
-                alreadyIn={alreadyIn}
-                onSelect={setVersionGame}
-              />
+            {/* Games removed from BGG */}
+            {removedGames.length > 0 && (
+              <div className={styles.removedSection}>
+                <div className={styles.removedHeader}>
+                  <span className={styles.removedTitle}>Removed from BGG</span>
+                  <button className={styles.removeAllBtn} onClick={removeAllRemovedGames}>
+                    Remove all
+                  </button>
+                </div>
+                <p className={styles.removedHint}>
+                  These games are in your ShelfGeek collection but no longer marked as owned on BGG.
+                </p>
+                {removedGames.map(g => (
+                  <div key={g.id} className={styles.removedRow}>
+                    {g.thumbnail ? (
+                      <img src={g.thumbnail} alt="" className={styles.thumb} loading="lazy" />
+                    ) : (
+                      <div className={styles.thumbPlaceholder} />
+                    )}
+                    <span className={styles.removedName}>{g.name}</span>
+                    <button
+                      className={styles.removeBtn}
+                      onClick={() => removeRemovedGame(g.id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -298,16 +352,16 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
 interface GameSectionProps {
   title: string;
   games: BggGame[];
-  alreadyIn: (g: BggGame) => boolean;
+  addedIds: Set<string>;
   onSelect: (g: BggGame) => void;
 }
 
-function GameSection({ title, games, alreadyIn, onSelect }: GameSectionProps) {
+function GameSection({ title, games, addedIds, onSelect }: GameSectionProps) {
   return (
     <div className={styles.section}>
       <div className={styles.sectionTitle}>{title}</div>
       {games.map(g => {
-        const done = alreadyIn(g);
+        const done = addedIds.has(g.bggId);
         return (
           <div key={g.bggId} className={`${styles.gameRow} ${done ? styles.done : ''}`}>
             {g.thumbnail ? (

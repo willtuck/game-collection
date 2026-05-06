@@ -242,6 +242,109 @@
   flex-shrink: 0;
 }
 
+.allSynced {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.5;
+  padding: 8px 0;
+}
+
+/* ── Removed from BGG section ── */
+
+.removedSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  margin-top: 4px;
+}
+
+.removedHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+
+.removedTitle {
+  font-size: 11px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--danger, #c0392b);
+}
+
+.removeAllBtn {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--danger, #c0392b);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--danger, #c0392b);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s;
+}
+
+.removeAllBtn:hover {
+  background: var(--danger, #c0392b);
+  color: #fff;
+}
+
+.removedHint {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.4;
+}
+
+.removedRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r);
+  transition: background 0.1s;
+}
+
+.removedRow:hover { background: var(--surface2); }
+
+.removedName {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.removeBtn {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--danger, #c0392b);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--danger, #c0392b);
+  font-family: var(--mono);
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.removeBtn:hover {
+  background: var(--danger, #c0392b);
+  color: #fff;
+}
+
 /* ── Adding phase ── */
 
 .addingPhase {
