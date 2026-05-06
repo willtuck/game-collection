@@ -143,10 +143,11 @@ export function KallaxManagerSheet({ open, onClose, units: unitsProp, onAdd: onA
             onChange={e => setNewModel(e.target.value)}
             aria-label="Unit type"
           >
-            {PRESET_MODELS.map(m => (
-              <option key={m} value={m}>{kuLabel(m)}</option>
-            ))}
-            <option disabled>──────────</option>
+            <optgroup label="Ikea Kallax">
+              {PRESET_MODELS.map(m => (
+                <option key={m} value={m}>{kuLabel(m)}</option>
+              ))}
+            </optgroup>
             <option value="custom">Custom…</option>
           </select>
           <input
