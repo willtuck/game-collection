@@ -202,14 +202,6 @@
   color: var(--text-mid);
 }
 
-.footerBgg {
-  display: flex;
-  justify-content: center;
-  padding-top: 20px;
-  margin-top: 20px;
-  border-top: 1px solid var(--border);
-}
-
 .bggLogo {
   height: 32px;
   width: auto;
@@ -225,6 +217,9 @@
     flex-direction: column;
     gap: 20px;
     align-items: flex-start;
+  }
+  .footerInner .bggLogo {
+    align-self: center;
   }
   .footerRight {
     text-align: left;

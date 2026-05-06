@@ -67,6 +67,7 @@ export function LandingPage() {
             </div>
             <p className={styles.footerTagline}>Your board game collection, beautifully organised.</p>
           </div>
+          <img src={bggLogo} alt="Powered by BoardGameGeek" className={styles.bggLogo} />
           <div className={styles.footerRight}>
             <div className={styles.footerLinks}>
               <Link to="/privacy" className={styles.footerLink}>Privacy Policy</Link>
@@ -74,9 +75,6 @@ export function LandingPage() {
             </div>
             <p className={styles.copyright}>© 2026 ShelfGeek</p>
           </div>
-        </div>
-        <div className={styles.footerBgg}>
-          <img src={bggLogo} alt="Powered by BoardGameGeek" className={styles.bggLogo} />
         </div>
       </footer>
     </div>
