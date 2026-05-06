@@ -11,10 +11,10 @@ export function TermsPage() {
 
       <h2>Using ShelfGeek</h2>
       <p>You may use the Service for personal, non-commercial purposes. You must not use it to violate any laws or the rights of others.</p>
-      <p>You are responsible for keeping your account credentials secure. Notify us immediately if you suspect unauthorised access to your account.</p>
+      <p>You are responsible for keeping your account credentials secure. Notify us immediately if you suspect unauthorized access to your account.</p>
 
       <h2>Your content</h2>
-      <p>You own the data you enter into ShelfGeek — your game collection, shelf configurations, and notes. By using the Service, you grant us a limited licence to store and display that data to you.</p>
+      <p>You own the data you enter into ShelfGeek — your game collection, shelf configurations, and notes. By using the Service, you grant us a limited license to store and display that data to you.</p>
       <p>We do not claim ownership of your content and will not use it for any purpose beyond operating the Service.</p>
 
       <h2>Service availability</h2>

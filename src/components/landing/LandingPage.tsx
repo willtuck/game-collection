@@ -28,7 +28,7 @@ export function LandingPage() {
         <HeroPattern />
         <div className={styles.heroContent}>
           <h1 className={styles.headline}>
-            Your board game collection,<br />beautifully organised.
+            Your board game collection,<br />beautifully organized.
           </h1>
           <p className={styles.subhead}>
             Track every game. Plan your shelves.<br />Always know what fits where.
@@ -51,7 +51,7 @@ export function LandingPage() {
             </p>
           </div>
           <div className={styles.featureCard}>
-            <h3 className={styles.featureTitle}>Visualise any shelving unit</h3>
+            <h3 className={styles.featureTitle}>Visualize any shelving unit</h3>
             <p className={styles.featureDesc}>
               See your shelves come to life in an isometric view — IKEA Kallax, custom units, whatever you use.
             </p>
@@ -65,7 +65,7 @@ export function LandingPage() {
             <div className={styles.wordmark}>
               Shelf<span className={styles.accent}>Geek</span>
             </div>
-            <p className={styles.footerTagline}>Your board game collection, beautifully organised.</p>
+            <p className={styles.footerTagline}>Your board game collection, beautifully organized.</p>
           </div>
           <img src={bggLogo} alt="Powered by BoardGameGeek" className={styles.bggLogo} />
           <div className={styles.footerRight}>

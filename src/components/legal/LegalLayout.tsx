@@ -24,7 +24,7 @@ export function LegalLayout({ children }: { children: ReactNode }) {
             <div className={styles.wordmark}>
               Shelf<span className={styles.accent}>Geek</span>
             </div>
-            <p className={styles.footerTagline}>Your board game collection, beautifully organised.</p>
+            <p className={styles.footerTagline}>Your board game collection, beautifully organized.</p>
           </div>
           <div className={styles.footerRight}>
             <div className={styles.footerLinks}>
