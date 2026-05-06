@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { getSortedForKallax } from '../../lib/sorting';
-import { packCellsGroupAware, packTop, fitsInCell } from '../../lib/packing';
+import { packCellsGroupAware, packTop, fitsInCell, fitsUprightInCell } from '../../lib/packing';
 import { unitGrid, unitDims } from '../../lib/helpers';
 import type { PackedGame } from '../../lib/types';
 import { KallaxCanvas } from './KallaxCanvas';
@@ -45,8 +45,13 @@ export function SuggestedView() {
     for (const ku of kallaxes) {
       const [cols, rows] = unitGrid(ku);
       const dims = unitDims(ku);
-      const oversized = rem.filter(g => !fitsInCell(g, dims));
-      const cellable  = rem.filter(g =>  fitsInCell(g, dims));
+      // In upright mode, only games that fit upright go into cells — games that
+      // fit only when flat (e.g. tall boxes like Ark Nova) go to top-of-shelf.
+      // In stacked mode, any game that fits in any orientation goes into cells.
+      const fitsCurrentMode = (g: (typeof rem)[0]) =>
+        kallaxMode === 'stacked' ? fitsInCell(g, dims) : fitsUprightInCell(g, dims);
+      const oversized = rem.filter(g => !fitsCurrentMode(g));
+      const cellable  = rem.filter(g =>  fitsCurrentMode(g));
       const { cellPacked, remaining: afterCells } = packCellsGroupAware(cellable, cols * rows, kallaxMode === 'stacked', dims);
       const { topPacked, remaining: afterTop }   = packTop(oversized, cols, rows, dims);
       rem = [...afterTop, ...afterCells];

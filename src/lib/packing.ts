@@ -3,7 +3,7 @@ import type { PackableGame, PackedGame } from './types';
 export const KALLAX = { w: 33, h: 33, d: 38 }; // cm, interior dimensions
 export const MAX_TOP_HEIGHT = 25; // cm — max stack height on top of a unit
 
-/** Returns true if the game can physically fit inside a cell of the given dimensions. */
+/** Returns true if the game can physically fit inside a cell in any orientation. */
 export function fitsInCell(g: PackableGame, dims = KALLAX): boolean {
   if (!g.width || !g.height || !g.depth) return false;
   const { w: KW, h: KH, d: KD } = dims;
@@ -14,6 +14,14 @@ export function fitsInCell(g: PackableGame, dims = KALLAX): boolean {
   const sorted = [gw, gh, gd].sort((a, b) => a - b);
   if ((sorted[1] <= KW && sorted[2] <= KD) || (sorted[1] <= KD && sorted[2] <= KW)) return true;
   return false;
+}
+
+/** Returns true if the game can stand upright inside a cell (used for upright storage mode). */
+export function fitsUprightInCell(g: PackableGame, dims = KALLAX): boolean {
+  if (!g.width || !g.height || !g.depth) return false;
+  const { w: KW, h: KH, d: KD } = dims;
+  const gw = parseFloat(g.width), gh = parseFloat(g.height), gd = parseFloat(g.depth);
+  return gh <= KH && gw <= KD && gd <= KW;
 }
 
 /**
