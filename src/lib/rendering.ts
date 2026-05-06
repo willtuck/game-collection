@@ -87,7 +87,7 @@ export function pointInPoly(px: number, py: number, poly: [number, number][]): b
 export function drawBox(
   canvas: HTMLCanvasElement,
   w: number, h: number, d: number,
-  col: GameColor = { fill: 'rgba(74,124,101,0.10)', stroke: '#4A7C65' },
+  col: GameColor = { fill: 'rgba(74,124,101,0.10)', stroke: '#4A7C65', light: 'rgb(230,242,237)' },
 ): void {
   const ctx = canvas.getContext('2d')!;
   const CW = canvas.width, CH = canvas.height;
@@ -207,11 +207,11 @@ function renderGameBox(
       : [[0,1],[1,5],[5,4],[4,0],[0,3],[3,7],[7,4],[7,6],[6,5]];
     edges.forEach(([a,b]) => gEdge(a, b, dimStroke, 0.75));
   } else {
-    // Parse base RGB and darken/lighten for face shading — fully opaque
-    const rgbMatch = col.fill.match(/rgba?\((\d+),(\d+),(\d+)/);
-    const [br, bg, bb] = rgbMatch ? [+rgbMatch[1], +rgbMatch[2], +rgbMatch[3]] : [128,128,128];
+    // Use the light tint as the base fill for shelf boxes; shading differentiates faces
+    const rgbMatch = col.light.match(/rgba?\((\d+),(\d+),(\d+)/);
+    const [br, bg, bb] = rgbMatch ? [+rgbMatch[1], +rgbMatch[2], +rgbMatch[3]] : [240,236,230];
     const shade = (r: number, g: number, b: number, f: number) =>
-      `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;
+      `rgb(${Math.min(255,Math.round(r*f))},${Math.min(255,Math.round(g*f))},${Math.min(255,Math.round(b*f))})`;
     const baseFill = shade(br, bg, bb, isMatch ? 1.0 : 0.92);   // front face
     const sideFill = shade(br, bg, bb, isMatch ? 0.82 : 0.75);   // side face (darker)
     const topFill  = shade(br, bg, bb, isMatch ? 1.08 : 1.0);    // top face (lighter)

@@ -237,14 +237,11 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   return (
     <>
       {/* ── View mode card (always rendered) ── */}
-      <div
-        className={styles.card}
-        style={game.accentColor ? { borderColor: game.accentColor } : undefined}
-      >
+      <div className={styles.card}>
         {/* Canvas strip */}
         <div
           className={styles.strip}
-          style={{ background: hasDims(game) ? col.fill.replace(/[\d.]+\)$/, '0.04)') : '#DED8D0' }}
+          style={{ background: hasDims(game) ? col.light : '#DED8D0' }}
         >
           {hasDims(game) && (
             <BoxPreview
@@ -496,7 +493,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
               </div>
               {(pw > 0 || ph > 0 || pd > 0) && (
                 <div className={styles.preview}>
-                  <BoxPreview w={pw||1} h={ph||1} d={pd||1} gameId={game.id} />
+                  <BoxPreview w={pw||1} h={ph||1} d={pd||1} color={col} />
                 </div>
               )}
               {dimSuggestions.length > 0 && (

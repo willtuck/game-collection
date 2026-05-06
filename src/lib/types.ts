@@ -51,8 +51,9 @@ export type KallaxSort =
   | 'dims-last';
 
 export interface GameColor {
-  fill: string;
-  stroke: string;
+  fill: string;   // vivid accent — used for the outlined box preview in the card
+  stroke: string; // darkened accent — used for box edges and strokes
+  light: string;  // very pale tint — used for strip background and shelf box fill
 }
 
 export interface Layout {
