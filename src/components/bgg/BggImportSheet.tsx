@@ -2,7 +2,6 @@ import { useState, useRef } from 'react';
 import { Sheet } from '../shared/Sheet';
 import { BggVersionSheet } from './BggVersionSheet';
 import { fetchBggCollection, fetchExpansionParents, type BggGame } from '../../lib/bggApi';
-import { extractDominantColor } from '../../lib/colorExtractor';
 import { useGameStore } from '../../store/useGameStore';
 import styles from './BggImportSheet.module.css';
 
@@ -118,16 +117,6 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
       newIds.push(g.bggId);
     });
     setAddedIds(s => new Set([...s, ...newIds]));
-
-    // Extract accent colors in the background for all newly added games
-    for (const g of toAdd) {
-      if (!g.thumbnail) continue;
-      const localId = bggIdToLocalId.get(g.bggId);
-      if (!localId) continue;
-      extractDominantColor(g.thumbnail).then(color => {
-        if (color) updateGame(localId, { accentColor: color });
-      });
-    }
 
     if (!expansionBggIds.length) {
       // Yield so React can paint the 'adding' phase before marking done
