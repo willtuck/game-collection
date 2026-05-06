@@ -21,20 +21,16 @@ function packManualCell(
   const result: PackedGame[] = [];
 
   if (storageMode !== 'stacked') {
-    // UPRIGHT: list[0] → visual leftmost.
-    // cosAz ≈ -0.924 so increasing 3D-x moves LEFT on screen. To pack from the
-    // visual-left wall, start xOff at dims.w and count down; list[0] ends up at
-    // the highest xOffset (= screen-leftmost position against the left wall).
-    const items: { game: Game; gd: number }[] = [];
+    // UPRIGHT: list[0] → visual leftmost. renderingts mirrors xOffset as
+    // (KW - xOffset - spineW), so xOffset=0 maps to the left wall on screen.
+    // Count up from 0, matching how packCell works for automatic storage.
+    let xOff = 0;
     for (const p of placements) {
       const game = games.find(g => g.id === p.gameId);
       if (!game?.width || !game.height || !game.depth) continue;
-      items.push({ game, gd: parseFloat(game.depth) });
-    }
-    let xOff = dims.w;
-    for (const { game, gd } of items) {
-      xOff -= gd;
+      const gd = parseFloat(game.depth);
       result.push({ ...game, xOffset: xOff, yOffset: 0, mode: 'upright' });
+      xOff += gd;
     }
   } else {
     // STACKED: list[0] → topmost. Collect items, compute total height, assign
