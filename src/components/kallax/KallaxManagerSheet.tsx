@@ -236,9 +236,10 @@ export function KallaxManagerSheet({ open, onClose, units: unitsProp, onAdd: onA
           </div>
         )}
 
-        <button className={styles.addBtn} onClick={handleAdd}>
-          Add unit
-        </button>
+        <div className={styles.addActions}>
+          <button className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+          <button className={styles.addBtn} onClick={handleAdd}>Add unit</button>
+        </div>
       </div>
     </Sheet>
   );

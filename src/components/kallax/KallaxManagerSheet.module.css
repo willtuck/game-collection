@@ -149,8 +149,27 @@
 
 .newLabelInput:focus { border-color: var(--accent-mid); }
 
+.addActions {
+  display: flex;
+  gap: 8px;
+}
+
+.cancelBtn {
+  height: 44px;
+  padding: 0 16px;
+  background: transparent;
+  color: var(--text-mid);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r);
+  font-family: var(--sans);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.cancelBtn:hover { background: var(--surface2); }
+
 .addBtn {
-  width: 100%;
+  flex: 1;
   height: 44px;
   background: var(--accent);
   color: #fff;
