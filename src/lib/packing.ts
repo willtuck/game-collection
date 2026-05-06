@@ -137,6 +137,45 @@ export function packTop(
   return { topPacked, remaining: [...remaining, ...cantFit] };
 }
 
+function stackDims(g: PackableGame, dims = KALLAX) {
+  const { w: KW } = dims;
+  const sorted = [parseFloat(g.width!), parseFloat(g.height!), parseFloat(g.depth!)].sort((a, b) => a - b);
+  const thickness = sorted[0];
+  const footW = sorted[1] <= KW ? sorted[1] : sorted[2];
+  const footD = sorted[1] <= KW ? sorted[2] : sorted[1];
+  return { thickness, footW, footD, area: footW * footD };
+}
+
+function canStackInCell(g: PackableGame, dims = KALLAX): boolean {
+  if (!g.width || !g.height || !g.depth) return false;
+  const { w: KW, d: KD } = dims;
+  const sorted = [parseFloat(g.width), parseFloat(g.height), parseFloat(g.depth)].sort((a, b) => a - b);
+  return (sorted[1] <= KW && sorted[2] <= KD) || (sorted[1] <= KD && sorted[2] <= KW);
+}
+
+/** Pack a pre-ordered list of games into a stack without re-sorting by area. */
+function packStackedOrdered(
+  ordered: PackableGame[],
+  startUsed: number,
+  dims = KALLAX,
+): PackedGame[] {
+  const { h: KH } = dims;
+  const packed: PackedGame[] = [];
+  let heightUsed = startUsed;
+  for (const g of ordered) {
+    if (!canStackInCell(g, dims)) continue;
+    const sd = stackDims(g, dims);
+    if (heightUsed + sd.thickness <= KH) {
+      packed.push({
+        ...g, yOffset: heightUsed, xOffset: 0, mode: 'stacked',
+        _thickness: sd.thickness, _footW: sd.footW, _footD: sd.footD,
+      });
+      heightUsed += sd.thickness;
+    }
+  }
+  return packed;
+}
+
 export function packCell(
   gamesPool: PackableGame[],
   isStacked: boolean,
@@ -157,23 +196,13 @@ export function packCell(
       }
     }
   } else {
-    function stackDims(g: PackableGame) {
-      const dims = [parseFloat(g.width!), parseFloat(g.height!), parseFloat(g.depth!)].sort((a, b) => a - b);
-      const thickness = dims[0];
-      const footW = dims[1] <= KW ? dims[1] : dims[2];
-      const footD = dims[1] <= KW ? dims[2] : dims[1];
-      return { thickness, footW, footD, area: footW * footD };
-    }
     const sorted = [...gamesPool]
-      .filter(g => {
-        const dims = [parseFloat(g.width!), parseFloat(g.height!), parseFloat(g.depth!)].sort((a, b) => a - b);
-        return (dims[1] <= KW && dims[2] <= KD) || (dims[1] <= KD && dims[2] <= KW);
-      })
-      .sort((a, b) => stackDims(b).area - stackDims(a).area);
+      .filter(g => canStackInCell(g, dims))
+      .sort((a, b) => stackDims(b, dims).area - stackDims(a, dims).area);
 
     let heightUsed = startUsed;
     for (const g of sorted) {
-      const sd = stackDims(g);
+      const sd = stackDims(g, dims);
       if (heightUsed + sd.thickness <= KH) {
         packed.push({
           ...g, yOffset: heightUsed, xOffset: 0, mode: 'stacked',
@@ -214,10 +243,29 @@ export function packCellsGroupAware(
       let fillIds: Set<string>;
 
       if (isStacked) {
-        const allPacked = packCell([...groupGames, ...fillCandidates], isStacked, 0, dims);
+        // Sort group and fill candidates separately by area descending, then insert
+        // the group as a contiguous block at the position where its largest game
+        // naturally falls in the overall area order. This keeps the group together
+        // while still maximising cell space and placing larger items lower.
+        const sortedGroup = [...groupGames]
+          .filter(g => canStackInCell(g, dims))
+          .sort((a, b) => stackDims(b, dims).area - stackDims(a, dims).area);
+        const sortedFills = [...fillCandidates]
+          .filter(g => canStackInCell(g, dims))
+          .sort((a, b) => stackDims(b, dims).area - stackDims(a, dims).area);
+
+        const groupMaxArea = sortedGroup.length > 0 ? stackDims(sortedGroup[0], dims).area : 0;
+        // Find the first fill candidate whose area is ≤ the group's largest game;
+        // that is where the group block is inserted.
+        const insertIdx = sortedFills.findIndex(f => stackDims(f, dims).area <= groupMaxArea);
+        const combined = insertIdx === -1
+          ? [...sortedFills, ...sortedGroup]
+          : [...sortedFills.slice(0, insertIdx), ...sortedGroup, ...sortedFills.slice(insertIdx)];
+
+        const allPacked = packStackedOrdered(combined, 0, dims);
         const groupIdSet = new Set(groupGames.map(g => g.id));
-        const packedGroupIds = new Set(allPacked.filter(g => groupIdSet.has(g.id)).map(g => g.id));
-        notPackedGroup = groupGames.filter(g => !packedGroupIds.has(g.id));
+        const packedIds = new Set(allPacked.map(g => g.id));
+        notPackedGroup = groupGames.filter(g => !packedIds.has(g.id));
         fillIds = new Set(allPacked.filter(g => !groupIdSet.has(g.id)).map(g => g.id));
         cellResult = allPacked;
       } else {
