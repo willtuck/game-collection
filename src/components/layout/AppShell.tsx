@@ -46,9 +46,15 @@ export function AppShell() {
       <Header onImportCSV={() => setImportOpen(true)} onExportCSV={handleExportCSV} />
       <BottomNav active={activeTab} onChange={setActiveTab} />
       <main className={styles.main}>
-        {activeTab === 'collection' && <CollectionView />}
-        {activeTab === 'suggested'  && <SuggestedView />}
-        {activeTab === 'manual'     && <ManualView />}
+        <div className={`${styles.tabPanel} ${activeTab === 'collection' ? styles.tabPanelActive : ''}`}>
+          <CollectionView />
+        </div>
+        <div className={`${styles.tabPanel} ${activeTab === 'suggested' ? styles.tabPanelActive : ''}`}>
+          <SuggestedView />
+        </div>
+        <div className={`${styles.tabPanel} ${activeTab === 'manual' ? styles.tabPanelActive : ''}`}>
+          <ManualView />
+        </div>
       </main>
       <ImportSheet open={importOpen} onClose={() => setImportOpen(false)} />
       <Toast />
