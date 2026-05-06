@@ -22,7 +22,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   signIn: async () => {
     await supabase.auth.signInWithOAuth({
-      provider: 'github',
+      provider: 'google',
       options: { redirectTo: window.location.origin },
     });
   },
