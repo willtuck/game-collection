@@ -61,7 +61,7 @@ export function LandingPage() {
 
       <section className={styles.pricing}>
         <div className={styles.pricingInner}>
-          <h2 className={styles.pricingHeading}>Simple, honest pricing</h2>
+          <h2 className={styles.pricingHeading}>No subscriptions. No catch.</h2>
           <p className={styles.pricingSubhead}>Start free. Upgrade once if you need more.</p>
           <div className={styles.pricingCards}>
             <div className={styles.pricingCard}>
