@@ -123,13 +123,16 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
     const ts = Date.now().toString(36);
     toAdd.forEach((g, i) => {
       const localId = `g${ts}${i.toString(36)}`;
+      const hasDims = g.widthCm && g.heightCm && g.depthCm;
       addGame({
         id: localId,
         bggId: g.bggId,
         thumbnail: g.thumbnail || undefined,
         name: g.name,
         type: g.type === 'boardgameexpansion' ? 'expansion' : undefined,
-        width: null, height: null, depth: null,
+        width:  hasDims ? g.widthCm!  : null,
+        height: hasDims ? g.heightCm! : null,
+        depth:  hasDims ? g.depthCm!  : null,
         unit: 'cm',
         minPlayers: g.minPlayers || undefined,
         maxPlayers: g.maxPlayers || undefined,
@@ -341,6 +344,7 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
         <BggVersionSheet
           open
           game={versionGame}
+          knownVersionId={versionGame.knownVersionId}
           onAdded={() => markAdded(versionGame.bggId)}
           onClose={() => setVersionGame(null)}
         />

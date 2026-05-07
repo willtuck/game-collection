@@ -88,6 +88,27 @@
   background: var(--accent-light, var(--surface2));
 }
 
+.knownVersion {
+  border-color: var(--accent-mid);
+  background: var(--surface2);
+}
+
+.versionNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.yourEdition {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  padding: 1px 7px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
 .versionInfo {
   flex: 1;
   display: flex;

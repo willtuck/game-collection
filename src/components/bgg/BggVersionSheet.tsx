@@ -10,9 +10,10 @@ interface BggVersionSheetProps {
   game: BggGame;
   onAdded: () => void;
   onClose: () => void;
+  knownVersionId?: string;
 }
 
-export function BggVersionSheet({ open, game, onAdded, onClose }: BggVersionSheetProps) {
+export function BggVersionSheet({ open, game, onAdded, onClose, knownVersionId }: BggVersionSheetProps) {
   const addGame = useGameStore(s => s.addGame);
 
   const [versions, setVersions] = useState<BggVersion[]>([]);
@@ -76,7 +77,9 @@ export function BggVersionSheet({ open, game, onAdded, onClose }: BggVersionShee
         </div>
       )}
 
-      <div className={styles.sectionLabel}>Select your edition</div>
+      <div className={styles.sectionLabel}>
+        {knownVersionId ? 'Your BGG edition is highlighted — select to confirm or pick another' : 'Select your edition'}
+      </div>
 
       {loading && (
         <div className={styles.loading}>
@@ -93,25 +96,33 @@ export function BggVersionSheet({ open, game, onAdded, onClose }: BggVersionShee
 
       {!loading && !error && versions.length > 0 && (
         <div className={styles.list}>
-          {versions.map(v => (
-            <button
-              key={v.id}
-              className={styles.versionRow}
-              onClick={() => handleSelect(v)}
-            >
-              <div className={styles.versionInfo}>
-                <span className={styles.versionName}>{v.name}</span>
-                <span className={styles.versionDetail}>
-                  {[v.publisher, v.year].filter(Boolean).join(' · ')}
-                </span>
-              </div>
-              {hasDims(v) ? (
-                <span className={styles.dims}>{fmtDims(v)}</span>
-              ) : (
-                <span className={styles.noDims}>no dims</span>
-              )}
-            </button>
-          ))}
+          {[...versions].sort((a, b) =>
+            a.id === knownVersionId ? -1 : b.id === knownVersionId ? 1 : 0
+          ).map(v => {
+            const isKnown = v.id === knownVersionId;
+            return (
+              <button
+                key={v.id}
+                className={`${styles.versionRow} ${isKnown ? styles.knownVersion : ''}`}
+                onClick={() => handleSelect(v)}
+              >
+                <div className={styles.versionInfo}>
+                  <div className={styles.versionNameRow}>
+                    <span className={styles.versionName}>{v.name}</span>
+                    {isKnown && <span className={styles.yourEdition}>Your edition</span>}
+                  </div>
+                  <span className={styles.versionDetail}>
+                    {[v.publisher, v.year].filter(Boolean).join(' · ')}
+                  </span>
+                </div>
+                {hasDims(v) ? (
+                  <span className={styles.dims}>{fmtDims(v)}</span>
+                ) : (
+                  <span className={styles.noDims}>no dims</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </Sheet>

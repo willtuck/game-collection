@@ -9,6 +9,11 @@ export interface BggGame {
   yearPublished: string;
   minPlayers: string;
   maxPlayers: string;
+  // Populated when the user has a specific version marked on BGG
+  knownVersionId?: string;
+  widthCm?: string | null;
+  heightCm?: string | null;
+  depthCm?: string | null;
 }
 
 export interface BggVersion {
@@ -43,21 +48,42 @@ function inToCm(val: string | null | undefined): string | null {
 
 function parseCollectionItems(doc: Document, type: BggGame['type']): BggGame[] {
   return Array.from(doc.querySelectorAll('item'))
-    .map(item => ({
-      bggId: item.getAttribute('objectid') ?? '',
-      name: item.querySelector('name')?.textContent?.trim() ?? '',
-      type,
-      thumbnail: (item.querySelector('thumbnail')?.textContent?.trim() ?? '')
-        .replace(/^\/\//, 'https://'),
-      yearPublished: item.querySelector('yearpublished')?.textContent?.trim() ?? '',
-      minPlayers: item.querySelector('stats')?.getAttribute('minplayers') ?? '',
-      maxPlayers: item.querySelector('stats')?.getAttribute('maxplayers') ?? '',
-    }))
+    .map(item => {
+      const versionItem = item.querySelector('version > item[type="boardgameversion"]');
+      const wIn = versionItem?.querySelector('width')?.getAttribute('value') ?? '';
+      const lIn = versionItem?.querySelector('length')?.getAttribute('value') ?? '';
+      const dIn = versionItem?.querySelector('depth')?.getAttribute('value') ?? '';
+      const a = parseFloat(wIn) || 0;
+      const b = parseFloat(lIn) || 0;
+      let widthCm: string | null = null, heightCm: string | null = null;
+      if (a > 0 && b > 0) {
+        widthCm  = inToCm(String(Math.min(a, b)));
+        heightCm = inToCm(String(Math.max(a, b)));
+      } else {
+        const face = a || b;
+        widthCm = heightCm = face > 0 ? inToCm(String(face)) : null;
+      }
+      const depthCm = inToCm(dIn);
+      return {
+        bggId: item.getAttribute('objectid') ?? '',
+        name: item.querySelector('name')?.textContent?.trim() ?? '',
+        type,
+        thumbnail: (item.querySelector('thumbnail')?.textContent?.trim() ?? '')
+          .replace(/^\/\//, 'https://'),
+        yearPublished: item.querySelector('yearpublished')?.textContent?.trim() ?? '',
+        minPlayers: item.querySelector('stats')?.getAttribute('minplayers') ?? '',
+        maxPlayers: item.querySelector('stats')?.getAttribute('maxplayers') ?? '',
+        knownVersionId: versionItem?.getAttribute('id') ?? undefined,
+        widthCm,
+        heightCm,
+        depthCm,
+      };
+    })
     .filter(g => g.bggId && g.name);
 }
 
 export async function fetchBggCollection(username: string): Promise<BggGame[]> {
-  const base = `collection?username=${encodeURIComponent(username)}&own=1&stats=1`;
+  const base = `collection?username=${encodeURIComponent(username)}&own=1&stats=1&version=1`;
   // BGG returns correct subtypes only when filtered per type — fetch both in parallel
   const [baseDoc, expansionDoc] = await Promise.all([
     bggFetch(`${base}&subtype=boardgame`),
