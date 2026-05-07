@@ -74,6 +74,10 @@ interface GameStore {
   // ── Settings ──
   setKallaxSort: (sort: KallaxSort) => void;
   setKallaxMode: (mode: StorageMode) => void;
+
+  // ── BGG ──
+  bggUsername: string;
+  setBggUsername: (username: string) => void;
 }
 
 export const useGameStore = create<GameStore>()(
@@ -237,6 +241,9 @@ export const useGameStore = create<GameStore>()(
 
       setKallaxSort: (sort) => set({ kallaxSort: sort }),
       setKallaxMode: (mode) => set({ kallaxMode: mode }),
+
+      bggUsername: '',
+      setBggUsername: (username) => set({ bggUsername: username }),
     }),
     {
       name: 'shelfgeek-v1',

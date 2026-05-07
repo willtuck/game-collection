@@ -22,10 +22,11 @@ interface AddProgress {
 }
 
 export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
-  const games      = useGameStore(s => s.games);
-  const addGame    = useGameStore(s => s.addGame);
-  const updateGame = useGameStore(s => s.updateGame);
-  const deleteGame = useGameStore(s => s.deleteGame);
+  const games          = useGameStore(s => s.games);
+  const addGame        = useGameStore(s => s.addGame);
+  const updateGame     = useGameStore(s => s.updateGame);
+  const deleteGame     = useGameStore(s => s.deleteGame);
+  const setBggUsername = useGameStore(s => s.setBggUsername);
 
   const [phase, setPhase]           = useState<Phase>('username');
   const [username, setUsername]     = useState('');
@@ -49,6 +50,7 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
     setPhase('loading');
     try {
       const list = await fetchBggCollection(u);
+      setBggUsername(u);
       setCollection(list);
       setAddedIds(new Set());
 

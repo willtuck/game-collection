@@ -175,6 +175,14 @@ export async function fetchBggGameDetails(bggId: string): Promise<BggGameDetails
   return { thumbnail, minPlayers, maxPlayers, versions };
 }
 
+export async function fetchBggKnownVersionId(username: string, bggId: string): Promise<string | null> {
+  const doc = await bggFetch(
+    `collection?username=${encodeURIComponent(username)}&id=${bggId}&own=1&version=1`
+  );
+  const versionItem = doc.querySelector('item version > item[type="boardgameversion"]');
+  return versionItem?.getAttribute('id') ?? null;
+}
+
 export async function fetchBggVersions(bggId: string): Promise<BggVersion[]> {
   const doc = await bggFetch(`thing?id=${bggId}&versions=1`);
   return Array.from(doc.querySelectorAll('versions item')).map(v => {

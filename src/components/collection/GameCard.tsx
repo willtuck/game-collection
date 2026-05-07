@@ -4,7 +4,7 @@ import { GroupInput } from './GroupInput';
 import { useGameStore } from '../../store/useGameStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { fetchDimSuggestions, contributeDims, type DimSuggestion } from '../../lib/supabaseSync';
-import { fetchBggVersions, type BggVersion } from '../../lib/bggApi';
+import { fetchBggVersions, fetchBggKnownVersionId, type BggVersion } from '../../lib/bggApi';
 import { extractDominantColor } from '../../lib/colorExtractor';
 import { hasDims, toCm, fmtDims } from '../../lib/helpers';
 import { gameColor } from '../../lib/colors';
@@ -26,7 +26,8 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const [editing, setEditing] = useState(false);
   const games = useGameStore(s => s.games);
   const updateGame = useGameStore(s => s.updateGame);
-  const userId = useAuthStore(s => s.user?.id);
+  const userId      = useAuthStore(s => s.user?.id);
+  const bggUsername = useGameStore(s => s.bggUsername);
   const manualKallaxes       = useGameStore(s => s.manualKallaxes);
   const manualPlacements     = useGameStore(s => s.manualPlacements);
   const setPendingManualNav  = useGameStore(s => s.setPendingManualNav);
@@ -94,17 +95,26 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     setSelectedVersionId('');
     versionDimsRef.current = null;
     fetchDimSuggestions(game.name).then(setDimSuggestions);
-    if (game.bggId) fetchBggVersions(game.bggId).then(versions => {
-      setBggVersions(versions);
+    if (game.bggId) {
+      const versionsPromise = fetchBggVersions(game.bggId);
       if (game.versionId) {
-        setSelectedVersionId(game.versionId);
-      } else if (game.width && game.height && game.depth) {
-        const match = versions.find(v =>
-          v.widthCm === game.width && v.heightCm === game.height && v.depthCm === game.depth
-        );
-        if (match) setSelectedVersionId(match.id);
+        versionsPromise.then(versions => {
+          setBggVersions(versions);
+          setSelectedVersionId(game.versionId!);
+        });
+      } else if (bggUsername) {
+        Promise.all([versionsPromise, fetchBggKnownVersionId(bggUsername, game.bggId)])
+          .then(([versions, knownId]) => {
+            setBggVersions(versions);
+            if (knownId) {
+              setSelectedVersionId(knownId);
+              updateGame(game.id, { versionId: knownId });
+            }
+          });
+      } else {
+        versionsPromise.then(setBggVersions);
       }
-    });
+    }
     setEditing(true);
   }
 
