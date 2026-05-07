@@ -5,8 +5,8 @@ import { useAuthStore } from '../../store/useAuthStore';
 import bggLogo from '../../assets/powered-by-bgg.svg';
 
 export function LandingPage() {
-  const signIn   = useAuthStore(s => s.signIn);
-  const session  = useAuthStore(s => s.session);
+  const openAuthModal = useAuthStore(s => s.openAuthModal);
+  const session       = useAuthStore(s => s.session);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export function LandingPage() {
         <div className={styles.wordmark}>
           Shelf<span className={styles.accent}>Geek</span>
         </div>
-        <button className={styles.signInBtn} onClick={signIn}>
+        <button className={styles.signInBtn} onClick={openAuthModal}>
           Sign in
         </button>
       </nav>
@@ -33,7 +33,7 @@ export function LandingPage() {
           <p className={styles.subhead}>
             Track every game. Plan your shelves.<br />Always know what fits where.
           </p>
-          <button className={styles.ctaBtn} onClick={signIn}>
+          <button className={styles.ctaBtn} onClick={openAuthModal}>
             Get started free
           </button>
         </div>

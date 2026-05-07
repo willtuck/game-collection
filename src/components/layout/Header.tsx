@@ -12,8 +12,8 @@ interface HeaderProps {
 export function Header({ onImportCSV, onExportCSV, onImportBgg }: HeaderProps) {
   const count   = useGameStore(s => s.games.length);
   const user    = useAuthStore(s => s.user);
-  const loading = useAuthStore(s => s.loading);
-  const signIn  = useAuthStore(s => s.signIn);
+  const loading       = useAuthStore(s => s.loading);
+  const openAuthModal = useAuthStore(s => s.openAuthModal);
 
   return (
     <header className={styles.header}>
@@ -30,7 +30,7 @@ export function Header({ onImportCSV, onExportCSV, onImportBgg }: HeaderProps) {
           user ? (
             <UserMenu onImportCSV={onImportCSV} onExportCSV={onExportCSV} onImportBgg={onImportBgg} />
           ) : (
-            <button className={styles.signInBtn} onClick={signIn}>
+            <button className={styles.signInBtn} onClick={openAuthModal}>
               Sign in
             </button>
           )
