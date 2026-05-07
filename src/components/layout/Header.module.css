@@ -36,12 +36,6 @@
   line-height: 1;
 }
 
-.count {
-  font-family: var(--sans);
-  font-size: 14px;
-  color: var(--text-light);
-}
-
 .auth {
   margin-left: auto;
   display: flex;

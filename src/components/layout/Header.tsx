@@ -1,4 +1,3 @@
-import { useGameStore } from '../../store/useGameStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { UserMenu } from './UserMenu';
 import styles from './Header.module.css';
@@ -10,7 +9,6 @@ interface HeaderProps {
 }
 
 export function Header({ onImportCSV, onExportCSV, onImportBgg }: HeaderProps) {
-  const count   = useGameStore(s => s.games.length);
   const user    = useAuthStore(s => s.user);
   const loading       = useAuthStore(s => s.loading);
   const openAuthModal = useAuthStore(s => s.openAuthModal);
@@ -21,11 +19,7 @@ export function Header({ onImportCSV, onExportCSV, onImportBgg }: HeaderProps) {
         Shelf<span>geek</span>
       </h1>
 
-      <span className={styles.count}>
-        {count === 1 ? '1 game' : `${count} games`}
-      </span>
-
-      <div className={styles.auth}>
+<div className={styles.auth}>
         {!loading && (
           user ? (
             <UserMenu onImportCSV={onImportCSV} onExportCSV={onExportCSV} onImportBgg={onImportBgg} />
