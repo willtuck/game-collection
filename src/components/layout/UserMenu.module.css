@@ -12,8 +12,8 @@
   letter-spacing: 0.04em;
   padding: 2px 8px;
   border-radius: 20px;
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  color: var(--accent);
+  background: var(--text);
+  color: #fff;
   pointer-events: none;
   white-space: nowrap;
 }
