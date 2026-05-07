@@ -216,16 +216,14 @@
   .footerInner {
     flex-direction: column;
     gap: 20px;
-    align-items: flex-start;
-  }
-  .footerInner .bggLogo {
-    align-self: center;
+    align-items: center;
+    text-align: center;
   }
   .footerRight {
-    text-align: left;
+    text-align: center;
   }
   .footerLinks {
-    justify-content: flex-start;
+    justify-content: center;
   }
 }
 
