@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from './_auth';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -19,13 +20,13 @@ async function readBody(req: any): Promise<any> {
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') { res.status(405).end(); return; }
 
-  const body = await readBody(req);
-  const { sessionId, userId } = body ?? {};
+  const userId = await requireAuth(req);
+  if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
 
-  if (!sessionId || !userId) {
-    res.status(400).json({ error: 'Missing sessionId or userId' });
-    return;
-  }
+  const body = await readBody(req);
+  const { sessionId } = body ?? {};
+
+  if (!sessionId) { res.status(400).json({ error: 'Missing sessionId' }); return; }
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -36,7 +37,7 @@ export default async function handler(req: any, res: any) {
     }
 
     if (session.metadata?.userId !== userId) {
-      res.status(403).json({ error: 'Unauthorized' });
+      res.status(403).json({ error: 'Forbidden' });
       return;
     }
 

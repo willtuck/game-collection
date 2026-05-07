@@ -10,6 +10,7 @@ interface UpgradeSheetProps {
 
 export function UpgradeSheet({ open, onClose }: UpgradeSheetProps) {
   const user      = useAuthStore(s => s.user);
+  const session   = useAuthStore(s => s.session);
   const openAuth  = useAuthStore(s => s.openAuthModal);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
@@ -21,8 +22,11 @@ export function UpgradeSheet({ open, onClose }: UpgradeSheetProps) {
     try {
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({}),
       });
       const data = await res.json();
       if (data.url) {

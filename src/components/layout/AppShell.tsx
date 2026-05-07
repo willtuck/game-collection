@@ -19,18 +19,22 @@ export function AppShell() {
   const pendingManualNav  = useGameStore(s => s.pendingManualNav);
   const pendingManualView = useGameStore(s => s.pendingManualView);
   const games = useGameStore(s => s.games);
-  const user  = useAuthStore(s => s.user);
+  const user    = useAuthStore(s => s.user);
+  const session = useAuthStore(s => s.session);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('upgraded') !== 'true') return;
     const sessionId = params.get('session_id');
     window.history.replaceState({}, '', '/app');
-    if (!user || !sessionId) return;
+    if (!user || !sessionId || !session?.access_token) return;
     fetch('/api/verify-payment', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, userId: user.id }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ sessionId }),
     })
       .then(r => r.json())
       .then(data => {

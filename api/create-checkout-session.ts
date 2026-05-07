@@ -1,26 +1,13 @@
 import Stripe from 'stripe';
+import { requireAuth } from './_auth';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-async function readBody(req: any): Promise<any> {
-  if (req.body !== undefined) return req.body;
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    req.on('data', (c: any) => chunks.push(Buffer.from(c)));
-    req.on('end', () => {
-      try { resolve(JSON.parse(Buffer.concat(chunks).toString() || '{}')); }
-      catch { resolve({}); }
-    });
-    req.on('error', reject);
-  });
-}
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') { res.status(405).end(); return; }
 
-  const body = await readBody(req);
-  const { userId } = body ?? {};
-  if (!userId) { res.status(400).json({ error: 'Missing userId' }); return; }
+  const userId = await requireAuth(req);
+  if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
 
   try {
     const session = await stripe.checkout.sessions.create({
