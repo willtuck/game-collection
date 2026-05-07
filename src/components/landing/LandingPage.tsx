@@ -39,9 +39,9 @@ export function LandingPage() {
         </div>
         <div className={styles.featureGrid}>
           <div className={styles.featureCard}>
-            <h3 className={styles.featureTitle}>Track your collection</h3>
+            <h3 className={styles.featureTitle}>Import from BoardGameGeek</h3>
             <p className={styles.featureDesc}>
-              Add every game you own. Search, filter, and manage your full library in one place.
+              Already on BGG? Import your entire collection in seconds. Or add games manually — dimensions and player counts included.
             </p>
           </div>
           <div className={styles.featureCard}>
