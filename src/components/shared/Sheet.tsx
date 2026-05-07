@@ -64,10 +64,19 @@ export function Sheet({ open, onClose, title, disableClose, children }: SheetPro
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose, disableClose]);
 
-  // Prevent body scroll when sheet is open
+  // Prevent body scroll when sheet is open (position:fixed works on iOS; overflow:hidden does not)
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    if (!open) return;
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top      = `-${scrollY}px`;
+    document.body.style.width    = '100%';
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top      = '';
+      document.body.style.width    = '';
+      window.scrollTo(0, scrollY);
+    };
   }, [open]);
 
   if (!open) return null;
