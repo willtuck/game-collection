@@ -9,7 +9,6 @@ import { BggImportSheet } from '../bgg/BggImportSheet';
 import { Toast } from '../shared/Toast';
 import { useGameStore } from '../../store/useGameStore';
 import { useAuthStore } from '../../store/useAuthStore';
-import { fetchPremiumStatus } from '../../hooks/useAuthInit';
 import { toast } from '../shared/Toast';
 import styles from './AppShell.module.css';
 
