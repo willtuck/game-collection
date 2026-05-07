@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { LandingPage } from './components/landing/LandingPage';
 import { AppShell } from './components/layout/AppShell';
 import { AuthGuard } from './components/landing/AuthGuard';
@@ -29,6 +30,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppRoutes />
+      <Analytics />
     </BrowserRouter>
   );
 }
