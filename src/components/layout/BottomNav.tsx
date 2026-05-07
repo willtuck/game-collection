@@ -9,8 +9,8 @@ interface BottomNavProps {
 
 const TABS: { id: TabName; label: string }[] = [
   { id: 'collection', label: 'Collection' },
-  { id: 'suggested',  label: 'Visualizer' },
-  { id: 'manual',     label: 'Manual' },
+  { id: 'suggested',  label: 'Organizer' },
+  { id: 'manual',     label: 'Manual Storage' },
 ];
 
 export function BottomNav({ active, onChange }: BottomNavProps) {
