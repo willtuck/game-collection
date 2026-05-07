@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useGameStore } from '../../store/useGameStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { getSortedForKallax } from '../../lib/sorting';
 import { packCellsGroupAware, packTop, fitsInCell, fitsUprightInCell } from '../../lib/packing';
 import { unitGrid, unitDims } from '../../lib/helpers';
@@ -7,6 +8,7 @@ import type { PackedGame } from '../../lib/types';
 import { KallaxCanvas } from './KallaxCanvas';
 import { SuggestedSettings } from './SuggestedSettings';
 import { KallaxManagerSheet } from './KallaxManagerSheet';
+import { UpgradeSheet } from '../shared/UpgradeSheet';
 import styles from './SuggestedView.module.css';
 
 interface UnitPacking {
@@ -22,16 +24,28 @@ interface UnitPacking {
 export function SuggestedView() {
   const games      = useGameStore(s => s.games);
   const kallaxes   = useGameStore(s => s.kallaxes);
+  const addKallax  = useGameStore(s => s.addKallax);
   const kallaxSort = useGameStore(s => s.kallaxSort);
   const kallaxMode = useGameStore(s => s.kallaxMode);
   const activeKuId = useGameStore(s => s.activeKuId);
   const setActiveKu   = useGameStore(s => s.setActiveKu);
   const setKallaxSort = useGameStore(s => s.setKallaxSort);
   const setKallaxMode = useGameStore(s => s.setKallaxMode);
+  const isPremium = useAuthStore(s => s.isPremium);
 
   const [search, setSearch] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+
+  function handleAddKallax(model: string, label: string) {
+    if (!isPremium && kallaxes.length >= 1) {
+      setManageOpen(false);
+      setUpgradeOpen(true);
+    } else {
+      addKallax(model, label);
+    }
+  }
 
   const sortedGames = useMemo(
     () => getSortedForKallax(games, kallaxSort),
@@ -160,7 +174,8 @@ export function SuggestedView() {
         ) : null}
       </div>
 
-      <KallaxManagerSheet open={manageOpen} onClose={() => setManageOpen(false)} />
+      <KallaxManagerSheet open={manageOpen} onClose={() => setManageOpen(false)} onAdd={handleAddKallax} />
+      <UpgradeSheet open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 
       <SuggestedSettings
         open={settingsOpen}

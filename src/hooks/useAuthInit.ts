@@ -29,7 +29,17 @@ export function useAuthInit() {
   }, [setSession]);
 }
 
+export async function fetchPremiumStatus(userId: string) {
+  const { data } = await supabase
+    .from('profiles')
+    .select('is_premium')
+    .eq('id', userId)
+    .single();
+  useAuthStore.getState().setIsPremium(data?.is_premium ?? false);
+}
+
 async function syncOnSignIn(userId: string) {
+  fetchPremiumStatus(userId);
   const { games: dbGames, kallaxes: dbKallaxes } = await fetchUserData(userId);
   const localGames = useGameStore.getState().games;
   const localKallaxes = useGameStore.getState().kallaxes;

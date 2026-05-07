@@ -8,6 +8,8 @@ import { ImportSheet } from '../sheets/ImportSheet';
 import { BggImportSheet } from '../bgg/BggImportSheet';
 import { Toast } from '../shared/Toast';
 import { useGameStore } from '../../store/useGameStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { fetchPremiumStatus } from '../../hooks/useAuthInit';
 import { toast } from '../shared/Toast';
 import styles from './AppShell.module.css';
 
@@ -18,6 +20,16 @@ export function AppShell() {
   const pendingManualNav  = useGameStore(s => s.pendingManualNav);
   const pendingManualView = useGameStore(s => s.pendingManualView);
   const games = useGameStore(s => s.games);
+  const user  = useAuthStore(s => s.user);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('upgraded') !== 'true') return;
+    window.history.replaceState({}, '', '/app');
+    if (user) {
+      fetchPremiumStatus(user.id).then(() => toast('Welcome to Premium!'));
+    }
+  }, [user]);
 
   useEffect(() => {
     if (pendingManualNav)  setActiveTab('manual');

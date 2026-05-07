@@ -5,10 +5,14 @@ import { FAB } from '../shared/FAB';
 import { AddGameSheet } from '../sheets/AddGameSheet';
 import { FilterSheet, type FilterState } from '../sheets/FilterSheet';
 import { ConfirmSheet } from '../shared/ConfirmSheet';
+import { UpgradeSheet } from '../shared/UpgradeSheet';
 import { useGameStore } from '../../store/useGameStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { hasDims } from '../../lib/helpers';
 import { toast } from '../shared/Toast';
 import styles from './CollectionView.module.css';
+
+const FREE_GAME_LIMIT = 20;
 
 const DEFAULT_FILTERS: FilterState = {
   typeFilter: 'all',
@@ -25,9 +29,19 @@ export function CollectionView() {
 
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const isPremium = useAuthStore(s => s.isPremium);
   const [addOpen, setAddOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  function handleFabClick() {
+    if (!isPremium && games.length >= FREE_GAME_LIMIT) {
+      setUpgradeOpen(true);
+    } else {
+      setAddOpen(true);
+    }
+  }
 
   const activeFilterCount = [
     filters.typeFilter !== 'all',
@@ -89,9 +103,10 @@ export function CollectionView() {
         />
       </div>
 
-      <FAB onClick={() => setAddOpen(true)} />
+      <FAB onClick={handleFabClick} />
 
       <AddGameSheet open={addOpen} onClose={() => setAddOpen(false)} />
+      <UpgradeSheet open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 
       <FilterSheet
         open={filterOpen}

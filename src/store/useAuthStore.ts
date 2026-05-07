@@ -7,11 +7,13 @@ interface AuthStore {
   session:        Session | null;
   loading:        boolean;
   authModalOpen:  boolean;
+  isPremium:      boolean;
 
   setSession:     (session: Session | null) => void;
   openAuthModal:  () => void;
   closeAuthModal: () => void;
   signOut:        () => Promise<void>;
+  setIsPremium:   (v: boolean) => void;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -19,6 +21,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   session:       null,
   loading:       true,
   authModalOpen: false,
+  isPremium:     false,
 
   setSession: (session) =>
     set({ session, user: session?.user ?? null, loading: false }),
@@ -26,8 +29,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
   openAuthModal:  () => set({ authModalOpen: true }),
   closeAuthModal: () => set({ authModalOpen: false }),
 
+  setIsPremium: (v) => set({ isPremium: v }),
+
   signOut: async () => {
     await supabase.auth.signOut();
-    set({ user: null, session: null });
+    set({ user: null, session: null, isPremium: false });
   },
 }));

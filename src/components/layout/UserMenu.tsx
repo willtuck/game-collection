@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useGameStore } from '../../store/useGameStore';
+import { UpgradeSheet } from '../shared/UpgradeSheet';
 import { toast } from '../shared/Toast';
 import styles from './UserMenu.module.css';
 
@@ -13,10 +14,12 @@ interface UserMenuProps {
 export function UserMenu({ onImportCSV, onExportCSV, onImportBgg }: UserMenuProps) {
   const user          = useAuthStore(s => s.user);
   const signOut       = useAuthStore(s => s.signOut);
+  const isPremium     = useAuthStore(s => s.isPremium);
   const clearAllGames = useGameStore(s => s.clearAllGames);
   const gameCount     = useGameStore(s => s.games.length);
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const avatar   = user?.user_metadata?.avatar_url as string | undefined;
   const username = user?.user_metadata?.user_name  as string | undefined;
@@ -55,6 +58,14 @@ export function UserMenu({ onImportCSV, onExportCSV, onImportBgg }: UserMenuProp
         <>
           <div className={styles.backdrop} onClick={close} aria-hidden="true" />
           <div className={styles.menu} role="menu">
+            {!isPremium && (
+              <>
+                <button role="menuitem" className={`${styles.item} ${styles.upgradeItem}`} onClick={() => { setUpgradeOpen(true); close(); }}>
+                  Upgrade to Premium
+                </button>
+                <div className={styles.menuDivider} aria-hidden="true" />
+              </>
+            )}
             <button role="menuitem" className={styles.item} onClick={() => { onImportBgg(); close(); }}>
               Import from BGG
             </button>
@@ -95,6 +106,7 @@ export function UserMenu({ onImportCSV, onExportCSV, onImportBgg }: UserMenuProp
           </div>
         </>
       )}
+      <UpgradeSheet open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
     </div>
   );
 }

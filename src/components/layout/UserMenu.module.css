@@ -108,6 +108,11 @@
   margin: 4px 0;
 }
 
+.upgradeItem {
+  color: var(--accent);
+  font-weight: 500;
+}
+
 .signOut {
   color: var(--danger);
 }
