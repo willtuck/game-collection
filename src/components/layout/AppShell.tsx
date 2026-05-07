@@ -25,10 +25,21 @@ export function AppShell() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('upgraded') !== 'true') return;
+    const sessionId = params.get('session_id');
     window.history.replaceState({}, '', '/app');
-    if (user) {
-      fetchPremiumStatus(user.id).then(() => toast('Welcome to Premium!'));
-    }
+    if (!user || !sessionId) return;
+    fetch('/api/verify-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, userId: user.id }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          useAuthStore.getState().setIsPremium(true);
+          toast('Welcome to Premium! 🎉');
+        }
+      });
   }, [user]);
 
   useEffect(() => {
