@@ -15,8 +15,6 @@ export interface Game {
   height: string | null;
   depth: string | null;
   unit: 'cm' | 'in';
-  minPlayers?: string | null;
-  maxPlayers?: string | null;
   added: string; // ISO date string
 }
 
@@ -44,7 +42,6 @@ export type StorageMode = 'upright' | 'stacked';
 export type KallaxSort =
   | 'alpha'
   | 'alpha-desc'
-  | 'players'
   | 'size-desc'
   | 'size-asc'
   | 'date-new'

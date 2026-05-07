@@ -137,8 +137,6 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
         height: hasDims ? g.heightCm! : null,
         depth:  hasDims ? g.depthCm!  : null,
         unit: 'cm',
-        minPlayers: g.minPlayers || undefined,
-        maxPlayers: g.maxPlayers || undefined,
         added: new Date().toISOString(),
       });
       bggIdToLocalId.set(g.bggId, localId);
@@ -378,17 +376,7 @@ function GameSection({ title, games, addedIds, onSelect }: GameSectionProps) {
             )}
             <div className={styles.gameInfo}>
               <span className={styles.gameName}>{g.name}</span>
-              <span className={styles.gameMeta}>
-                {g.yearPublished}
-                {(g.minPlayers || g.maxPlayers) && (
-                  <>
-                    {' · '}
-                    {g.minPlayers === g.maxPlayers || !g.maxPlayers
-                      ? `${g.minPlayers}p`
-                      : `${g.minPlayers}–${g.maxPlayers}p`}
-                  </>
-                )}
-              </span>
+              <span className={styles.gameMeta}>{g.yearPublished}</span>
             </div>
             {done ? (
               <span className={styles.addedBadge}>✓ Added</span>

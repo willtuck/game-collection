@@ -55,7 +55,7 @@ export function AppShell() {
 
   function handleExportCSV() {
     if (!games.length) { toast('Nothing to export yet.'); return; }
-    const cols = ['id','name','minPlayers','maxPlayers','width','height','depth','unit','type','baseGameId','storedInside','groupName','added'];
+    const cols = ['id','name','width','height','depth','unit','type','baseGameId','storedInside','groupName','added'];
     const rows = games.map(g => cols.map(k => {
       const v = g[k as keyof typeof g];
       const s = v == null ? '' : String(v);

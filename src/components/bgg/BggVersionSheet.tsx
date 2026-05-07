@@ -44,8 +44,6 @@ export function BggVersionSheet({ open, game, onAdded, onClose, knownVersionId }
       height: hasDims ? v.heightCm : null,
       depth:  hasDims ? v.depthCm  : null,
       unit: 'cm',
-      minPlayers: game.minPlayers || undefined,
-      maxPlayers: game.maxPlayers || undefined,
       added: new Date().toISOString(),
     };
     addGame(newGame);
@@ -68,13 +66,6 @@ export function BggVersionSheet({ open, game, onAdded, onClose, knownVersionId }
             <span className={styles.expansionBadge}>Expansion</span>
           )}
           <span className={styles.year}>{game.yearPublished}</span>
-          {(game.minPlayers || game.maxPlayers) && (
-            <span className={styles.players}>
-              {game.minPlayers === game.maxPlayers || !game.maxPlayers
-                ? `${game.minPlayers} player${parseInt(game.minPlayers) === 1 ? '' : 's'}`
-                : `${game.minPlayers}–${game.maxPlayers} players`}
-            </span>
-          )}
         </div>
       )}
 

@@ -1,7 +1,5 @@
 export interface ImportRow {
   name: string;
-  minPlayers?: string;
-  maxPlayers?: string;
   width?: string;
   height?: string;
   depth?: string;
@@ -49,8 +47,6 @@ export function parseImportCSV(text: string): ImportRow[] {
 
   // Column detection — try BGG names first, then generic names, then our own export names
   const nameKey   = findKey(normKeys, ['objectname', 'name', 'game name', 'game', 'title']);
-  const minKey    = findKey(normKeys, ['minplayers', 'min_players', 'min players']);
-  const maxKey    = findKey(normKeys, ['maxplayers', 'max_players', 'max players']);
   const wKey      = findKey(normKeys, ['width']);
   const hKey      = findKey(normKeys, ['height']);
   const dKey      = findKey(normKeys, ['depth']);
@@ -77,8 +73,6 @@ export function parseImportCSV(text: string): ImportRow[] {
       if (!name || name === headerCount.toString()) return null; // skip blank rows
 
       const row: ImportRow = { name };
-      const min = get(minKey);  if (min && /^\d+$/.test(min) && parseInt(min) > 0) row.minPlayers = min;
-      const max = get(maxKey);  if (max && /^\d+$/.test(max) && parseInt(max) > 0) row.maxPlayers = max;
       const w   = get(wKey);   if (w   && parseFloat(w)   > 0) row.width   = w;
       const h   = get(hKey);   if (h   && parseFloat(h)   > 0) row.height  = h;
       const d   = get(dKey);   if (d   && parseFloat(d)   > 0) row.depth   = d;

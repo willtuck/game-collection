@@ -62,8 +62,6 @@ export function ImportSheet({ open, onClose }: ImportSheetProps) {
         height: r.height ? toCm(r.height, u) : null,
         depth:  r.depth  ? toCm(r.depth,  u) : null,
         unit: 'cm',
-        minPlayers: r.minPlayers,
-        maxPlayers: r.maxPlayers,
         groupName: r.groupName,
         added: now,
       };
@@ -126,13 +124,8 @@ export function ImportSheet({ open, onClose }: ImportSheetProps) {
                 <div key={i} className={`${styles.previewItem} ${isDupe ? styles.dupe : ''}`}>
                   <span className={styles.previewName}>{r.name}</span>
                   <span className={styles.previewMeta}>
-                    {r.minPlayers && r.maxPlayers
-                      ? `${r.minPlayers}–${r.maxPlayers}p`
-                      : r.minPlayers
-                      ? `${r.minPlayers}p`
-                      : ''}
                     {r.width && r.height && r.depth
-                      ? ` · ${r.width}×${r.height}×${r.depth}${r.unit ?? 'cm'}`
+                      ? `${r.width}×${r.height}×${r.depth}${r.unit ?? 'cm'}`
                       : ''}
                   </span>
                   {isDupe && <span className={styles.dupeTag}>skip</span>}

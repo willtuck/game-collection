@@ -19,13 +19,6 @@ export function getSortedForKallax(games: Game[], kallaxSort: KallaxSort): Packa
   switch (kallaxSort) {
     case 'alpha':      sorted.sort((a,b) => sortKey(a.name).localeCompare(sortKey(b.name))); break;
     case 'alpha-desc': sorted.sort((a,b) => sortKey(b.name).localeCompare(sortKey(a.name))); break;
-    case 'players':
-      sorted.sort((a,b) => {
-        const am = parseInt(a.minPlayers ?? '') || 99;
-        const bm = parseInt(b.minPlayers ?? '') || 99;
-        return am !== bm ? am - bm : a.name.localeCompare(b.name);
-      });
-      break;
     case 'size-desc': sorted.sort((a,b) => vol(b) - vol(a)); break;
     case 'size-asc':  sorted.sort((a,b) => vol(a) - vol(b)); break;
     case 'date-new':  sorted.sort((a,b) => new Date(b.added).getTime() - new Date(a.added).getTime()); break;

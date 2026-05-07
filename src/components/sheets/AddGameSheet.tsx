@@ -28,14 +28,11 @@ interface AddFormState {
   width: string;
   height: string;
   depth: string;
-  minPlayers: string;
-  maxPlayers: string;
 }
 
 const EMPTY: AddFormState = {
   name: '', unit: 'cm', type: 'base', baseGameId: '',
   storageMode: 'box', groupName: '', width: '', height: '', depth: '',
-  minPlayers: '', maxPlayers: '',
 };
 
 interface BggSelection {
@@ -91,8 +88,6 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
     setBggSelected({ bggId: result.bggId, thumbnail: '', versions: [], loadingDetails: true });
     try {
       const details = await fetchBggGameDetails(result.bggId);
-      set('minPlayers', details.minPlayers);
-      set('maxPlayers', details.maxPlayers);
       setBggSelected({ bggId: result.bggId, thumbnail: details.thumbnail, versions: details.versions, loadingDetails: false });
     } catch {
       setBggSelected(s => s ? { ...s, loadingDetails: false } : null);
@@ -158,8 +153,6 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
       height: storedInside ? null : toCm(form.height, form.unit),
       depth:  storedInside ? null : toCm(form.depth, form.unit),
       unit: form.unit,
-      minPlayers: form.minPlayers.trim() || undefined,
-      maxPlayers: form.maxPlayers.trim() || undefined,
       added: new Date().toISOString(),
     };
 
@@ -307,43 +300,6 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
             Group <span className={styles.optional}>(optional)</span>
           </label>
           <GroupInput value={form.groupName} onChange={v => set('groupName', v)} />
-        </div>
-
-        {/* Players */}
-        <div className={styles.field}>
-          <label className={styles.label}>
-            Players <span className={styles.optional}>(optional)</span>
-          </label>
-          <div className={styles.playersRow}>
-            <div className={styles.dimField}>
-              <label className={styles.dimLabel} htmlFor={`${formId}-minPlayers`}>Min</label>
-              <input
-                id={`${formId}-minPlayers`}
-                type="number"
-                name="minPlayers"
-                className={styles.dimInput}
-                value={form.minPlayers}
-                onChange={e => set('minPlayers', e.target.value)}
-                placeholder="1"
-                min="1"
-                max="99"
-              />
-            </div>
-            <div className={styles.dimField}>
-              <label className={styles.dimLabel} htmlFor={`${formId}-maxPlayers`}>Max</label>
-              <input
-                id={`${formId}-maxPlayers`}
-                type="number"
-                name="maxPlayers"
-                className={styles.dimInput}
-                value={form.maxPlayers}
-                onChange={e => set('maxPlayers', e.target.value)}
-                placeholder="4"
-                min="1"
-                max="99"
-              />
-            </div>
-          </div>
         </div>
 
         {/* Dimensions */}

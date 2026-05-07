@@ -65,8 +65,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     width: disp(game.width),
     height: disp(game.height),
     depth: disp(game.depth),
-    minPlayers: game.minPlayers ?? '',
-    maxPlayers: game.maxPlayers ?? '',
   });
 
   function setF<K extends keyof typeof form>(key: K, val: (typeof form)[K]) {
@@ -84,8 +82,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
       width: disp(game.width),
       height: disp(game.height),
       depth: disp(game.depth),
-      minPlayers: game.minPlayers ?? '',
-      maxPlayers: game.maxPlayers ?? '',
     });
     setDimSuggestions([]);
     setActiveSugIdx(null);
@@ -151,8 +147,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
       groupName: form.groupName.trim() || undefined,
       width: wCm, height: hCm, depth: dCm,
       unit: form.unit,
-      minPlayers: form.minPlayers.trim() || undefined,
-      maxPlayers: form.maxPlayers.trim() || undefined,
     });
     if (!storedInside && wCm && hCm && dCm && userId) {
       contributeDims(name, wCm, hCm, dCm, userId);
@@ -298,19 +292,9 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
                 }
               </div>
 
-              {/* Players / group line */}
-              {(game.minPlayers || game.maxPlayers || game.groupName) && (
-                <div className={styles.metaLine}>
-                  {(game.minPlayers || game.maxPlayers) && (
-                    game.minPlayers === game.maxPlayers || !game.maxPlayers
-                      ? `${game.minPlayers}p`
-                      : `${game.minPlayers}–${game.maxPlayers}p`
-                  )}
-                  {(game.minPlayers || game.maxPlayers) && game.groupName && (
-                    <span className={styles.metaSep}> · </span>
-                  )}
-                  {game.groupName}
-                </div>
+              {/* Group line */}
+              {game.groupName && (
+                <div className={styles.metaLine}>{game.groupName}</div>
               )}
 
               {/* Status pills: Base Game · Expansion · Manually Stored */}
@@ -446,43 +430,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
               Group <span className={styles.optional}>(optional)</span>
             </label>
             <GroupInput value={form.groupName} onChange={v => setF('groupName', v)} />
-          </div>
-
-          {/* Players */}
-          <div className={styles.field}>
-            <label className={styles.flabel}>
-              Players <span className={styles.optional}>(optional)</span>
-            </label>
-            <div className={styles.playersRow}>
-              <div className={styles.dimField}>
-                <label className={styles.dimLabel} htmlFor={`${formId}-minPlayers`}>Min</label>
-                <input
-                  id={`${formId}-minPlayers`}
-                  type="number"
-                  name="minPlayers"
-                  className={styles.dimInput}
-                  value={form.minPlayers}
-                  onChange={e => setF('minPlayers', e.target.value)}
-                  placeholder="1"
-                  min="1"
-                  max="99"
-                />
-              </div>
-              <div className={styles.dimField}>
-                <label className={styles.dimLabel} htmlFor={`${formId}-maxPlayers`}>Max</label>
-                <input
-                  id={`${formId}-maxPlayers`}
-                  type="number"
-                  name="maxPlayers"
-                  className={styles.dimInput}
-                  value={form.maxPlayers}
-                  onChange={e => setF('maxPlayers', e.target.value)}
-                  placeholder="4"
-                  min="1"
-                  max="99"
-                />
-              </div>
-            </div>
           </div>
 
           {/* Dimensions */}

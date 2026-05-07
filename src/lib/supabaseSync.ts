@@ -18,8 +18,6 @@ function gameToRow(game: Game, userId: string) {
     height:        game.height,
     depth:         game.depth,
     unit:          game.unit,
-    min_players:   game.minPlayers    ?? null,
-    max_players:   game.maxPlayers    ?? null,
     added:         game.added,
   };
 }
@@ -38,8 +36,6 @@ function rowToGame(row: Record<string, unknown>): Game {
     height:       row.height       as string | null,
     depth:        row.depth        as string | null,
     unit:         (row.unit as 'cm' | 'in') ?? 'cm',
-    minPlayers:   row.min_players  as string | null | undefined,
-    maxPlayers:   row.max_players  as string | null | undefined,
     added:        row.added        as string,
   };
 }

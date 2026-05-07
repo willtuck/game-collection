@@ -17,7 +17,6 @@ const FREE_GAME_LIMIT = 20;
 const DEFAULT_FILTERS: FilterState = {
   typeFilter: 'all',
   dimsFilter: 'all',
-  playersFilter: 'all',
   sort: 'name-asc',
 };
 
@@ -46,7 +45,6 @@ export function CollectionView() {
   const activeFilterCount = [
     filters.typeFilter !== 'all',
     filters.dimsFilter !== 'all',
-    filters.playersFilter !== 'all',
     filters.sort !== 'name-asc',
   ].filter(Boolean).length;
 
@@ -58,15 +56,6 @@ export function CollectionView() {
     if (filters.typeFilter === 'expansion') list = list.filter(g => g.type === 'expansion');
     if (filters.dimsFilter === 'has')     list = list.filter(g => hasDims(g));
     if (filters.dimsFilter === 'missing') list = list.filter(g => !hasDims(g));
-    if (filters.playersFilter !== 'all') {
-      const n = parseInt(filters.playersFilter);
-      list = list.filter(g => {
-        if (!g.minPlayers && !g.maxPlayers) return false;
-        const mn = parseInt(g.minPlayers ?? '') || 1;
-        const mx = parseInt(g.maxPlayers ?? '') || mn;
-        return n === 6 ? mx >= 6 : mn <= n && mx >= n;
-      });
-    }
     list.sort((a, b) => {
       switch (filters.sort) {
         case 'name-asc':      return a.name.localeCompare(b.name);

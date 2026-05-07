@@ -43,7 +43,6 @@ export function SuggestedSettings({
           <option value="size-asc">Smallest first</option>
           <option value="date-new">Recently added</option>
           <option value="date-old">Oldest first</option>
-          <option value="players">By player count</option>
         </select>
       </div>
     </Sheet>

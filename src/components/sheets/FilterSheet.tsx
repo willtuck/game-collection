@@ -5,7 +5,6 @@ import styles from './FilterSheet.module.css';
 export interface FilterState {
   typeFilter: 'all' | 'base' | 'expansion';
   dimsFilter: 'all' | 'has' | 'missing';
-  playersFilter: 'all' | '1' | '2' | '3' | '4' | '5' | '6';
   sort: 'name-asc' | 'name-desc' | 'date-desc' | 'date-asc' | 'missing-first';
 }
 
@@ -52,22 +51,6 @@ export function FilterSheet({ open, filters, onChange, onClose }: FilterSheetPro
               aria-pressed={filters.dimsFilter === v}
             >
               {v === 'all' ? 'All' : v === 'has' ? 'Has dims' : 'Missing'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className={styles.section}>
-        <div className={styles.label} id={`${sortId}-players`}>Players</div>
-        <div className={styles.toggle} role="group" aria-labelledby={`${sortId}-players`} style={{ flexWrap: 'wrap' }}>
-          {(['all', '1', '2', '3', '4', '5', '6'] as const).map(v => (
-            <button
-              key={v}
-              className={`${styles.tbtn} ${filters.playersFilter === v ? styles.on : ''}`}
-              onClick={() => set('playersFilter', v)}
-              aria-pressed={filters.playersFilter === v}
-            >
-              {v === 'all' ? 'Any' : v === '6' ? '6+' : v}
             </button>
           ))}
         </div>

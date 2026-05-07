@@ -7,8 +7,6 @@ export interface BggGame {
   type: 'boardgame' | 'boardgameexpansion';
   thumbnail: string;
   yearPublished: string;
-  minPlayers: string;
-  maxPlayers: string;
   // Populated when the user has a specific version marked on BGG
   knownVersionId?: string;
   widthCm?: string | null;
@@ -71,8 +69,6 @@ function parseCollectionItems(doc: Document, type: BggGame['type']): BggGame[] {
         thumbnail: (item.querySelector('thumbnail')?.textContent?.trim() ?? '')
           .replace(/^\/\//, 'https://'),
         yearPublished: item.querySelector('yearpublished')?.textContent?.trim() ?? '',
-        minPlayers: item.querySelector('stats')?.getAttribute('minplayers') ?? '',
-        maxPlayers: item.querySelector('stats')?.getAttribute('maxplayers') ?? '',
         knownVersionId: versionItem?.getAttribute('id') ?? undefined,
         widthCm,
         heightCm,
@@ -136,8 +132,6 @@ export async function searchBgg(query: string): Promise<BggSearchResult[]> {
 
 export interface BggGameDetails {
   thumbnail: string;
-  minPlayers: string;
-  maxPlayers: string;
   versions: BggVersion[];
 }
 
@@ -146,8 +140,6 @@ export async function fetchBggGameDetails(bggId: string): Promise<BggGameDetails
   const item = doc.querySelector('item');
   const thumbnail = (item?.querySelector('thumbnail')?.textContent?.trim() ?? '')
     .replace(/^\/\//, 'https://');
-  const minPlayers = item?.querySelector('minplayers')?.getAttribute('value') ?? '';
-  const maxPlayers = item?.querySelector('maxplayers')?.getAttribute('value') ?? '';
   const versions: BggVersion[] = Array.from(doc.querySelectorAll('versions item')).map(v => {
     const wIn = v.querySelector('width')?.getAttribute('value') ?? '';
     const lIn = v.querySelector('length')?.getAttribute('value') ?? '';
@@ -172,7 +164,7 @@ export async function fetchBggGameDetails(bggId: string): Promise<BggGameDetails
       depthCm: inToCm(dIn),
     };
   });
-  return { thumbnail, minPlayers, maxPlayers, versions };
+  return { thumbnail, versions };
 }
 
 export async function fetchBggKnownVersionId(username: string, bggId: string): Promise<string | null> {
