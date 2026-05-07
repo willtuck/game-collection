@@ -41,6 +41,7 @@ export function UserMenu({ onImportCSV, onExportCSV, onImportBgg }: UserMenuProp
 
   return (
     <div className={styles.wrap}>
+      {isPremium && <span className={styles.premiumBadge}>Premium</span>}
       <button
         className={styles.avatarBtn}
         onClick={() => setOpen(o => !o)}

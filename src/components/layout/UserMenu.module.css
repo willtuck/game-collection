@@ -1,5 +1,21 @@
 .wrap {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.premiumBadge {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 /* Avatar tap target — 44×44 for mobile */
