@@ -96,7 +96,14 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     fetchDimSuggestions(game.name).then(setDimSuggestions);
     if (game.bggId) fetchBggVersions(game.bggId).then(versions => {
       setBggVersions(versions);
-      if (game.versionId) setSelectedVersionId(game.versionId);
+      if (game.versionId) {
+        setSelectedVersionId(game.versionId);
+      } else if (game.width && game.height && game.depth) {
+        const match = versions.find(v =>
+          v.widthCm === game.width && v.heightCm === game.height && v.depthCm === game.depth
+        );
+        if (match) setSelectedVersionId(match.id);
+      }
     });
     setEditing(true);
   }
