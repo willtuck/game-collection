@@ -3,6 +3,7 @@
 export interface Game {
   id: string;
   bggId?: string;
+  versionId?: string; // BGG version/edition ID, stored locally only
   thumbnail?: string;
   accentColor?: string; // dominant color extracted from thumbnail, stored locally
   name: string;

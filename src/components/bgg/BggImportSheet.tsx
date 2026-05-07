@@ -130,6 +130,7 @@ export function BggImportSheet({ open, onClose }: BggImportSheetProps) {
         thumbnail: g.thumbnail || undefined,
         name: g.name,
         type: g.type === 'boardgameexpansion' ? 'expansion' : undefined,
+        versionId: g.knownVersionId ?? undefined,
         width:  hasDims ? g.widthCm!  : null,
         height: hasDims ? g.heightCm! : null,
         depth:  hasDims ? g.depthCm!  : null,

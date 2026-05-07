@@ -94,7 +94,10 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     setSelectedVersionId('');
     versionDimsRef.current = null;
     fetchDimSuggestions(game.name).then(setDimSuggestions);
-    if (game.bggId) fetchBggVersions(game.bggId).then(setBggVersions);
+    if (game.bggId) fetchBggVersions(game.bggId).then(versions => {
+      setBggVersions(versions);
+      if (game.versionId) setSelectedVersionId(game.versionId);
+    });
     setEditing(true);
   }
 
