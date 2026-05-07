@@ -59,6 +59,45 @@ export function LandingPage() {
         </div>
       </section>
 
+      <section className={styles.pricing}>
+        <div className={styles.pricingInner}>
+          <h2 className={styles.pricingHeading}>Simple, honest pricing</h2>
+          <p className={styles.pricingSubhead}>Start free. Upgrade once if you need more.</p>
+          <div className={styles.pricingCards}>
+            <div className={styles.pricingCard}>
+              <div className={styles.planName}>Free</div>
+              <div className={styles.planPrice}><span className={styles.planAmount}>$0</span></div>
+              <ul className={styles.planPerks}>
+                <li>Up to 20 games</li>
+                <li>1 shelving unit</li>
+                <li>BGG import</li>
+                <li>Isometric shelf view</li>
+              </ul>
+              <button className={styles.planCta} onClick={openAuthModal}>
+                Get started free
+              </button>
+            </div>
+            <div className={`${styles.pricingCard} ${styles.pricingCardPremium}`}>
+              <div className={styles.planBadge}>Premium</div>
+              <div className={styles.planPrice}>
+                <span className={styles.planAmount}>$7</span>
+                <span className={styles.planOnce}>one-time</span>
+              </div>
+              <ul className={styles.planPerks}>
+                <li>Unlimited games</li>
+                <li>Unlimited shelving units</li>
+                <li>BGG import</li>
+                <li>Isometric shelf view</li>
+                <li>No subscription, ever</li>
+              </ul>
+              <button className={styles.planCtaPremium} onClick={openAuthModal}>
+                Get started
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div>
