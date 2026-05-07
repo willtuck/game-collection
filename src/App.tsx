@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { LandingPage } from './components/landing/LandingPage';
@@ -7,6 +8,7 @@ import { PrivacyPage } from './components/legal/PrivacyPage';
 import { TermsPage } from './components/legal/TermsPage';
 import { AuthModal } from './components/auth/AuthModal';
 import { ResetPasswordPage } from './components/auth/ResetPasswordPage';
+import { ComingSoonPage } from './components/landing/ComingSoonPage';
 import { useAuthInit } from './hooks/useAuthInit';
 
 function AppRoutes() {
@@ -27,6 +29,17 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const [unlocked, setUnlocked] = useState(
+    () => localStorage.getItem('sg-access') === 'true'
+  );
+
+  function handleUnlock() {
+    localStorage.setItem('sg-access', 'true');
+    setUnlocked(true);
+  }
+
+  if (!unlocked) return <ComingSoonPage onUnlock={handleUnlock} />;
+
   return (
     <BrowserRouter>
       <AppRoutes />
