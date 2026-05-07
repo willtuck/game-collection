@@ -20,7 +20,7 @@ export function Header({ onImportCSV, onExportCSV, onImportBgg }: HeaderProps) {
       <h1 className={styles.title}>
         Shelf<span>geek</span>
       </h1>
-      <span className={styles.build}>{__COMMIT_HASH__}</span>
+
       <span className={styles.count}>
         {count === 1 ? '1 game' : `${count} games`}
       </span>
