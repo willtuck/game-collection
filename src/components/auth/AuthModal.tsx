@@ -24,6 +24,8 @@ export function AuthModal() {
     setPassword('');
     setError('');
     setSuccess('');
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
   }, [open]);
 
   useEffect(() => {
