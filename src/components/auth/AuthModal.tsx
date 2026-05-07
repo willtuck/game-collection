@@ -62,7 +62,6 @@ export function AuthModal() {
         g.accounts.id.renderButton(googleBtnRef.current, {
           theme: 'outline',
           size: 'large',
-          width: googleBtnRef.current.offsetWidth || 360,
           text: 'signin_with',
           shape: 'rectangular',
           logo_alignment: 'left',
