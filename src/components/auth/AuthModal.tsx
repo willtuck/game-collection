@@ -138,7 +138,6 @@ export function AuthModal() {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                autoFocus
                 autoComplete="email"
               />
             </div>
