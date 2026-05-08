@@ -2,7 +2,6 @@ import { useState, useId, useRef, useEffect } from 'react';
 import { BoxPreview } from './BoxPreview';
 import { GroupInput } from './GroupInput';
 import { useGameStore } from '../../store/useGameStore';
-import { useAuthStore } from '../../store/useAuthStore';
 import { fetchBggVersions, fetchBggKnownVersionId, type BggVersion } from '../../lib/bggApi';
 import { extractDominantColor } from '../../lib/colorExtractor';
 import { hasDims, toCm, fmtDims } from '../../lib/helpers';
