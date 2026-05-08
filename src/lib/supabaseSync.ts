@@ -7,6 +7,7 @@ let _pending = 0;
 let _hasError = false;
 
 function onSyncStart() {
+  if (_pending === 0) _hasError = false; // reset error state at the start of each new batch
   _pending++;
   useAuthStore.getState().setSyncStatus('syncing');
 }
