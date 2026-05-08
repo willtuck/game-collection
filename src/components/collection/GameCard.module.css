@@ -217,7 +217,7 @@
 
 .dimRow {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) auto;
+  grid-template-columns: auto repeat(3, 1fr);
   gap: 8px;
   align-items: end;
 }
@@ -225,6 +225,10 @@
 .dimToggleField {
   display: flex;
   align-items: flex-end;
+}
+
+.dimToggle button {
+  height: 40px;
 }
 
 .dimField { display: flex; flex-direction: column; gap: 4px; }

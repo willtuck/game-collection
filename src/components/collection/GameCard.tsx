@@ -392,6 +392,9 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
             <div className={styles.field}>
               <span className={styles.flabel}>Dimensions</span>
               <div className={styles.dimRow}>
+                <div className={styles.dimToggleField}>
+                  <UnitToggle value={form.unit} onChange={setUnit} className={styles.dimToggle} />
+                </div>
                 {(['width','height','depth'] as const).map((k, i) => (
                   <div key={k} className={styles.dimField}>
                     <label className={styles.dimLabel} htmlFor={`${formId}-${k}`}>{['W','H','D'][i]}</label>
@@ -409,9 +412,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
                     />
                   </div>
                 ))}
-                <div className={styles.dimToggleField}>
-                  <UnitToggle value={form.unit} onChange={setUnit} />
-                </div>
               </div>
               {(pw > 0 || ph > 0 || pd > 0) && (
                 <div className={styles.preview}>
