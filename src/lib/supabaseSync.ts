@@ -79,51 +79,6 @@ export async function deleteKallaxDb(id: string) {
   if (error) console.error('[sync] deleteKallaxDb:', error.message);
 }
 
-// ── Shared dimensions ────────────────────────────────────────────────────────
-
-export interface DimSuggestion {
-  width: string;
-  height: string;
-  depth: string;
-}
-
-export async function fetchDimSuggestions(gameName: string): Promise<DimSuggestion[]> {
-  const key = gameName.trim().toLowerCase();
-  if (!key) return [];
-  const { data, error } = await supabase
-    .from('game_dimensions')
-    .select('width, height, depth')
-    .eq('game_name_key', key);
-  if (error) { console.error('[sync] fetchDimSuggestions:', error.message); return []; }
-  const seen = new Set<string>();
-  return (data ?? []).filter((r: DimSuggestion) => {
-    const k = `${r.width}×${r.height}×${r.depth}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-}
-
-export async function contributeDims(
-  gameName: string,
-  width: string,
-  height: string,
-  depth: string,
-  userId: string,
-) {
-  const key = gameName.trim().toLowerCase();
-  if (!key || !width || !height || !depth) return;
-  const { error } = await supabase.from('game_dimensions').upsert({
-    game_name_key: key,
-    user_id: userId,
-    width,
-    height,
-    depth,
-    updated_at: new Date().toISOString(),
-  });
-  if (error) console.error('[sync] contributeDims:', error.message);
-}
-
 // ── Bulk operations (used on sign-in) ────────────────────────────────────────
 
 export async function fetchUserData(userId: string): Promise<{ games: Game[]; kallaxes: KallaxUnit[] }> {

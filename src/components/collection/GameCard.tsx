@@ -3,7 +3,6 @@ import { BoxPreview } from './BoxPreview';
 import { GroupInput } from './GroupInput';
 import { useGameStore } from '../../store/useGameStore';
 import { useAuthStore } from '../../store/useAuthStore';
-import { fetchDimSuggestions, contributeDims, type DimSuggestion } from '../../lib/supabaseSync';
 import { fetchBggVersions, fetchBggKnownVersionId, type BggVersion } from '../../lib/bggApi';
 import { extractDominantColor } from '../../lib/colorExtractor';
 import { hasDims, toCm, fmtDims } from '../../lib/helpers';
@@ -26,7 +25,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const [editing, setEditing] = useState(false);
   const games = useGameStore(s => s.games);
   const updateGame = useGameStore(s => s.updateGame);
-  const userId      = useAuthStore(s => s.user?.id);
   const bggUsername = useGameStore(s => s.bggUsername);
   const manualKallaxes       = useGameStore(s => s.manualKallaxes);
   const manualPlacements     = useGameStore(s => s.manualPlacements);
@@ -34,9 +32,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const setPendingManualView  = useGameStore(s => s.setPendingManualView);
   const removeManualPlacement = useGameStore(s => s.removeManualPlacement);
   const col = gameColor(game.id, game.accentColor);
-  const [dimSuggestions, setDimSuggestions] = useState<DimSuggestion[]>([]);
-  const [activeSugIdx, setActiveSugIdx] = useState<number | null>(null);
-  const [savedDims, setSavedDims] = useState<{ width: string; height: string; depth: string } | null>(null);
   const [bggVersions, setBggVersions] = useState<BggVersion[]>([]);
   const [selectedVersionId, setSelectedVersionId] = useState('');
   // track whether the current dims came from a version pick (so manual edits can reset it)
@@ -83,14 +78,10 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
       height: disp(game.height),
       depth: disp(game.depth),
     });
-    setDimSuggestions([]);
-    setActiveSugIdx(null);
-    setSavedDims(null);
     setPendingFitWarning(null);
     setBggVersions([]);
     setSelectedVersionId('');
     versionDimsRef.current = null;
-    fetchDimSuggestions(game.name).then(setDimSuggestions);
     if (game.bggId) {
       const versionsPromise = fetchBggVersions(game.bggId);
       if (game.versionId) {
@@ -116,9 +107,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
 
   function cancelEdit() {
     setEditing(false);
-    setDimSuggestions([]);
-    setActiveSugIdx(null);
-    setSavedDims(null);
     setPendingFitWarning(null);
     setBggVersions([]);
     setSelectedVersionId('');
@@ -148,14 +136,8 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
       width: wCm, height: hCm, depth: dCm,
       unit: form.unit,
     });
-    if (!storedInside && wCm && hCm && dCm && userId) {
-      contributeDims(name, wCm, hCm, dCm, userId);
-    }
     toast(`Updated "${name}"`);
     setEditing(false);
-    setDimSuggestions([]);
-    setActiveSugIdx(null);
-    setSavedDims(null);
   }
 
   function saveEdit() {
@@ -176,32 +158,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
     }
 
     commitUpdate(name, storedInside, wCm, hCm, dCm);
-  }
-
-  function applySuggestion(s: DimSuggestion, i: number) {
-    if (activeSugIdx === i) {
-      // Deselect — revert to saved dims
-      if (savedDims) setForm(f => ({ ...f, ...savedDims }));
-      setActiveSugIdx(null);
-      setSavedDims(null);
-    } else {
-      // Select — save current dims on first pick, then apply
-      if (activeSugIdx === null) {
-        setSavedDims({ width: form.width, height: form.height, depth: form.depth });
-      }
-      setForm(f => ({
-        ...f,
-        width:  f.unit === 'cm' ? s.width  : (parseFloat(s.width)  / 2.54).toFixed(2),
-        height: f.unit === 'cm' ? s.height : (parseFloat(s.height) / 2.54).toFixed(2),
-        depth:  f.unit === 'cm' ? s.depth  : (parseFloat(s.depth)  / 2.54).toFixed(2),
-      }));
-      setActiveSugIdx(i);
-    }
-  }
-
-  function fmtSug(v: string) {
-    if (form.unit === 'cm') return v;
-    return (parseFloat(v) / 2.54).toFixed(1);
   }
 
   function selectVersion(id: string) {
@@ -461,20 +417,6 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
               {(pw > 0 || ph > 0 || pd > 0) && (
                 <div className={styles.preview}>
                   <BoxPreview w={pw||1} h={ph||1} d={pd||1} color={col} />
-                </div>
-              )}
-              {dimSuggestions.length > 0 && (
-                <div className={styles.suggestions}>
-                  <span className={styles.sugLabel}>Suggested</span>
-                  {dimSuggestions.map((s, i) => (
-                    <button
-                      key={i}
-                      className={`${styles.sugChip} ${activeSugIdx === i ? styles.sugChipActive : ''}`}
-                      onClick={() => applySuggestion(s, i)}
-                    >
-                      {fmtSug(s.width)} × {fmtSug(s.height)} × {fmtSug(s.depth)} {form.unit}
-                    </button>
-                  ))}
                 </div>
               )}
             </div>

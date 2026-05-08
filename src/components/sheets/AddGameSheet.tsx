@@ -4,8 +4,6 @@ import { GroupInput } from '../collection/GroupInput';
 import { BoxPreview } from '../collection/BoxPreview';
 import { UnitToggle } from '../shared/UnitToggle';
 import { useGameStore } from '../../store/useGameStore';
-import { useAuthStore } from '../../store/useAuthStore';
-import { contributeDims } from '../../lib/supabaseSync';
 import { toCm } from '../../lib/helpers';
 import { toast } from '../shared/Toast';
 import { searchBgg, fetchBggGameDetails } from '../../lib/bggApi';
@@ -157,10 +155,6 @@ export function AddGameSheet({ open, onClose }: AddGameSheetProps) {
     };
 
     addGame(game);
-    if (!storedInside && game.width && game.height && game.depth) {
-      const uid = useAuthStore.getState().user?.id;
-      if (uid) contributeDims(game.name, game.width, game.height, game.depth, uid);
-    }
     toast(`Added "${name}"`);
     setForm(EMPTY);
     resetBgg();
