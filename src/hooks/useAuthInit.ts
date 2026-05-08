@@ -40,7 +40,9 @@ export async function fetchPremiumStatus(userId: string) {
 
 async function syncOnSignIn(userId: string) {
   fetchPremiumStatus(userId);
-  const { games: dbGames, kallaxes: dbKallaxes } = await fetchUserData(userId);
+  const { games: dbGames, kallaxes: dbKallaxes, error } = await fetchUserData(userId);
+  if (error) return; // don't touch local state if Supabase is unreachable
+
   const localGames = useGameStore.getState().games;
   const localKallaxes = useGameStore.getState().kallaxes;
 

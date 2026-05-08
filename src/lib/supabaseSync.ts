@@ -81,11 +81,16 @@ export async function deleteKallaxDb(id: string) {
 
 // ── Bulk operations (used on sign-in) ────────────────────────────────────────
 
-export async function fetchUserData(userId: string): Promise<{ games: Game[]; kallaxes: KallaxUnit[] }> {
+export async function fetchUserData(userId: string): Promise<{ games: Game[]; kallaxes: KallaxUnit[]; error?: string }> {
   const [gamesRes, kallaxRes] = await Promise.all([
     supabase.from('games').select('*').eq('user_id', userId),
     supabase.from('kallax_units').select('*').eq('user_id', userId),
   ]);
+  if (gamesRes.error || kallaxRes.error) {
+    const msg = gamesRes.error?.message ?? kallaxRes.error?.message;
+    console.error('[sync] fetchUserData:', msg);
+    return { games: [], kallaxes: [], error: msg };
+  }
   return {
     games:    (gamesRes.data  ?? []).map(r => rowToGame(r as Record<string, unknown>)),
     kallaxes: (kallaxRes.data ?? []).map(r => rowToKu(r  as Record<string, unknown>)),
