@@ -62,8 +62,11 @@ async function syncOnSignIn(userId: string) {
     const localOnly = localGames.filter(g => !dbById.has(g.id));
     if (localOnly.length > 0) {
       await pushAllToDb(localOnly, [], userId);
-      mergedGames.push(...localOnly);
+    } else {
+      // DB confirmed — no push needed, mark as synced directly
+      useAuthStore.getState().setSyncStatus('synced');
     }
+    mergedGames.push(...localOnly);
 
     useGameStore.setState({ games: mergedGames, kallaxes: dbKallaxes });
   } else {

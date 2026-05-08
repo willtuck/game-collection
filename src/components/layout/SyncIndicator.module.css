@@ -1,0 +1,37 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.label {
+  color: var(--text-light);
+}
+
+.icon {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.synced .icon { color: #4a9d6f; }
+.error  .icon { color: var(--danger); }
+.error  .label { color: var(--danger); }
+
+.spinner {
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid var(--border-mid);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 479px) {
+  .label { display: none; }
+}

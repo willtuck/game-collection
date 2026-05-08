@@ -1,5 +1,6 @@
 import { useAuthStore } from '../../store/useAuthStore';
 import { UserMenu } from './UserMenu';
+import { SyncIndicator } from './SyncIndicator';
 import styles from './Header.module.css';
 
 interface HeaderProps {
@@ -19,7 +20,8 @@ export function Header({ onImportCSV, onExportCSV, onImportBgg }: HeaderProps) {
         Shelf<span>geek</span>
       </h1>
 
-<div className={styles.auth}>
+      <div className={styles.auth}>
+        <SyncIndicator />
         {!loading && (
           user ? (
             <UserMenu onImportCSV={onImportCSV} onExportCSV={onExportCSV} onImportBgg={onImportBgg} />

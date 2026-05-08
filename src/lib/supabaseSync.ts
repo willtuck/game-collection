@@ -1,5 +1,23 @@
 import { supabase } from './supabase';
+import { useAuthStore } from '../store/useAuthStore';
 import type { Game, KallaxUnit } from './types';
+
+// ── Pending-op tracker ───────────────────────────────────────────────────────
+let _pending = 0;
+let _hasError = false;
+
+function onSyncStart() {
+  _pending++;
+  useAuthStore.getState().setSyncStatus('syncing');
+}
+
+function onSyncDone(error = false) {
+  if (error) _hasError = true;
+  _pending = Math.max(0, _pending - 1);
+  if (_pending === 0) {
+    useAuthStore.getState().setSyncStatus(_hasError ? 'error' : 'synced');
+  }
+}
 
 // ── Mapping helpers ──────────────────────────────────────────────────────────
 
@@ -55,28 +73,38 @@ function rowToKu(row: Record<string, unknown>): KallaxUnit {
 // ── Single-record mutations ──────────────────────────────────────────────────
 
 export async function upsertGame(game: Game, userId: string) {
+  onSyncStart();
   const { error } = await supabase.from('games').upsert(gameToRow(game, userId));
   if (error) console.error('[sync] upsertGame:', error.message);
+  onSyncDone(!!error);
 }
 
 export async function deleteGameDb(id: string) {
+  onSyncStart();
   const { error } = await supabase.from('games').delete().eq('id', id);
   if (error) console.error('[sync] deleteGameDb:', error.message);
+  onSyncDone(!!error);
 }
 
 export async function deleteAllGamesDb(userId: string) {
+  onSyncStart();
   const { error } = await supabase.from('games').delete().eq('user_id', userId);
   if (error) console.error('[sync] deleteAllGamesDb:', error.message);
+  onSyncDone(!!error);
 }
 
 export async function upsertKallax(ku: KallaxUnit, userId: string) {
+  onSyncStart();
   const { error } = await supabase.from('kallax_units').upsert(kuToRow(ku, userId));
   if (error) console.error('[sync] upsertKallax:', error.message);
+  onSyncDone(!!error);
 }
 
 export async function deleteKallaxDb(id: string) {
+  onSyncStart();
   const { error } = await supabase.from('kallax_units').delete().eq('id', id);
   if (error) console.error('[sync] deleteKallaxDb:', error.message);
+  onSyncDone(!!error);
 }
 
 // ── Bulk operations (used on sign-in) ────────────────────────────────────────
@@ -98,12 +126,15 @@ export async function fetchUserData(userId: string): Promise<{ games: Game[]; ka
 }
 
 export async function pushAllToDb(games: Game[], kallaxes: KallaxUnit[], userId: string) {
+  onSyncStart();
+  let anyError = false;
   if (games.length) {
     const { error } = await supabase.from('games').upsert(games.map(g => gameToRow(g, userId)));
-    if (error) console.error('[sync] pushAllToDb games:', error.message);
+    if (error) { console.error('[sync] pushAllToDb games:', error.message); anyError = true; }
   }
   if (kallaxes.length) {
     const { error } = await supabase.from('kallax_units').upsert(kallaxes.map(k => kuToRow(k, userId)));
-    if (error) console.error('[sync] pushAllToDb kallaxes:', error.message);
+    if (error) { console.error('[sync] pushAllToDb kallaxes:', error.message); anyError = true; }
   }
+  onSyncDone(anyError);
 }
