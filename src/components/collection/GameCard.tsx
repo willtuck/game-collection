@@ -391,10 +391,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
           {/* Dimensions */}
           {!storedInsideEdit && (
             <div className={styles.field}>
-              <div className={styles.dimHeader}>
-                <span className={styles.flabel}>Dimensions</span>
-                <UnitToggle value={form.unit} onChange={setUnit} />
-              </div>
+              <span className={styles.flabel}>Dimensions</span>
               <div className={styles.dimRow}>
                 {(['width','height','depth'] as const).map((k, i) => (
                   <div key={k} className={styles.dimField}>
@@ -413,6 +410,9 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
                     />
                   </div>
                 ))}
+                <div className={styles.dimToggleField}>
+                  <UnitToggle value={form.unit} onChange={setUnit} />
+                </div>
               </div>
               {(pw > 0 || ph > 0 || pd > 0) && (
                 <div className={styles.preview}>
