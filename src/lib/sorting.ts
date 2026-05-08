@@ -1,4 +1,4 @@
-import type { Game, PackableGame, KallaxSort } from './types';
+import type { Game, PackableGame, ShelfSort } from './types';
 import { hasDims } from './helpers';
 
 // Strip leading articles so "A War of Whispers" sorts as "War of Whispers"
@@ -6,7 +6,7 @@ function sortKey(name: string) {
   return name.replace(/^(the|a|an)\s+/i, '').trim();
 }
 
-export function getSortedForKallax(games: Game[], kallaxSort: KallaxSort): PackableGame[] {
+export function getSortedForShelf(games: Game[], shelfSort: ShelfSort): PackableGame[] {
   const eligible = games.filter(
     g => hasDims(g) && !(g.type === 'expansion' && g.storedInside)
   );
@@ -16,14 +16,14 @@ export function getSortedForKallax(games: Game[], kallaxSort: KallaxSort): Packa
   }
 
   const sorted = [...eligible];
-  switch (kallaxSort) {
+  switch (shelfSort) {
     case 'alpha':      sorted.sort((a,b) => sortKey(a.name).localeCompare(sortKey(b.name))); break;
     case 'alpha-desc': sorted.sort((a,b) => sortKey(b.name).localeCompare(sortKey(a.name))); break;
-    case 'size-desc': sorted.sort((a,b) => vol(b) - vol(a)); break;
-    case 'size-asc':  sorted.sort((a,b) => vol(a) - vol(b)); break;
-    case 'date-new':  sorted.sort((a,b) => new Date(b.added).getTime() - new Date(a.added).getTime()); break;
-    case 'date-old':  sorted.sort((a,b) => new Date(a.added).getTime() - new Date(b.added).getTime()); break;
-    case 'dims-last': break;
+    case 'size-desc':  sorted.sort((a,b) => vol(b) - vol(a)); break;
+    case 'size-asc':   sorted.sort((a,b) => vol(a) - vol(b)); break;
+    case 'date-new':   sorted.sort((a,b) => new Date(b.added).getTime() - new Date(a.added).getTime()); break;
+    case 'date-old':   sorted.sort((a,b) => new Date(a.added).getTime() - new Date(b.added).getTime()); break;
+    case 'dims-last':  break;
   }
 
   // Group: each game immediately followed by its boxed expansions, then all group-mates

@@ -1,4 +1,4 @@
-import type { Game, KallaxUnit } from './types';
+import type { Game, ShelfUnit } from './types';
 import { KALLAX } from './packing';
 
 export function hasDims(g: Game): boolean {
@@ -36,7 +36,7 @@ export function esc(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-export function kuGrid(model: string): [number, number] {
+export function shelfGrid(model: string): [number, number] {
   const map: Record<string, [number, number]> = {
     '1x1': [1,1], '1x2': [1,2], '2x1': [2,1], '1x4': [1,4], '4x1': [4,1],
     '2x2': [2,2], '2x4': [2,4], '4x2': [4,2], '4x4': [4,4], '5x5': [5,5],
@@ -44,7 +44,7 @@ export function kuGrid(model: string): [number, number] {
   return map[model] ?? [2, 4];
 }
 
-export function kuLabel(model: string): string {
+export function shelfLabel(model: string): string {
   const labels: Record<string, string> = {
     '1x1': '1×1', '1x2': '1×2 tall', '2x1': '1×2 wide',
     '1x4': '1×4 tall', '4x1': '1×4 wide', '2x2': '2×2',
@@ -74,20 +74,20 @@ export function buildCustomModel(spec: CustomUnitSpec): string {
   return `custom:${spec.cols}:${spec.rows}:${spec.cellW}:${spec.cellH}:${spec.cellD}`;
 }
 
-export function unitGrid(ku: KallaxUnit): [number, number] {
-  const c = parseCustomModel(ku.model);
+export function unitGrid(shelf: ShelfUnit): [number, number] {
+  const c = parseCustomModel(shelf.model);
   if (c) return [c.cols, c.rows];
-  return kuGrid(ku.model);
+  return shelfGrid(shelf.model);
 }
 
-export function unitDims(ku: KallaxUnit): { w: number; h: number; d: number } {
-  const c = parseCustomModel(ku.model);
+export function unitDims(shelf: ShelfUnit): { w: number; h: number; d: number } {
+  const c = parseCustomModel(shelf.model);
   if (c) return { w: c.cellW, h: c.cellH, d: c.cellD };
   return KALLAX;
 }
 
-export function unitBadgeLabel(ku: KallaxUnit): string {
-  const c = parseCustomModel(ku.model);
+export function unitBadgeLabel(shelf: ShelfUnit): string {
+  const c = parseCustomModel(shelf.model);
   if (c) return `${c.cols}×${c.rows}`;
-  return kuLabel(ku.model);
+  return shelfLabel(shelf.model);
 }

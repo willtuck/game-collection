@@ -25,7 +25,7 @@ export function fitsUprightInCell(g: PackableGame, dims = KALLAX): boolean {
 }
 
 /**
- * Packs games on top of a Kallax unit in stacked orientation.
+ * Packs games on top of a shelf unit in stacked orientation.
  * Placement strategy:
  *   1. Fill a side-by-side base row from left to right; center the row when done.
  *   2. Games that don't fit in the row try to stack on an existing base-row game
@@ -88,7 +88,7 @@ export function packTop(
     topPacked.push({
       ...item.g,
       xOffset: x,
-      yOffset: yBase,                   // bottom of game box sits on the Kallax top surface
+      yOffset: yBase,                   // bottom of game box sits on the shelf top surface
       mode: 'stacked',
       _thickness: item.thickness,
       _footW: item.footW,

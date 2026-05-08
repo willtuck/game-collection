@@ -18,7 +18,7 @@ export interface Game {
   added: string; // ISO date string
 }
 
-// Game annotated with packing metadata — used only during Kallax layout
+// Game annotated with packing metadata — used only during shelf layout
 export interface PackableGame extends Game {
   _cellGroup?: string;
 }
@@ -32,14 +32,14 @@ export interface PackedGame extends PackableGame {
   _footD?: number;
 }
 
-export interface KallaxUnit {
+export interface ShelfUnit {
   id: string;
   model: string; // e.g. '2x4'
   label: string;
 }
 
 export type StorageMode = 'upright' | 'stacked';
-export type KallaxSort =
+export type ShelfSort =
   | 'alpha'
   | 'alpha-desc'
   | 'size-desc'
@@ -61,9 +61,9 @@ export interface Layout {
   type: 'suggested' | 'manual';
   createdAt: string;
   updatedAt: string;
-  sortScheme?: KallaxSort;
+  sortScheme?: ShelfSort;
   storageMode?: StorageMode;
-  units: Pick<KallaxUnit, 'id' | 'model' | 'label'>[];
+  units: Pick<ShelfUnit, 'id' | 'model' | 'label'>[];
   placements: Placement[];
   collectionSnapshot?: { id: string; name: string }[];
 }

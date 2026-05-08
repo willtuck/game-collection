@@ -1,18 +1,18 @@
 import { useState, useRef } from 'react';
 import { Sheet } from '../shared/Sheet';
 import { useGameStore } from '../../store/useGameStore';
-import { kuLabel, unitBadgeLabel, buildCustomModel } from '../../lib/helpers';
+import { shelfLabel, unitBadgeLabel, buildCustomModel } from '../../lib/helpers';
 import { KALLAX } from '../../lib/packing';
-import type { KallaxUnit } from '../../lib/types';
+import type { ShelfUnit } from '../../lib/types';
 import styles from './KallaxManagerSheet.module.css';
 
 const PRESET_MODELS = ['1x1','1x2','2x1','1x4','4x1','2x2','2x4','4x2','4x4','5x5'];
 
-interface KallaxManagerSheetProps {
+interface ShelfManagerSheetProps {
   open: boolean;
   onClose: () => void;
   /** Optional: override the store's data/actions for a separate unit list (e.g. manual units) */
-  units?: KallaxUnit[];
+  units?: ShelfUnit[];
   onAdd?: (model: string, label: string) => void;
   onRemove?: (id: string) => void;
   onUpdateLabel?: (id: string, label: string) => void;
@@ -30,16 +30,16 @@ function toCm(val: string, unit: 'cm' | 'in'): number {
   return unit === 'in' ? n * 2.54 : n;
 }
 
-export function KallaxManagerSheet({ open, onClose, units: unitsProp, onAdd: onAddProp, onRemove: onRemoveProp, onUpdateLabel: onUpdateLabelProp, title = 'Shelving units' }: KallaxManagerSheetProps) {
-  const storeKallaxes          = useGameStore(s => s.kallaxes);
-  const storeAddKallax         = useGameStore(s => s.addKallax);
-  const storeRemoveKallax      = useGameStore(s => s.removeKallax);
-  const storeUpdateKallaxLabel = useGameStore(s => s.updateKallaxLabel);
+export function ShelfManagerSheet({ open, onClose, units: unitsProp, onAdd: onAddProp, onRemove: onRemoveProp, onUpdateLabel: onUpdateLabelProp, title = 'Shelving units' }: ShelfManagerSheetProps) {
+  const storeShelves            = useGameStore(s => s.shelves);
+  const storeAddShelf           = useGameStore(s => s.addShelf);
+  const storeRemoveShelf        = useGameStore(s => s.removeShelf);
+  const storeUpdateShelfLabel   = useGameStore(s => s.updateShelfLabel);
 
-  const kallaxes          = unitsProp          ?? storeKallaxes;
-  const addKallax         = onAddProp          ?? storeAddKallax;
-  const removeKallax      = onRemoveProp       ?? storeRemoveKallax;
-  const updateKallaxLabel = onUpdateLabelProp  ?? storeUpdateKallaxLabel;
+  const shelves           = unitsProp          ?? storeShelves;
+  const addShelf          = onAddProp          ?? storeAddShelf;
+  const removeShelf       = onRemoveProp       ?? storeRemoveShelf;
+  const updateShelfLabel  = onUpdateLabelProp  ?? storeUpdateShelfLabel;
 
   const [newModel,    setNewModel]    = useState('2x4');
   const [newLabel,    setNewLabel]    = useState('');
@@ -84,12 +84,12 @@ export function KallaxManagerSheet({ open, onClose, units: unitsProp, onAdd: onA
 
       // Auto-name if blank: "Custom 1", "Custom 2", …
       if (!label) {
-        const existingCustom = kallaxes.filter(k => k.model.startsWith('custom:')).length;
+        const existingCustom = shelves.filter(k => k.model.startsWith('custom:')).length;
         label = `Custom ${existingCustom + 1}`;
       }
     }
 
-    addKallax(model, label);
+    addShelf(model, label);
     setNewLabel('');
   }
 
@@ -97,21 +97,21 @@ export function KallaxManagerSheet({ open, onClose, units: unitsProp, onAdd: onA
     <Sheet open={open} onClose={onClose} title={title}>
       {/* ── Existing units ── */}
       <div className={styles.list}>
-        {kallaxes.map(ku => (
-          <div key={ku.id} className={styles.row}>
-            <span className={styles.modelBadge}>{unitBadgeLabel(ku)}</span>
+        {shelves.map(shelf => (
+          <div key={shelf.id} className={styles.row}>
+            <span className={styles.modelBadge}>{unitBadgeLabel(shelf)}</span>
             <div className={styles.labelWrap}>
               <input
-                ref={el => { if (el) labelRefs.current.set(ku.id, el); else labelRefs.current.delete(ku.id); }}
+                ref={el => { if (el) labelRefs.current.set(shelf.id, el); else labelRefs.current.delete(shelf.id); }}
                 className={styles.labelInput}
-                value={ku.label}
-                onChange={e => updateKallaxLabel(ku.id, e.target.value)}
+                value={shelf.label}
+                onChange={e => updateShelfLabel(shelf.id, e.target.value)}
                 placeholder="Rename…"
-                aria-label={`Name for ${unitBadgeLabel(ku)} unit`}
+                aria-label={`Name for ${unitBadgeLabel(shelf)} unit`}
               />
               <button
                 className={styles.pencilBtn}
-                onClick={() => labelRefs.current.get(ku.id)?.focus()}
+                onClick={() => labelRefs.current.get(shelf.id)?.focus()}
                 tabIndex={-1}
                 aria-hidden="true"
               >
@@ -123,9 +123,9 @@ export function KallaxManagerSheet({ open, onClose, units: unitsProp, onAdd: onA
             </div>
             <button
               className={styles.deleteBtn}
-              onClick={() => removeKallax(ku.id)}
-              disabled={kallaxes.length === 1}
-              aria-label={kallaxes.length === 1 ? "Can't remove the last unit" : `Remove ${ku.label}`}
+              onClick={() => removeShelf(shelf.id)}
+              disabled={shelves.length === 1}
+              aria-label={shelves.length === 1 ? "Can't remove the last unit" : `Remove ${shelf.label}`}
             >✕</button>
           </div>
         ))}
@@ -145,7 +145,7 @@ export function KallaxManagerSheet({ open, onClose, units: unitsProp, onAdd: onA
           >
             <optgroup label="Ikea Kallax">
               {PRESET_MODELS.map(m => (
-                <option key={m} value={m}>{kuLabel(m)}</option>
+                <option key={m} value={m}>{shelfLabel(m)}</option>
               ))}
             </optgroup>
             <option disabled>──────────</option>

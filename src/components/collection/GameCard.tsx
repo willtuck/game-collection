@@ -25,7 +25,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
   const games = useGameStore(s => s.games);
   const updateGame = useGameStore(s => s.updateGame);
   const bggUsername = useGameStore(s => s.bggUsername);
-  const manualKallaxes       = useGameStore(s => s.manualKallaxes);
+  const manualShelves        = useGameStore(s => s.manualShelves);
   const manualPlacements     = useGameStore(s => s.manualPlacements);
   const setPendingManualNav  = useGameStore(s => s.setPendingManualNav);
   const setPendingManualView  = useGameStore(s => s.setPendingManualView);
@@ -276,11 +276,11 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
                 </button>
               );
             }
-            if (hasDims(game) && manualKallaxes.length > 0) {
+            if (hasDims(game) && manualShelves.length > 0) {
               return (
                 <button
                   className={styles.actionLink}
-                  onClick={() => setPendingManualNav({ unitId: manualKallaxes[0].id, gameId: game.id })}
+                  onClick={() => setPendingManualNav({ unitId: manualShelves[0].id, gameId: game.id })}
                 >
                   Store manually →
                 </button>
@@ -433,7 +433,7 @@ export function GameCard({ game, onDeleteRequest }: GameCardProps) {
         open={!!pendingFitWarning}
         title="Game no longer fits"
         message={<>
-          The new dimensions for <strong>{game.name}</strong> are too large to fit in a Kallax cell.
+          The new dimensions for <strong>{game.name}</strong> are too large to fit in a shelf cell.
           Saving will remove it from your manual shelf — you can reassign it later.
         </>}
         confirmLabel="Save & remove from shelf"

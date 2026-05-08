@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useGameStore } from '../../store/useGameStore';
-import { KallaxCanvas } from '../kallax/KallaxCanvas';
-import { KallaxManagerSheet } from '../kallax/KallaxManagerSheet';
+import { ShelfCanvas } from '../kallax/KallaxCanvas';
+import { ShelfManagerSheet } from '../kallax/KallaxManagerSheet';
 import { ManualCellSheet } from './ManualCellSheet';
 import { Sheet } from '../shared/Sheet';
 import { unitGrid, unitDims, fmtDims, hasDims } from '../../lib/helpers';
@@ -69,15 +69,15 @@ interface PickState {
 }
 
 export function ManualView() {
-  const manualKallaxes          = useGameStore(s => s.manualKallaxes);
-  const activeManualKuId        = useGameStore(s => s.activeManualKuId);
-  const manualPlacements        = useGameStore(s => s.manualPlacements);
-  const pendingManualNav        = useGameStore(s => s.pendingManualNav);
-  const games                   = useGameStore(s => s.games);
-  const setActiveManualKu       = useGameStore(s => s.setActiveManualKu);
-  const addManualKallax         = useGameStore(s => s.addManualKallax);
-  const removeManualKallax      = useGameStore(s => s.removeManualKallax);
-  const updateManualKallaxLabel = useGameStore(s => s.updateManualKallaxLabel);
+  const manualShelves            = useGameStore(s => s.manualShelves);
+  const activeManualShelfId      = useGameStore(s => s.activeManualShelfId);
+  const manualPlacements         = useGameStore(s => s.manualPlacements);
+  const pendingManualNav         = useGameStore(s => s.pendingManualNav);
+  const games                    = useGameStore(s => s.games);
+  const setActiveManualShelf     = useGameStore(s => s.setActiveManualShelf);
+  const addManualShelf           = useGameStore(s => s.addManualShelf);
+  const removeManualShelf        = useGameStore(s => s.removeManualShelf);
+  const updateManualShelfLabel   = useGameStore(s => s.updateManualShelfLabel);
   const setPendingManualNav     = useGameStore(s => s.setPendingManualNav);
   const addManualPlacement      = useGameStore(s => s.addManualPlacement);
   const updateManualCellMode    = useGameStore(s => s.updateManualCellMode);
@@ -97,25 +97,25 @@ export function ManualView() {
   const dragIdRef   = useRef<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
-  const activeUnit = manualKallaxes.find(k => k.id === activeManualKuId) ?? manualKallaxes[0];
+  const activeUnit = manualShelves.find(k => k.id === activeManualShelfId) ?? manualShelves[0];
 
   // Consume pending navigation from GameCard (placement mode)
   useEffect(() => {
     if (pendingManualNav) {
-      setActiveManualKu(pendingManualNav.unitId);
+      setActiveManualShelf(pendingManualNav.unitId);
       setPendingGame({ gameId: pendingManualNav.gameId, unitId: pendingManualNav.unitId });
       setPendingManualNav(null);
     }
-  }, [pendingManualNav, setActiveManualKu, setPendingManualNav]);
+  }, [pendingManualNav, setActiveManualShelf, setPendingManualNav]);
 
   // Consume view navigation from GameCard "Manually stored." pill
   useEffect(() => {
     if (pendingManualView) {
-      setActiveManualKu(pendingManualView.unitId);
+      setActiveManualShelf(pendingManualView.unitId);
       setCellSheetIdx(pendingManualView.cellIndex);
       setPendingManualView(null);
     }
-  }, [pendingManualView, setActiveManualKu, setPendingManualView]);
+  }, [pendingManualView, setActiveManualShelf, setPendingManualView]);
 
   const cellPacked = useMemo(() => {
     if (!activeUnit) return [];
@@ -148,7 +148,7 @@ export function ManualView() {
 
   const [cols, rows] = activeUnit ? unitGrid(activeUnit) : [0, 0];
   const dims = activeUnit ? unitDims(activeUnit) : KALLAX;
-  const noUnits = manualKallaxes.length === 0;
+  const noUnits = manualShelves.length === 0;
   const placedCount = activeUnit
     ? manualPlacements.filter(p => p.unitId === activeUnit.id).length
     : 0;
@@ -256,17 +256,17 @@ export function ManualView() {
       </div>
 
       {/* Unit tabs */}
-      {manualKallaxes.length > 1 && (
+      {manualShelves.length > 1 && (
         <div className={styles.units} role="tablist">
-          {manualKallaxes.map(ku => (
+          {manualShelves.map(shelf => (
             <button
-              key={ku.id}
+              key={shelf.id}
               role="tab"
-              aria-selected={ku.id === activeUnit?.id}
-              className={`${styles.unitTab} ${ku.id === activeUnit?.id ? styles.activeTab : ''}`}
-              onClick={() => setActiveManualKu(ku.id)}
+              aria-selected={shelf.id === activeUnit?.id}
+              className={`${styles.unitTab} ${shelf.id === activeUnit?.id ? styles.activeTab : ''}`}
+              onClick={() => setActiveManualShelf(shelf.id)}
             >
-              {ku.label}
+              {shelf.label}
             </button>
           ))}
         </div>
@@ -283,7 +283,7 @@ export function ManualView() {
         ) : activeUnit ? (
           <>
             <div className={styles.canvasArea}>
-              <KallaxCanvas
+              <ShelfCanvas
                 key={activeUnit.id}
                 cellPacked={previewCellPacked}
                 cols={cols}
@@ -305,14 +305,14 @@ export function ManualView() {
       </div>
 
       {/* Units manager */}
-      <KallaxManagerSheet
+      <ShelfManagerSheet
         open={manageOpen}
         onClose={() => setManageOpen(false)}
         title="Manual units"
-        units={manualKallaxes}
-        onAdd={addManualKallax}
-        onRemove={removeManualKallax}
-        onUpdateLabel={updateManualKallaxLabel}
+        units={manualShelves}
+        onAdd={addManualShelf}
+        onRemove={removeManualShelf}
+        onUpdateLabel={updateManualShelfLabel}
       />
 
       {/* Cell editor (existing games, no pending placement) */}

@@ -1,13 +1,13 @@
 import { Sheet } from '../shared/Sheet';
-import type { KallaxSort, StorageMode } from '../../lib/types';
+import type { ShelfSort, StorageMode } from '../../lib/types';
 import styles from './SuggestedSettings.module.css';
 
 interface SuggestedSettingsProps {
   open: boolean;
   onClose: () => void;
-  sort: KallaxSort;
+  sort: ShelfSort;
   mode: StorageMode;
-  onSortChange: (s: KallaxSort) => void;
+  onSortChange: (s: ShelfSort) => void;
   onModeChange: (m: StorageMode) => void;
 }
 
@@ -35,7 +35,7 @@ export function SuggestedSettings({
         <select
           className={styles.select}
           value={sort}
-          onChange={e => onSortChange(e.target.value as KallaxSort)}
+          onChange={e => onSortChange(e.target.value as ShelfSort)}
         >
           <option value="alpha">Name A–Z</option>
           <option value="alpha-desc">Name Z–A</option>

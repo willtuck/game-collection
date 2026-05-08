@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Game, KallaxUnit, Layout, ManualPlacement, StorageMode, KallaxSort } from '../lib/types';
-import { kuLabel } from '../lib/helpers';
+import type { Game, ShelfUnit, Layout, ManualPlacement, StorageMode, ShelfSort } from '../lib/types';
+import { shelfLabel } from '../lib/helpers';
 import { useAuthStore } from './useAuthStore';
 import {
   upsertGame, deleteGameDb, deleteAllGamesDb,
-  upsertKallax, deleteKallaxDb,
+  upsertShelf, deleteShelfDb,
 } from '../lib/supabaseSync';
 
 const uid = () => useAuthStore.getState().user?.id ?? null;
@@ -27,11 +27,11 @@ const uid = () => useAuthStore.getState().user?.id ?? null;
 interface GameStore {
   // ── State ──
   games: Game[];
-  kallaxes: KallaxUnit[];
+  shelves: ShelfUnit[];
   layouts: Layout[];
-  kallaxSort: KallaxSort;
-  kallaxMode: StorageMode;
-  activeKuId: string | null;
+  shelfSort: ShelfSort;
+  shelfMode: StorageMode;
+  activeShelfId: string | null;
 
   // ── Game actions ──
   addGame: (game: Game) => void;
@@ -39,11 +39,11 @@ interface GameStore {
   deleteGame: (id: string) => void;
   clearAllGames: () => void;
 
-  // ── Kallax unit actions ──
-  addKallax: (model: string, label: string) => void;
-  removeKallax: (id: string) => void;
-  updateKallaxLabel: (id: string, label: string) => void;
-  setActiveKu: (id: string) => void;
+  // ── Shelf unit actions ──
+  addShelf: (model: string, label: string) => void;
+  removeShelf: (id: string) => void;
+  updateShelfLabel: (id: string, label: string) => void;
+  setActiveShelf: (id: string) => void;
 
   // ── Layout actions ──
   addLayout: (layout: Layout) => void;
@@ -51,17 +51,17 @@ interface GameStore {
   deleteLayout: (id: string) => void;
 
   // ── Manual layout state ──
-  manualKallaxes: KallaxUnit[];
-  activeManualKuId: string | null;
+  manualShelves: ShelfUnit[];
+  activeManualShelfId: string | null;
   manualPlacements: ManualPlacement[];
   pendingManualNav: { unitId: string; gameId: string } | null;
   pendingManualView: { unitId: string; cellIndex: number } | null;
 
   // ── Manual unit actions ──
-  addManualKallax: (model: string, label: string) => void;
-  removeManualKallax: (id: string) => void;
-  updateManualKallaxLabel: (id: string, label: string) => void;
-  setActiveManualKu: (id: string) => void;
+  addManualShelf: (model: string, label: string) => void;
+  removeManualShelf: (id: string) => void;
+  updateManualShelfLabel: (id: string, label: string) => void;
+  setActiveManualShelf: (id: string) => void;
 
   // ── Manual placement actions ──
   addManualPlacement: (p: ManualPlacement) => void;
@@ -72,8 +72,8 @@ interface GameStore {
   setPendingManualView: (nav: { unitId: string; cellIndex: number } | null) => void;
 
   // ── Settings ──
-  setKallaxSort: (sort: KallaxSort) => void;
-  setKallaxMode: (mode: StorageMode) => void;
+  setShelfSort: (sort: ShelfSort) => void;
+  setShelfMode: (mode: StorageMode) => void;
 
   // ── BGG ──
   bggUsername: string;
@@ -84,13 +84,13 @@ export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       games: [],
-      kallaxes: [],
+      shelves: [],
       layouts: [],
-      kallaxSort: 'alpha',
-      kallaxMode: 'upright',
-      activeKuId: null,
-      manualKallaxes: [],
-      activeManualKuId: null,
+      shelfSort: 'alpha',
+      shelfMode: 'upright',
+      activeShelfId: null,
+      manualShelves: [],
+      activeManualShelfId: null,
       manualPlacements: [],
       pendingManualNav: null,
       pendingManualView: null,
@@ -122,42 +122,42 @@ export const useGameStore = create<GameStore>()(
         if (userId) deleteAllGamesDb(userId);
       },
 
-      addKallax: (model, label) => {
+      addShelf: (model, label) => {
         const id = 'ku' + Date.now().toString(36);
-        const resolvedLabel = label.trim() || kuLabel(model);
-        const ku: KallaxUnit = { id, model, label: resolvedLabel };
+        const resolvedLabel = label.trim() || shelfLabel(model);
+        const shelf: ShelfUnit = { id, model, label: resolvedLabel };
         set(s => ({
-          kallaxes: [...s.kallaxes, ku],
-          activeKuId: id,
+          shelves: [...s.shelves, shelf],
+          activeShelfId: id,
         }));
         const userId = uid();
-        if (userId) upsertKallax(ku, userId);
+        if (userId) upsertShelf(shelf, userId);
       },
 
-      removeKallax: (id) => {
+      removeShelf: (id) => {
         set(s => {
-          const next = s.kallaxes.filter(k => k.id !== id);
+          const next = s.shelves.filter(k => k.id !== id);
           return {
-            kallaxes: next,
-            activeKuId: s.activeKuId === id ? (next[0]?.id ?? null) : s.activeKuId,
+            shelves: next,
+            activeShelfId: s.activeShelfId === id ? (next[0]?.id ?? null) : s.activeShelfId,
           };
         });
         const userId = uid();
-        if (userId) deleteKallaxDb(id);
+        if (userId) deleteShelfDb(id);
       },
 
-      updateKallaxLabel: (id, label) => {
+      updateShelfLabel: (id, label) => {
         set(s => ({
-          kallaxes: s.kallaxes.map(k => k.id === id ? { ...k, label } : k),
+          shelves: s.shelves.map(k => k.id === id ? { ...k, label } : k),
         }));
         const userId = uid();
         if (userId) {
-          const updated = get().kallaxes.find(k => k.id === id);
-          if (updated) upsertKallax(updated, userId);
+          const updated = get().shelves.find(k => k.id === id);
+          if (updated) upsertShelf(updated, userId);
         }
       },
 
-      setActiveKu: (id) => set({ activeKuId: id }),
+      setActiveShelf: (id) => set({ activeShelfId: id }),
 
       addLayout: (layout) =>
         set(s => ({ layouts: [...s.layouts, layout] })),
@@ -170,34 +170,34 @@ export const useGameStore = create<GameStore>()(
       deleteLayout: (id) =>
         set(s => ({ layouts: s.layouts.filter(l => l.id !== id) })),
 
-      addManualKallax: (model, label) => {
+      addManualShelf: (model, label) => {
         const id = 'mku' + Date.now().toString(36);
-        const resolvedLabel = label.trim() || kuLabel(model);
-        const ku: KallaxUnit = { id, model, label: resolvedLabel };
+        const resolvedLabel = label.trim() || shelfLabel(model);
+        const shelf: ShelfUnit = { id, model, label: resolvedLabel };
         set(s => ({
-          manualKallaxes: [...s.manualKallaxes, ku],
-          activeManualKuId: id,
+          manualShelves: [...s.manualShelves, shelf],
+          activeManualShelfId: id,
         }));
       },
 
-      removeManualKallax: (id) => {
+      removeManualShelf: (id) => {
         set(s => {
-          const next = s.manualKallaxes.filter(k => k.id !== id);
+          const next = s.manualShelves.filter(k => k.id !== id);
           return {
-            manualKallaxes: next,
-            activeManualKuId: s.activeManualKuId === id ? (next[0]?.id ?? null) : s.activeManualKuId,
+            manualShelves: next,
+            activeManualShelfId: s.activeManualShelfId === id ? (next[0]?.id ?? null) : s.activeManualShelfId,
             manualPlacements: s.manualPlacements.filter(p => p.unitId !== id),
           };
         });
       },
 
-      updateManualKallaxLabel: (id, label) => {
+      updateManualShelfLabel: (id, label) => {
         set(s => ({
-          manualKallaxes: s.manualKallaxes.map(k => k.id === id ? { ...k, label } : k),
+          manualShelves: s.manualShelves.map(k => k.id === id ? { ...k, label } : k),
         }));
       },
 
-      setActiveManualKu: (id) => set({ activeManualKuId: id }),
+      setActiveManualShelf: (id) => set({ activeManualShelfId: id }),
 
       addManualPlacement: (p) => {
         set(s => {
@@ -239,14 +239,29 @@ export const useGameStore = create<GameStore>()(
       setPendingManualNav: (nav: { unitId: string; gameId: string } | null) => set({ pendingManualNav: nav }),
       setPendingManualView: (nav: { unitId: string; cellIndex: number } | null) => set({ pendingManualView: nav }),
 
-      setKallaxSort: (sort) => set({ kallaxSort: sort }),
-      setKallaxMode: (mode) => set({ kallaxMode: mode }),
+      setShelfSort: (sort) => set({ shelfSort: sort }),
+      setShelfMode: (mode) => set({ shelfMode: mode }),
 
       bggUsername: '',
       setBggUsername: (username) => set({ bggUsername: username }),
     }),
     {
       name: 'shelfgeek-v1',
+      version: 1,
+      migrate: (persistedState: any, version: number) => {
+        if (version === 0) {
+          return {
+            ...persistedState,
+            shelves:             persistedState.kallaxes          ?? [],
+            manualShelves:       persistedState.manualKallaxes    ?? [],
+            activeShelfId:       persistedState.activeKuId        ?? null,
+            activeManualShelfId: persistedState.activeManualKuId  ?? null,
+            shelfSort:           persistedState.kallaxSort        ?? 'alpha',
+            shelfMode:           persistedState.kallaxMode        ?? 'upright',
+          };
+        }
+        return persistedState as any;
+      },
     }
   )
 );

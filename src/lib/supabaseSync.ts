@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { useAuthStore } from '../store/useAuthStore';
-import type { Game, KallaxUnit } from './types';
+import type { Game, ShelfUnit } from './types';
 
 // ── Pending-op tracker ───────────────────────────────────────────────────────
 let _pending = 0;
@@ -58,11 +58,11 @@ function rowToGame(row: Record<string, unknown>): Game {
   };
 }
 
-function kuToRow(ku: KallaxUnit, userId: string) {
-  return { id: ku.id, user_id: userId, model: ku.model, label: ku.label };
+function shelfToRow(shelf: ShelfUnit, userId: string) {
+  return { id: shelf.id, user_id: userId, model: shelf.model, label: shelf.label };
 }
 
-function rowToKu(row: Record<string, unknown>): KallaxUnit {
+function rowToShelf(row: Record<string, unknown>): ShelfUnit {
   return {
     id:    row.id    as string,
     model: row.model as string,
@@ -93,48 +93,48 @@ export async function deleteAllGamesDb(userId: string) {
   onSyncDone(!!error);
 }
 
-export async function upsertKallax(ku: KallaxUnit, userId: string) {
+export async function upsertShelf(shelf: ShelfUnit, userId: string) {
   onSyncStart();
-  const { error } = await supabase.from('kallax_units').upsert(kuToRow(ku, userId));
-  if (error) console.error('[sync] upsertKallax:', error.message);
+  const { error } = await supabase.from('shelves').upsert(shelfToRow(shelf, userId));
+  if (error) console.error('[sync] upsertShelf:', error.message);
   onSyncDone(!!error);
 }
 
-export async function deleteKallaxDb(id: string) {
+export async function deleteShelfDb(id: string) {
   onSyncStart();
-  const { error } = await supabase.from('kallax_units').delete().eq('id', id);
-  if (error) console.error('[sync] deleteKallaxDb:', error.message);
+  const { error } = await supabase.from('shelves').delete().eq('id', id);
+  if (error) console.error('[sync] deleteShelfDb:', error.message);
   onSyncDone(!!error);
 }
 
 // ── Bulk operations (used on sign-in) ────────────────────────────────────────
 
-export async function fetchUserData(userId: string): Promise<{ games: Game[]; kallaxes: KallaxUnit[]; error?: string }> {
-  const [gamesRes, kallaxRes] = await Promise.all([
+export async function fetchUserData(userId: string): Promise<{ games: Game[]; shelves: ShelfUnit[]; error?: string }> {
+  const [gamesRes, shelvesRes] = await Promise.all([
     supabase.from('games').select('*').eq('user_id', userId),
-    supabase.from('kallax_units').select('*').eq('user_id', userId),
+    supabase.from('shelves').select('*').eq('user_id', userId),
   ]);
-  if (gamesRes.error || kallaxRes.error) {
-    const msg = gamesRes.error?.message ?? kallaxRes.error?.message;
+  if (gamesRes.error || shelvesRes.error) {
+    const msg = gamesRes.error?.message ?? shelvesRes.error?.message;
     console.error('[sync] fetchUserData:', msg);
-    return { games: [], kallaxes: [], error: msg };
+    return { games: [], shelves: [], error: msg };
   }
   return {
-    games:    (gamesRes.data  ?? []).map(r => rowToGame(r as Record<string, unknown>)),
-    kallaxes: (kallaxRes.data ?? []).map(r => rowToKu(r  as Record<string, unknown>)),
+    games:   (gamesRes.data   ?? []).map(r => rowToGame(r  as Record<string, unknown>)),
+    shelves: (shelvesRes.data ?? []).map(r => rowToShelf(r as Record<string, unknown>)),
   };
 }
 
-export async function pushAllToDb(games: Game[], kallaxes: KallaxUnit[], userId: string) {
+export async function pushAllToDb(games: Game[], shelves: ShelfUnit[], userId: string) {
   onSyncStart();
   let anyError = false;
   if (games.length) {
     const { error } = await supabase.from('games').upsert(games.map(g => gameToRow(g, userId)));
     if (error) { console.error('[sync] pushAllToDb games:', error.message); anyError = true; }
   }
-  if (kallaxes.length) {
-    const { error } = await supabase.from('kallax_units').upsert(kallaxes.map(k => kuToRow(k, userId)));
-    if (error) { console.error('[sync] pushAllToDb kallaxes:', error.message); anyError = true; }
+  if (shelves.length) {
+    const { error } = await supabase.from('shelves').upsert(shelves.map(s => shelfToRow(s, userId)));
+    if (error) { console.error('[sync] pushAllToDb shelves:', error.message); anyError = true; }
   }
   onSyncDone(anyError);
 }

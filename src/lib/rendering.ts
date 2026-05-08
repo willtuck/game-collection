@@ -240,7 +240,7 @@ function renderGameBox(
   return { faceFront, faceSide };
 }
 
-/* ── Kallax cell renderer (two-pass) ── */
+/* ── Shelf cell renderer (two-pass) ── */
 
 /** Pass 1: draw the 5 opaque cell walls (everything except the open front face). */
 export function drawCellShell(
@@ -429,7 +429,7 @@ export function drawCell(
 /* ── Top-of-unit renderer ── */
 
 /**
- * Draws games stacked on top of a Kallax unit (above y=0) and returns their hit regions.
+ * Draws games stacked on top of a shelf unit (above y=0) and returns their hit regions.
  * Games are always in stacked orientation; positions are absolute (pre-computed by packTop).
  */
 export function drawTopGames(

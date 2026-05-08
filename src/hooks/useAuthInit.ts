@@ -40,13 +40,13 @@ export async function fetchPremiumStatus(userId: string) {
 
 async function syncOnSignIn(userId: string) {
   fetchPremiumStatus(userId);
-  const { games: dbGames, kallaxes: dbKallaxes, error } = await fetchUserData(userId);
+  const { games: dbGames, shelves: dbShelves, error } = await fetchUserData(userId);
   if (error) return; // don't touch local state if Supabase is unreachable
 
   const localGames = useGameStore.getState().games;
-  const localKallaxes = useGameStore.getState().kallaxes;
+  const localShelves = useGameStore.getState().shelves;
 
-  if (dbGames.length > 0 || dbKallaxes.length > 0) {
+  if (dbGames.length > 0 || dbShelves.length > 0) {
     // Cloud has data — DB wins, but preserve local-only fields and locally-only games.
     const localById = new Map(localGames.map(g => [g.id, g]));
     const dbById    = new Map(dbGames.map(g => [g.id, g]));
@@ -68,9 +68,9 @@ async function syncOnSignIn(userId: string) {
     }
     mergedGames.push(...localOnly);
 
-    useGameStore.setState({ games: mergedGames, kallaxes: dbKallaxes });
+    useGameStore.setState({ games: mergedGames, shelves: dbShelves });
   } else {
     // Cloud is empty — push whatever is stored locally
-    await pushAllToDb(localGames, localKallaxes, userId);
+    await pushAllToDb(localGames, localShelves, userId);
   }
 }

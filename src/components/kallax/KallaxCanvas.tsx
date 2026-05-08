@@ -27,7 +27,7 @@ interface DragState {
   moved: boolean;
 }
 
-export function KallaxCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [], cellDims, onCellClick, highlightCellIdx }: KallaxCanvasProps) {
+export function ShelfCanvas({ cellPacked, cols, rows, searchTerm, topPacked = [], cellDims, onCellClick, highlightCellIdx }: KallaxCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const hitRef       = useRef<HitRegion[]>([]);

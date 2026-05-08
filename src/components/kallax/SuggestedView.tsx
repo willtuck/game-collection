@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { useAuthStore } from '../../store/useAuthStore';
-import { getSortedForKallax } from '../../lib/sorting';
+import { getSortedForShelf } from '../../lib/sorting';
 import { packCellsGroupAware, packTop, fitsInCell, fitsUprightInCell } from '../../lib/packing';
 import { unitGrid, unitDims } from '../../lib/helpers';
 import type { PackedGame } from '../../lib/types';
-import { KallaxCanvas } from './KallaxCanvas';
+import { ShelfCanvas } from './KallaxCanvas';
 import { SuggestedSettings } from './SuggestedSettings';
-import { KallaxManagerSheet } from './KallaxManagerSheet';
+import { ShelfManagerSheet } from './KallaxManagerSheet';
 import { UpgradeSheet } from '../shared/UpgradeSheet';
 import styles from './SuggestedView.module.css';
 
@@ -22,15 +22,15 @@ interface UnitPacking {
 }
 
 export function SuggestedView() {
-  const games      = useGameStore(s => s.games);
-  const kallaxes   = useGameStore(s => s.kallaxes);
-  const addKallax  = useGameStore(s => s.addKallax);
-  const kallaxSort = useGameStore(s => s.kallaxSort);
-  const kallaxMode = useGameStore(s => s.kallaxMode);
-  const activeKuId = useGameStore(s => s.activeKuId);
-  const setActiveKu   = useGameStore(s => s.setActiveKu);
-  const setKallaxSort = useGameStore(s => s.setKallaxSort);
-  const setKallaxMode = useGameStore(s => s.setKallaxMode);
+  const games         = useGameStore(s => s.games);
+  const shelves       = useGameStore(s => s.shelves);
+  const addShelf      = useGameStore(s => s.addShelf);
+  const shelfSort     = useGameStore(s => s.shelfSort);
+  const shelfMode     = useGameStore(s => s.shelfMode);
+  const activeShelfId = useGameStore(s => s.activeShelfId);
+  const setActiveShelf  = useGameStore(s => s.setActiveShelf);
+  const setShelfSort    = useGameStore(s => s.setShelfSort);
+  const setShelfMode    = useGameStore(s => s.setShelfMode);
   const isPremium = useAuthStore(s => s.isPremium);
 
   const [search, setSearch] = useState('');
@@ -38,45 +38,45 @@ export function SuggestedView() {
   const [manageOpen, setManageOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
-  function handleAddKallax(model: string, label: string) {
-    if (!isPremium && kallaxes.length >= 1) {
+  function handleAddShelf(model: string, label: string) {
+    if (!isPremium && shelves.length >= 1) {
       setManageOpen(false);
       setUpgradeOpen(true);
     } else {
-      addKallax(model, label);
+      addShelf(model, label);
     }
   }
 
   const sortedGames = useMemo(
-    () => getSortedForKallax(games, kallaxSort),
-    [games, kallaxSort],
+    () => getSortedForShelf(games, shelfSort),
+    [games, shelfSort],
   );
 
   // Pack games sequentially across all units — overflow from unit N feeds unit N+1
   const { units, remaining } = useMemo(() => {
     const units: UnitPacking[] = [];
     let rem = sortedGames;
-    for (const ku of kallaxes) {
-      const [cols, rows] = unitGrid(ku);
-      const dims = unitDims(ku);
+    for (const shelf of shelves) {
+      const [cols, rows] = unitGrid(shelf);
+      const dims = unitDims(shelf);
       // In upright mode, only games that fit upright go into cells — games that
       // fit only when flat (e.g. tall boxes like Ark Nova) go to top-of-shelf.
       // In stacked mode, any game that fits in any orientation goes into cells.
       const fitsCurrentMode = (g: (typeof rem)[0]) =>
-        kallaxMode === 'stacked' ? fitsInCell(g, dims) : fitsUprightInCell(g, dims);
+        shelfMode === 'stacked' ? fitsInCell(g, dims) : fitsUprightInCell(g, dims);
       const oversized = rem.filter(g => !fitsCurrentMode(g));
       const cellable  = rem.filter(g =>  fitsCurrentMode(g));
-      const { cellPacked, remaining: afterCells } = packCellsGroupAware(cellable, cols * rows, kallaxMode === 'stacked', dims);
+      const { cellPacked, remaining: afterCells } = packCellsGroupAware(cellable, cols * rows, shelfMode === 'stacked', dims);
       const { topPacked, remaining: afterTop }   = packTop(oversized, cols, rows, dims);
       rem = [...afterTop, ...afterCells];
-      units.push({ id: ku.id, label: ku.label, cols, rows, cellPacked, topPacked, dims });
+      units.push({ id: shelf.id, label: shelf.label, cols, rows, cellPacked, topPacked, dims });
     }
     return { units, remaining: rem };
-  }, [sortedGames, kallaxes, kallaxMode]);
+  }, [sortedGames, shelves, shelfMode]);
 
-  const activeUnit = units.find(u => u.id === activeKuId) ?? units[0];
+  const activeUnit = units.find(u => u.id === activeShelfId) ?? units[0];
 
-  const noUnits = kallaxes.length === 0;
+  const noUnits = shelves.length === 0;
 
   return (
     <div className={styles.view}>
@@ -112,7 +112,7 @@ export function SuggestedView() {
               role="tab"
               aria-selected={u.id === activeUnit?.id}
               className={`${styles.unitTab} ${u.id === activeUnit?.id ? styles.activeTab : ''}`}
-              onClick={() => setActiveKu(u.id)}
+              onClick={() => setActiveShelf(u.id)}
             >
               {u.label}
             </button>
@@ -131,7 +131,7 @@ export function SuggestedView() {
         ) : activeUnit ? (
           <>
             <div className={styles.canvasArea}>
-              <KallaxCanvas
+              <ShelfCanvas
                 key={activeUnit.id}
                 cellPacked={activeUnit.cellPacked}
                 cols={activeUnit.cols}
@@ -152,14 +152,14 @@ export function SuggestedView() {
                 <>{' · '}{activeUnit.topPacked.length}{' '}
                   {activeUnit.topPacked.length === 1 ? 'game' : 'games'} on top</>
               )}
-              {' · '}{kallaxMode}
+              {' · '}{shelfMode}
             </div>
 
             {remaining.length > 0 && (
               <div className={styles.remaining}>
                 <div className={styles.remainingTitle}>
                   {remaining.length} {remaining.length === 1 ? 'game' : 'games'} don't fit
-                  {kallaxes.length > 1 ? ' in any unit' : ''}
+                  {shelves.length > 1 ? ' in any unit' : ''}
                 </div>
                 <div className={styles.remainingList}>
                   {remaining.map(g => (
@@ -174,16 +174,16 @@ export function SuggestedView() {
         ) : null}
       </div>
 
-      <KallaxManagerSheet open={manageOpen} onClose={() => setManageOpen(false)} onAdd={handleAddKallax} />
+      <ShelfManagerSheet open={manageOpen} onClose={() => setManageOpen(false)} onAdd={handleAddShelf} />
       <UpgradeSheet open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 
       <SuggestedSettings
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        sort={kallaxSort}
-        mode={kallaxMode}
-        onSortChange={setKallaxSort}
-        onModeChange={setKallaxMode}
+        sort={shelfSort}
+        mode={shelfMode}
+        onSortChange={setShelfSort}
+        onModeChange={setShelfMode}
       />
     </div>
   );
